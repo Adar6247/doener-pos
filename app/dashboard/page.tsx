@@ -1,195 +1,19 @@
-
 "use client";
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-const categories = {
-  "Lahmacun-Spezialitäten": [
-    "Lahmacun",
-    "Lahmacun mit Salat und Soße (gerollt)",
-    "Lahmacun mit Käse",
-    "Lahmacun Spezial",
-    "Lahmacun Teller",
-    "Lahmacun Spezial Teller",
-  ],
-
-  "Grillspezialitäten": [
-    "Lammspieße",
-    "Lammkoteletts",
-    "Adana Kebap",
-    "Steak",
-    "Gemischter Grill",
-    "Chicken Nuggets mit Pommes",
-    "Chicken Wings mit Pommes",
-  ],
-
-  Burger: [
-    "Hamburger (55 g)",
-    "Hamburger XXL (125 g)",
-    "Cheeseburger (55 g)",
-    "Cheeseburger XXL (125 g)",
-    "Chickenburger (90 g)",
-  ],
-
-  Salate: [
-    "Gemischter Salat (klein)",
-    "Gemischter Salat (groß)",
-    "Hirten-Salat",
-    "Salat Tonno",
-    "Salat mit Putenstreifen",
-  ],
-
-  "Pizza (Ø 30 cm)": [
-    "Pizza Margherita",
-    "Pizza Funghi",
-    "Pizza Spinat",
-    "Pizza Peperoni",
-    "Pizza Salami",
-    "Pizza Schinken",
-    "Pizza Sucuk",
-    "Pizza Hawaii",
-    "Pizza Artischocken",
-    "Pizza Tonno",
-    "Pizza Kebap",
-    "Pizza Chipolla",
-    "Pizza Vegetarisch",
-    "Pizza Sucuk Spezial",
-    "Pizza Döner Spezial",
-    "Pizza Meeresfrüchte",
-    "Pizza Vier Jahreszeiten",
-    "Pizza Sardellen",
-    "Party-Pizza (60x40 cm)",
-  ],
-
-  Flammkuchen: [
-    "Flammkuchen",
-  ],
-
-  "Döner-Spezialitäten": [
-    "Döner im Fladenbrot",
-    "Döner mit Käse im Fladenbrot",
-    "Yufka Döner",
-    "Döner Vegetarisch",
-    "Yufka Vegetarisch",
-    "Vegetarischer Teller",
-    "Döner Box",
-    "Döner Teller",
-    "Döner Teller (klein)",
-  ],
-
-  "Falafel-Spezialitäten": [
-    "Falafel im Fladenbrot",
-    "Falafel Box",
-    "Falafel Teller",
-  ],
-
-  Extras: [
-    "Portion Pommes",
-    "Iskender",
-  ],
-
-  "Pide und Seele": [
-    "Pide mit Käse",
-    "Pide mit Hackfleisch",
-    "Pide mit Spinat & Käse",
-    "Pide mit Sucuk & Käse",
-    "Seele mit Putenschinken und Käse",
-    "Seele mit Dönerfleisch, frischen Tomaten und Zwiebeln",
-  ],
-
-  "Warme Getränke": [
-    "Tasse Kaffee (klein)",
-  ],
-
-  "Alkoholische Getränke": [
-    "Hofbräu 0,5 l",
-    "Pils Hofbräu 0,5 l",
-    "Hefeweizen hell 0,5 l",
-    "Kristallweizen 0,5 l",
-    "Radler 0,5 l",
-    "Beck’s 0,33 l",
-    "Beck’s Lemon 0,33 l",
-    "Tannenzäpfle 0,33 l",
-    "Tannenzäpfle 0,33 l",
-    "Desperados 0,33 l",
-    "Rotwein Trollinger 0,25 l",
-    "Weißwein Riesling 0,25 l",
-    "Rosé Württemberger 0,25 l",
-    "Weinschorle 0,25 l",
-  ],
-
-  "Kalte Getränke – Softdrinks": [
-    "Fanta 0,3 l",
-    "Fanta 0,5 l",
-    "Coca-Cola 0,3 l",
-    "Coca-Cola 0,5 l",
-    "Coca-Cola Light 0,3 l",
-    "Coca-Cola Light 0,5 l",
-    "Sprite 0,3 l",
-    "Sprite 0,5 l",
-    "Spezi 0,3 l",
-    "Spezi 0,5 l",
-    "Red Bull 0,25 l",
-    "Wasser 0,3 l",
-    "Wasser 0,5 l",
-  ],
-
-  "Kalte Getränke – Säfte": [
-    "Orangensaft 0,3 l",
-    "Kirschsaft 0,3 l",
-    "Kiba (Kirsch-Banane) 0,3 l",
-    "Bananensaft 0,3 l",
-    "Bananensaft 0,5 l",
-    "Apfelsaft 0,3 l",
-    "Apfelsaft 0,5 l",
-    "Johannisbeersaft 0,3 l",
-    "Johannisbeersaft 0,5 l",
-    "Apfelschorle 0,3 l",
-    "Apfelschorle 0,5 l",
-  ],
-
-  Schweppes: [
-    "Ginger Ale",
-    "Tonic Water",
-    "Bitter Lemon",
-  ],
-
-  Cocktails: [
-    "Aperol Spritz",
-    "Hugo",
-    "Campari Orange",
-    "Campari Soda",
-  ],
-
-  Longdrinks: [
-    "Jacky Cola 2 cl",
-    "Jacky Cola 4 cl",
-    "Wodka Lemon 2 cl",
-    "Wodka Lemon 4 cl",
-    "Wodka Bull 2 cl",
-    "Wodka Bull 4 cl",
-    "Wodka Orange 2 cl",
-    "Wodka Orange 4 cl",
-    "Asbach Cola 2 cl",
-    "Asbach Cola 4 cl",
-    "Gin Tonic 2 cl",
-    "Gin Tonic 4 cl",
-  ],
-
-  Spirituosen: [
-    "Jägermeister",
-    "Ramazzotti",
-    "Wodka",
-    "Tequila",
-    "Asbach",
-    "Baileys",
-    "Williams",
-  ],
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+  created_at: string;
 };
 
 type CartItem = {
+  id: number;
   name: string;
+  price: number;
   quantity: number;
 };
 
@@ -201,6 +25,9 @@ type FinishedNotification = {
 export default function Dashboard() {
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState("");
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   const [selectedCategory, setSelectedCategory] =
     useState<string | null>(null);
@@ -217,6 +44,9 @@ export default function Dashboard() {
   const [notifications, setNotifications] =
     useState<FinishedNotification[]>([]);
 
+  /*
+   * Benutzer laden
+   */
   useEffect(() => {
     async function loadUser() {
       const {
@@ -243,6 +73,45 @@ export default function Dashboard() {
     loadUser();
   }, []);
 
+  /*
+   * Produkte aus Supabase laden
+   */
+  useEffect(() => {
+    async function loadProducts() {
+      setLoadingProducts(true);
+
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("category", { ascending: true })
+        .order("name", { ascending: true });
+
+      if (error) {
+        console.error("PRODUKTE FEHLER:", {
+          message: error.message,
+          code: error.code,
+        });
+
+        setMessage(
+          "Die Produkte konnten nicht geladen werden."
+        );
+
+        setLoadingProducts(false);
+        return;
+      }
+
+      setProducts(data ?? []);
+      setLoadingProducts(false);
+    }
+
+    loadProducts();
+  }, []);
+
+  /*
+   * Realtime:
+   * Wenn eine Bestellung in der Küche fertig gemacht wird,
+   * bekommt der Kellner eine Benachrichtigung.
+   */
   useEffect(() => {
     if (!userId) return;
 
@@ -303,20 +172,26 @@ export default function Dashboard() {
     };
   }, [userId]);
 
+  /*
+   * Logout
+   */
   async function logout() {
     await supabase.auth.signOut();
     window.location.href = "/";
   }
 
-  function addToCart(productName: string) {
+  /*
+   * Produkt in Warenkorb
+   */
+  function addToCart(product: Product) {
     setCart((currentCart) => {
       const existing = currentCart.find(
-        (item) => item.name === productName
+        (item) => item.id === product.id
       );
 
       if (existing) {
         return currentCart.map((item) =>
-          item.name === productName
+          item.id === product.id
             ? {
                 ...item,
                 quantity: item.quantity + 1,
@@ -328,7 +203,9 @@ export default function Dashboard() {
       return [
         ...currentCart,
         {
-          name: productName,
+          id: product.id,
+          name: product.name,
+          price: Number(product.price),
           quantity: 1,
         },
       ];
@@ -337,10 +214,13 @@ export default function Dashboard() {
     setShowCart(true);
   }
 
-  function increaseQuantity(productName: string) {
+  /*
+   * Menge erhöhen
+   */
+  function increaseQuantity(productId: number) {
     setCart((currentCart) =>
       currentCart.map((item) =>
-        item.name === productName
+        item.id === productId
           ? {
               ...item,
               quantity: item.quantity + 1,
@@ -350,11 +230,14 @@ export default function Dashboard() {
     );
   }
 
-  function decreaseQuantity(productName: string) {
+  /*
+   * Menge verringern
+   */
+  function decreaseQuantity(productId: number) {
     setCart((currentCart) =>
       currentCart
         .map((item) =>
-          item.name === productName
+          item.id === productId
             ? {
                 ...item,
                 quantity: item.quantity - 1,
@@ -365,10 +248,16 @@ export default function Dashboard() {
     );
   }
 
+  /*
+   * Warenkorb leeren
+   */
   function clearCart() {
     setCart([]);
   }
 
+  /*
+   * Neue Bestellung
+   */
   function startNewOrder() {
     setTableNumber(null);
     setSelectedCategory(null);
@@ -377,6 +266,9 @@ export default function Dashboard() {
     setMessage("");
   }
 
+  /*
+   * Benachrichtigung entfernen
+   */
   function removeNotification(id: number) {
     setNotifications((current) =>
       current.filter(
@@ -385,9 +277,14 @@ export default function Dashboard() {
     );
   }
 
+  /*
+   * Bestellung absenden
+   */
   async function submitOrder() {
     if (!tableNumber) {
-      setMessage("Bitte zuerst einen Tisch auswählen.");
+      setMessage(
+        "Bitte zuerst einen Tisch auswählen."
+      );
       return;
     }
 
@@ -411,9 +308,11 @@ export default function Dashboard() {
       });
 
       setSending(false);
+
       setMessage(
         "Du bist nicht richtig angemeldet. Bitte neu anmelden."
       );
+
       return;
     }
 
@@ -423,16 +322,21 @@ export default function Dashboard() {
       status: "offen",
     });
 
-    const { data: order, error: orderError } =
-      await supabase
-        .from("orders")
-        .insert({
-          table_number: tableNumber,
-          waiter_id: user.id,
-          status: "offen",
-        })
-        .select()
-        .single();
+    /*
+     * Bestellung erstellen
+     */
+    const {
+      data: order,
+      error: orderError,
+    } = await supabase
+      .from("orders")
+      .insert({
+        table_number: tableNumber,
+        waiter_id: user.id,
+        status: "offen",
+      })
+      .select()
+      .single();
 
     if (orderError || !order) {
       console.error("BESTELLUNG FEHLER:", {
@@ -450,8 +354,14 @@ export default function Dashboard() {
       return;
     }
 
-    console.log("BESTELLUNG ERSTELLT:", order);
+    console.log(
+      "BESTELLUNG ERSTELLT:",
+      order
+    );
 
+    /*
+     * Produkte der Bestellung speichern
+     */
     const orderItems = cart.map((item) => ({
       order_id: order.id,
       product_name: item.name,
@@ -489,24 +399,68 @@ export default function Dashboard() {
     );
   }
 
-  const products = selectedCategory
-    ? categories[
-        selectedCategory as keyof typeof categories
-      ]
+  /*
+   * Kategorien automatisch aus den Produkten erstellen
+   */
+  const categories = Array.from(
+    new Set(
+      products
+        .map((product) => product.category)
+        .filter(
+          (category) =>
+            category && category.trim() !== ""
+        )
+    )
+  );
+
+  /*
+   * Produkte der ausgewählten Kategorie
+   */
+  const categoryProducts = selectedCategory
+    ? products.filter(
+        (product) =>
+          product.category === selectedCategory
+      )
     : [];
 
+  /*
+   * Anzahl Artikel
+   */
   const totalItems = cart.reduce(
     (total, item) => total + item.quantity,
     0
   );
 
+  /*
+   * Gesamtpreis
+   */
+  const totalPrice = cart.reduce(
+    (total, item) =>
+      total + item.price * item.quantity,
+    0
+  );
+
+  /*
+   * Tische 1-25
+   */
   const tables = Array.from(
     { length: 25 },
     (_, index) => index + 1
   );
 
+  /*
+   * Preis formatieren
+   */
+  function formatPrice(price: number) {
+    return Number(price).toFixed(2).replace(".", ",") + " €";
+  }
+
   return (
     <main className="min-h-screen bg-gray-100">
+      {/* =====================================================
+          BENACHRICHTIGUNGEN
+      ===================================================== */}
+
       {notifications.length > 0 && (
         <div className="fixed top-5 right-5 z-[100] w-full max-w-sm space-y-3">
           {notifications.map((notification) => (
@@ -532,7 +486,9 @@ export default function Dashboard() {
 
                 <button
                   onClick={() =>
-                    removeNotification(notification.id)
+                    removeNotification(
+                      notification.id
+                    )
                   }
                   className="text-white/80 hover:text-white text-xl"
                 >
@@ -543,6 +499,10 @@ export default function Dashboard() {
           ))}
         </div>
       )}
+
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
       <header className="bg-white shadow-sm p-5 flex items-center justify-between sticky top-0 z-20">
         <div>
@@ -578,7 +538,13 @@ export default function Dashboard() {
         </div>
       </header>
 
+      {/* =====================================================
+          HAUPTBEREICH
+      ===================================================== */}
+
       <div className="p-5 md:p-8 max-w-7xl mx-auto">
+        {/* Willkommen */}
+
         <div className="bg-white rounded-2xl shadow-sm p-5 mb-6">
           <h2 className="text-xl font-bold">
             Willkommen 👋
@@ -588,6 +554,8 @@ export default function Dashboard() {
             Angemeldet als: {email}
           </p>
         </div>
+
+        {/* Nachricht */}
 
         {message && (
           <div
@@ -603,87 +571,152 @@ export default function Dashboard() {
           </div>
         )}
 
-        {tableNumber === null && (
-          <>
-            <h2 className="text-2xl font-bold mb-2">
-              Tisch auswählen
-            </h2>
+        {/* =====================================================
+            PRODUKTE LADEN
+        ===================================================== */}
 
-            <p className="text-gray-600 mb-5">
-              Wähle den Tisch für die Bestellung.
-            </p>
-
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-              {tables.map((table) => (
-                <button
-                  key={table}
-                  onClick={() => setTableNumber(table)}
-                  className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition"
-                >
-                  <div className="text-3xl mb-2">
-                    🪑
-                  </div>
-
-                  <div className="font-bold text-lg">
-                    Tisch {table}
-                  </div>
-                </button>
-              ))}
+        {loadingProducts && (
+          <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
+            <div className="text-4xl mb-3">
+              ⏳
             </div>
-          </>
+
+            <p className="font-semibold text-lg">
+              Speisekarte wird geladen...
+            </p>
+          </div>
         )}
 
-        {tableNumber !== null && !selectedCategory && (
-          <>
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  Bestellung für Tisch {tableNumber}
-                </h2>
+        {/* =====================================================
+            KEINE PRODUKTE
+        ===================================================== */}
 
-                <p className="text-gray-600 mt-1">
-                  Kategorie auswählen
-                </p>
+        {!loadingProducts &&
+          products.length === 0 && (
+            <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
+              <div className="text-5xl mb-4">
+                🍽️
               </div>
 
-              <button
-                onClick={() => setTableNumber(null)}
-                className="bg-white px-5 py-3 rounded-xl shadow-sm font-semibold hover:bg-gray-50"
-              >
-                Tisch ändern
-              </button>
-            </div>
+              <h2 className="text-xl font-bold">
+                Keine Produkte vorhanden
+              </h2>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Object.keys(categories).map(
-                (category) => (
+              <p className="text-gray-600 mt-2">
+                Lege zuerst Produkte im Adminbereich an.
+              </p>
+            </div>
+          )}
+
+        {/* =====================================================
+            TISCH AUSWÄHLEN
+        ===================================================== */}
+
+        {!loadingProducts &&
+          products.length > 0 &&
+          tableNumber === null && (
+            <>
+              <h2 className="text-2xl font-bold mb-2">
+                Tisch auswählen
+              </h2>
+
+              <p className="text-gray-600 mb-5">
+                Wähle den Tisch für die Bestellung.
+              </p>
+
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                {tables.map((table) => (
                   <button
-                    key={category}
+                    key={table}
                     onClick={() =>
-                      setSelectedCategory(category)
+                      setTableNumber(table)
                     }
-                    className="bg-white rounded-2xl shadow-sm p-5 hover:shadow-lg hover:-translate-y-1 transition text-left"
+                    className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg hover:-translate-y-1 transition"
                   >
-                    <h3 className="font-bold text-lg">
-                      {category}
-                    </h3>
+                    <div className="text-3xl mb-2">
+                      🪑
+                    </div>
 
-                    <p className="text-gray-600 mt-2">
-                      {
-                        categories[
-                          category as keyof typeof categories
-                        ].length
-                      }{" "}
-                      Produkte
-                    </p>
+                    <div className="font-bold text-lg">
+                      Tisch {table}
+                    </div>
                   </button>
-                )
-              )}
-            </div>
-          </>
-        )}
+                ))}
+              </div>
+            </>
+          )}
 
-        {tableNumber !== null &&
+        {/* =====================================================
+            KATEGORIEN
+        ===================================================== */}
+
+        {!loadingProducts &&
+          products.length > 0 &&
+          tableNumber !== null &&
+          !selectedCategory && (
+            <>
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h2 className="text-2xl font-bold">
+                    Bestellung für Tisch{" "}
+                    {tableNumber}
+                  </h2>
+
+                  <p className="text-gray-600 mt-1">
+                    Kategorie auswählen
+                  </p>
+                </div>
+
+                <button
+                  onClick={() =>
+                    setTableNumber(null)
+                  }
+                  className="bg-white px-5 py-3 rounded-xl shadow-sm font-semibold hover:bg-gray-50"
+                >
+                  Tisch ändern
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {categories.map((category) => {
+                  const count = products.filter(
+                    (product) =>
+                      product.category === category
+                  ).length;
+
+                  return (
+                    <button
+                      key={category}
+                      onClick={() =>
+                        setSelectedCategory(
+                          category
+                        )
+                      }
+                      className="bg-white rounded-2xl shadow-sm p-5 hover:shadow-lg hover:-translate-y-1 transition text-left"
+                    >
+                      <h3 className="font-bold text-lg">
+                        {category}
+                      </h3>
+
+                      <p className="text-gray-600 mt-2">
+                        {count}{" "}
+                        {count === 1
+                          ? "Produkt"
+                          : "Produkte"}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+        {/* =====================================================
+            PRODUKTE EINER KATEGORIE
+        ===================================================== */}
+
+        {!loadingProducts &&
+          tableNumber !== null &&
           selectedCategory && (
             <>
               <div className="flex items-center justify-between mb-5">
@@ -705,32 +738,54 @@ export default function Dashboard() {
                 {selectedCategory}
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {products.map((product) => (
-                  <button
-                    key={product}
-                    onClick={() =>
-                      addToCart(product)
-                    }
-                    className="bg-white rounded-2xl shadow-sm p-5 text-left hover:shadow-lg hover:-translate-y-1 transition"
-                  >
-                    <h3 className="font-bold text-lg">
-                      {product}
-                    </h3>
+              {categoryProducts.length === 0 ? (
+                <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
+                  <p className="text-gray-600">
+                    Keine Produkte in dieser Kategorie.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {categoryProducts.map(
+                    (product) => (
+                      <button
+                        key={product.id}
+                        onClick={() =>
+                          addToCart(product)
+                        }
+                        className="bg-white rounded-2xl shadow-sm p-5 text-left hover:shadow-lg hover:-translate-y-1 transition"
+                      >
+                        <h3 className="font-bold text-lg">
+                          {product.name}
+                        </h3>
 
-                    <p className="text-gray-600 text-sm mt-2">
-                      + Zum Warenkorb
-                    </p>
-                  </button>
-                ))}
-              </div>
+                        <p className="text-xl font-bold mt-3">
+                          {formatPrice(
+                            Number(product.price)
+                          )}
+                        </p>
+
+                        <p className="text-gray-600 text-sm mt-2">
+                          + Zum Warenkorb
+                        </p>
+                      </button>
+                    )
+                  )}
+                </div>
+              )}
             </>
           )}
       </div>
 
+      {/* =====================================================
+          WARENKORB
+      ===================================================== */}
+
       {showCart && (
         <div className="fixed inset-0 bg-black/50 z-50 flex justify-end">
           <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col">
+            {/* Warenkorb Header */}
+
             <div className="p-5 border-b flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold">
@@ -738,7 +793,8 @@ export default function Dashboard() {
                 </h2>
 
                 <p className="text-gray-600 text-sm">
-                  Tisch {tableNumber} · {totalItems} Artikel
+                  Tisch {tableNumber} · {totalItems}{" "}
+                  Artikel
                 </p>
               </div>
 
@@ -749,6 +805,8 @@ export default function Dashboard() {
                 ✕
               </button>
             </div>
+
+            {/* Warenkorb Inhalt */}
 
             <div className="flex-1 overflow-y-auto p-5">
               {cart.length === 0 ? (
@@ -769,19 +827,37 @@ export default function Dashboard() {
                 <div className="space-y-4">
                   {cart.map((item) => (
                     <div
-                      key={item.name}
+                      key={item.id}
                       className="border rounded-2xl p-4"
                     >
-                      <div className="font-semibold mb-3">
-                        {item.name}
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="font-semibold">
+                            {item.name}
+                          </div>
+
+                          <div className="text-gray-600 text-sm mt-1">
+                            {formatPrice(
+                              item.price
+                            )}{" "}
+                            pro Stück
+                          </div>
+                        </div>
+
+                        <div className="font-bold">
+                          {formatPrice(
+                            item.price *
+                              item.quantity
+                          )}
+                        </div>
                       </div>
 
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between mt-4">
                         <div className="flex items-center gap-3">
                           <button
                             onClick={() =>
                               decreaseQuantity(
-                                item.name
+                                item.id
                               )
                             }
                             className="w-10 h-10 rounded-xl bg-gray-200 text-xl font-bold hover:bg-gray-300"
@@ -796,7 +872,7 @@ export default function Dashboard() {
                           <button
                             onClick={() =>
                               increaseQuantity(
-                                item.name
+                                item.id
                               )
                             }
                             className="w-10 h-10 rounded-xl bg-black text-white text-xl font-bold hover:bg-gray-800"
@@ -811,8 +887,8 @@ export default function Dashboard() {
                               (currentCart) =>
                                 currentCart.filter(
                                   (cartItem) =>
-                                    cartItem.name !==
-                                    item.name
+                                    cartItem.id !==
+                                    item.id
                                 )
                             )
                           }
@@ -827,14 +903,30 @@ export default function Dashboard() {
               )}
             </div>
 
+            {/* =================================================
+                WARENKORB FOOTER
+            ================================================= */}
+
             <div className="border-t p-5 space-y-3">
               {cart.length > 0 && (
-                <button
-                  onClick={clearCart}
-                  className="w-full border border-red-300 text-red-600 rounded-xl py-3 font-semibold hover:bg-red-50"
-                >
-                  Warenkorb leeren
-                </button>
+                <>
+                  <div className="flex items-center justify-between text-lg">
+                    <span className="font-semibold">
+                      Gesamt
+                    </span>
+
+                    <span className="font-bold text-2xl">
+                      {formatPrice(totalPrice)}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={clearCart}
+                    className="w-full border border-red-300 text-red-600 rounded-xl py-3 font-semibold hover:bg-red-50"
+                  >
+                    Warenkorb leeren
+                  </button>
+                </>
               )}
 
               <button
@@ -861,4 +953,4 @@ export default function Dashboard() {
       )}
     </main>
   );
-}
+} 

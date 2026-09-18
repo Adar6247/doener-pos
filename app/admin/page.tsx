@@ -282,6 +282,14 @@ const PRODUCT_CATALOG = [
   },
 ];
 
+/* =========================================================
+   KATEGORIEN
+   ========================================================= */
+
+const PRODUCT_CATEGORIES = PRODUCT_CATALOG.map(
+  (category) => category.category
+);
+
 export default function AdminPage() {
   const { theme, setTheme } = useTheme();
 
@@ -296,6 +304,8 @@ export default function AdminPage() {
   const [productsLoading, setProductsLoading] = useState(false);
   const [productsMessage, setProductsMessage] = useState("");
   const [savingPrice, setSavingPrice] = useState<number | null>(null);
+  const [savingProduct, setSavingProduct] = useState<number | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<number | null>(null);
 
   const [showEmployees, setShowEmployees] = useState(false);
   const [showOrders, setShowOrders] = useState(false);
@@ -303,6 +313,8 @@ export default function AdminPage() {
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
+  const [showProducts, setShowProducts] = useState(false);
+  const [showAddProduct, setShowAddProduct] = useState(false);
 
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
 
@@ -323,9 +335,21 @@ export default function AdminPage() {
     DailyStatistic[]
   >([]);
 
+  const [newProductName, setNewProductName] = useState("");
+  const [newProductCategory, setNewProductCategory] = useState(
+    PRODUCT_CATEGORIES[0]
+  );
+  const [newProductPrice, setNewProductPrice] = useState("0.00");
+  const [productCreateMessage, setProductCreateMessage] = useState("");
+  const [productCreateLoading, setProductCreateLoading] = useState(false);
+
   useEffect(() => {
     checkAdmin();
   }, []);
+
+  /* =========================================================
+     ADMIN PRÜFEN
+     ========================================================= */
 
   async function checkAdmin() {
     setLoading(true);
@@ -359,6 +383,10 @@ export default function AdminPage() {
     setLoading(false);
   }
 
+  /* =========================================================
+     MITARBEITER LADEN
+     ========================================================= */
+
   async function loadProfiles() {
     const { data, error } = await supabase
       .from("profiles")
@@ -373,21 +401,27 @@ export default function AdminPage() {
     setProfiles(data || []);
   }
 
+  /* =========================================================
+     BESTELLUNGEN LADEN
+     ========================================================= */
+
   async function loadOrders() {
-    const { data: ordersData, error: ordersError } = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const { data: ordersData, error: ordersError } =
+      await supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false });
 
     if (ordersError) {
       console.error("ORDERS FEHLER:", ordersError);
       return;
     }
 
-    const { data: itemsData, error: itemsError } = await supabase
-      .from("order_items")
-      .select("*")
-      .order("id", { ascending: true });
+    const { data: itemsData, error: itemsError } =
+      await supabase
+        .from("order_items")
+        .select("*")
+        .order("id", { ascending: true });
 
     if (itemsError) {
       console.error("ORDER ITEMS FEHLER:", itemsError);
@@ -397,6 +431,10 @@ export default function AdminPage() {
     setOrders(ordersData || []);
     setOrderItems(itemsData || []);
   }
+
+  /* =========================================================
+     PRODUKTE LADEN
+     ========================================================= */
 
   async function loadProducts() {
     setProductsLoading(true);
@@ -412,7 +450,8 @@ export default function AdminPage() {
       console.error("PRODUCT FEHLER:", error);
 
       setProductsMessage(
-        error.message || "Produkte konnten nicht geladen werden."
+        error.message ||
+          "Produkte konnten nicht geladen werden."
       );
 
       setProductsLoading(false);
@@ -422,6 +461,10 @@ export default function AdminPage() {
     setProducts((data || []) as Product[]);
     setProductsLoading(false);
   }
+
+  /* =========================================================
+     SPEISEKARTE AUTOMATISCH ANLEGEN
+     ========================================================= */
 
   async function createCatalogProducts() {
     setProductsLoading(true);
@@ -453,6 +496,7 @@ export default function AdminPage() {
       setProductsMessage(
         "Alle Produkte sind bereits angelegt."
       );
+
       setProductsLoading(false);
       return;
     }
@@ -462,7 +506,10 @@ export default function AdminPage() {
       .insert(missingProducts);
 
     if (error) {
-      console.error("PRODUCT ERSTELLEN FEHLER:", error);
+      console.error(
+        "PRODUCT ERSTELLEN FEHLER:",
+        error
+      );
 
       setProductsMessage(
         error.message ||
@@ -482,6 +529,10 @@ export default function AdminPage() {
     setProductsLoading(false);
   }
 
+  /* =========================================================
+     PREIS ÄNDERN
+     ========================================================= */
+
   async function updateProductPrice(
     productId: number,
     price: number
@@ -493,10 +544,12 @@ export default function AdminPage() {
 
     setSavingPrice(productId);
 
+    const roundedPrice = Number(price.toFixed(2));
+
     const { error } = await supabase
       .from("products")
       .update({
-        price: Number(price.toFixed(2)),
+        price: roundedPrice,
       })
       .eq("id", productId);
 
@@ -517,7 +570,7 @@ export default function AdminPage() {
         product.id === productId
           ? {
               ...product,
-              price: Number(price.toFixed(2)),
+              price: roundedPrice,
             }
           : product
       )
@@ -526,6 +579,200 @@ export default function AdminPage() {
     setSavingPrice(null);
   }
 
+  /* =========================================================
+     PRODUKT ÄNDERN
+     ========================================================= */
+
+  async function updateProduct(
+    productId: number,
+    name: string,
+    category: string
+  ) {
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
+      alert("Bitte einen Produktnamen eingeben.");
+      return;
+    }
+
+    if (!category) {
+      alert("Bitte eine Kategorie auswählen.");
+      return;
+    }
+
+    setSavingProduct(productId);
+
+    const { error } = await supabase
+      .from("products")
+      .update({
+        name: trimmedName,
+        category,
+      })
+      .eq("id", productId);
+
+    if (error) {
+      console.error("PRODUKT ÄNDERN FEHLER:", error);
+
+      alert(
+        error.message ||
+          "Produkt konnte nicht geändert werden."
+      );
+
+      setSavingProduct(null);
+      return;
+    }
+
+    setProducts((currentProducts) =>
+      currentProducts.map((product) =>
+        product.id === productId
+          ? {
+              ...product,
+              name: trimmedName,
+              category,
+            }
+          : product
+      )
+    );
+
+    setSavingProduct(null);
+  }
+
+  /* =========================================================
+     PRODUKT LÖSCHEN
+     ========================================================= */
+
+  async function deleteProduct(product: Product) {
+    const confirmed = window.confirm(
+      `Möchtest du "${product.name}" wirklich löschen?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingProduct(product.id);
+
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", product.id);
+
+    if (error) {
+      console.error(
+        "PRODUKT LÖSCHEN FEHLER:",
+        error
+      );
+
+      alert(
+        error.message ||
+          "Produkt konnte nicht gelöscht werden."
+      );
+
+      setDeletingProduct(null);
+      return;
+    }
+
+    setProducts((currentProducts) =>
+      currentProducts.filter(
+        (item) => item.id !== product.id
+      )
+    );
+
+    setDeletingProduct(null);
+  }
+
+  /* =========================================================
+     NEUES PRODUKT ERSTELLEN
+     ========================================================= */
+
+  async function createProduct() {
+    setProductCreateMessage("");
+
+    const name = newProductName.trim();
+
+    if (!name) {
+      setProductCreateMessage(
+        "Bitte einen Produktnamen eingeben."
+      );
+      return;
+    }
+
+    if (!newProductCategory) {
+      setProductCreateMessage(
+        "Bitte eine Kategorie auswählen."
+      );
+      return;
+    }
+
+    const price = Number(newProductPrice);
+
+    if (!Number.isFinite(price) || price < 0) {
+      setProductCreateMessage(
+        "Bitte einen gültigen Preis eingeben."
+      );
+      return;
+    }
+
+    const alreadyExists = products.some(
+      (product) =>
+        product.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      setProductCreateMessage(
+        "Dieses Produkt existiert bereits."
+      );
+      return;
+    }
+
+    setProductCreateLoading(true);
+
+    const { data, error } = await supabase
+      .from("products")
+      .insert({
+        name,
+        category: newProductCategory,
+        price: Number(price.toFixed(2)),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error(
+        "NEUES PRODUKT FEHLER:",
+        error
+      );
+
+      setProductCreateMessage(
+        error.message ||
+          "Produkt konnte nicht erstellt werden."
+      );
+
+      setProductCreateLoading(false);
+      return;
+    }
+
+    if (data) {
+      setProducts((currentProducts) => [
+        ...currentProducts,
+        data as Product,
+      ]);
+    }
+
+    setNewProductName("");
+    setNewProductPrice("0.00");
+
+    setProductCreateMessage(
+      "Produkt erfolgreich erstellt."
+    );
+
+    setProductCreateLoading(false);
+  }
+
+  /* =========================================================
+     PANELS
+     ========================================================= */
+
   function closeAllPanels() {
     setShowEmployees(false);
     setShowOrders(false);
@@ -533,6 +780,8 @@ export default function AdminPage() {
     setShowAddEmployee(false);
     setShowStatistics(false);
     setShowPrices(false);
+    setShowProducts(false);
+    setShowAddProduct(false);
   }
 
   function openEmployees() {
@@ -558,6 +807,12 @@ export default function AdminPage() {
     loadProducts();
   }
 
+  function openProducts() {
+    closeAllPanels();
+    setShowProducts(true);
+    loadProducts();
+  }
+
   function openAddEmployee() {
     setShowAddEmployee(true);
     setEmployeeMessage("");
@@ -577,6 +832,10 @@ export default function AdminPage() {
     setShowStatistics(true);
     loadStatistics();
   }
+
+  /* =========================================================
+     STATISTIK
+     ========================================================= */
 
   async function loadStatistics() {
     setStatisticsLoading(true);
@@ -652,9 +911,12 @@ export default function AdminPage() {
     date.setHours(0, 0, 0, 0);
 
     const day = date.getDay();
-    const difference = day === 0 ? 6 : day - 1;
+    const difference =
+      day === 0 ? 6 : day - 1;
 
-    date.setDate(date.getDate() - difference);
+    date.setDate(
+      date.getDate() - difference
+    );
 
     return date;
   }
@@ -670,18 +932,27 @@ export default function AdminPage() {
 
   function getOrdersFromDate(date: Date) {
     return statisticsOrders.filter(
-      (order) => new Date(order.created_at) >= date
+      (order) =>
+        new Date(order.created_at) >= date
     );
   }
 
+  /* =========================================================
+     MITARBEITER ERSTELLEN
+     ========================================================= */
+
   async function createEmployee() {
     if (!employeeName.trim()) {
-      setEmployeeMessage("Bitte einen Namen eingeben.");
+      setEmployeeMessage(
+        "Bitte einen Namen eingeben."
+      );
       return;
     }
 
     if (!employeeEmail.trim()) {
-      setEmployeeMessage("Bitte eine E-Mail eingeben.");
+      setEmployeeMessage(
+        "Bitte eine E-Mail eingeben."
+      );
       return;
     }
 
@@ -696,18 +967,21 @@ export default function AdminPage() {
     setEmployeeMessage("");
 
     try {
-      const response = await fetch("/api/admin/create-user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: employeeName,
-          email: employeeEmail,
-          password: employeePassword,
-          role: employeeRole,
-        }),
-      });
+      const response = await fetch(
+        "/api/admin/create-user",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: employeeName,
+            email: employeeEmail,
+            password: employeePassword,
+            role: employeeRole,
+          }),
+        }
+      );
 
       const result = await response.json();
 
@@ -744,22 +1018,29 @@ export default function AdminPage() {
     }
   }
 
+  /* =========================================================
+     MITARBEITER ÄNDERN
+     ========================================================= */
+
   async function updateEmployee(
     id: string,
     name: string,
     role: "waiter" | "kitchen" | "admin"
   ) {
-    const response = await fetch("/api/admin/update-user", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id,
-        name,
-        role,
-      }),
-    });
+    const response = await fetch(
+      "/api/admin/update-user",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+          name,
+          role,
+        }),
+      }
+    );
 
     const result = await response.json();
 
@@ -773,6 +1054,10 @@ export default function AdminPage() {
 
     await loadProfiles();
   }
+
+  /* =========================================================
+     PASSWORT ÄNDERN
+     ========================================================= */
 
   async function updatePassword(id: string) {
     const password = window.prompt(
@@ -814,13 +1099,23 @@ export default function AdminPage() {
       return;
     }
 
-    alert("Passwort erfolgreich geändert.");
+    alert(
+      "Passwort erfolgreich geändert."
+    );
   }
+
+  /* =========================================================
+     LOGOUT
+     ========================================================= */
 
   async function logout() {
     await supabase.auth.signOut();
     window.location.href = "/login";
   }
+
+  /* =========================================================
+     HILFSFUNKTIONEN
+     ========================================================= */
 
   function getProfileName(id: string) {
     const profile = profiles.find(
@@ -837,11 +1132,18 @@ export default function AdminPage() {
   }
 
   function formatDate(date: string) {
-    return new Date(date).toLocaleString("de-DE", {
-      dateStyle: "short",
-      timeStyle: "short",
-    });
+    return new Date(date).toLocaleString(
+      "de-DE",
+      {
+        dateStyle: "short",
+        timeStyle: "short",
+      }
+    );
   }
+
+  /* =========================================================
+     LOADING
+     ========================================================= */
 
   if (loading) {
     return (
@@ -853,10 +1155,15 @@ export default function AdminPage() {
     );
   }
 
+  /* =========================================================
+     KEIN ZUGRIFF
+     ========================================================= */
+
   if (!authorized) {
     return (
       <main className="min-h-screen bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center p-6">
         <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-8 text-center max-w-md w-full">
+
           <h1 className="text-2xl font-bold text-red-600 mb-3">
             Kein Zugriff
           </h1>
@@ -867,43 +1174,67 @@ export default function AdminPage() {
 
           <button
             onClick={() => {
-              window.location.href = "/dashboard";
+              window.location.href =
+                "/dashboard";
             }}
             className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl py-3 font-semibold"
           >
             Zum Dashboard
           </button>
+
         </div>
       </main>
     );
   }
 
+  /* =========================================================
+     STATISTIK-WERTE
+     ========================================================= */
+
   const todayOrders =
-    getOrdersFromDate(getStartOfToday());
+    getOrdersFromDate(
+      getStartOfToday()
+    );
 
   const weekOrders =
-    getOrdersFromDate(getStartOfWeek());
+    getOrdersFromDate(
+      getStartOfWeek()
+    );
 
   const monthOrders =
-    getOrdersFromDate(getStartOfMonth());
+    getOrdersFromDate(
+      getStartOfMonth()
+    );
 
   const finishedOrders =
     statisticsOrders.filter(
-      (order) => order.status === "fertig"
+      (order) =>
+        order.status === "fertig"
     );
 
   const openOrdersCount =
     statisticsOrders.filter(
-      (order) => order.status === "offen"
+      (order) =>
+        order.status === "offen"
     ).length;
+
+  /* =========================================================
+     RENDER
+     ========================================================= */
 
   return (
     <main className="min-h-screen bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white p-4 md:p-8">
+
       <div className="max-w-7xl mx-auto">
 
-        {/* HEADER */}
+        {/* =====================================================
+            HEADER
+            ===================================================== */}
+
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+
           <div>
+
             <h1 className="text-3xl md:text-4xl font-bold">
               Adminbereich
             </h1>
@@ -911,6 +1242,7 @@ export default function AdminPage() {
             <p className="text-zinc-600 dark:text-zinc-400 mt-1">
               Döner POS Verwaltung
             </p>
+
           </div>
 
           <button
@@ -919,20 +1251,29 @@ export default function AdminPage() {
           >
             Abmelden
           </button>
+
         </div>
 
-        {/* HAUPTKARTEN */}
+        {/* =====================================================
+            HAUPTKARTEN
+            ===================================================== */}
+
         {!showEmployees &&
           !showOrders &&
           !showSettings &&
           !showStatistics &&
-          !showPrices && (
+          !showPrices &&
+          !showProducts && (
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+              {/* MITARBEITER */}
 
               <button
                 onClick={openEmployees}
                 className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
               >
+
                 <div className="text-3xl mb-4">
                   👥
                 </div>
@@ -948,12 +1289,16 @@ export default function AdminPage() {
                 <p className="mt-4 font-semibold">
                   {profiles.length} Mitarbeiter
                 </p>
+
               </button>
+
+              {/* BESTELLUNGEN */}
 
               <button
                 onClick={openOrders}
                 className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
               >
+
                 <div className="text-3xl mb-4">
                   🧾
                 </div>
@@ -969,12 +1314,16 @@ export default function AdminPage() {
                 <p className="mt-4 font-semibold">
                   {orders.length} Bestellungen
                 </p>
+
               </button>
+
+              {/* STATISTIK */}
 
               <button
                 onClick={openStatistics}
                 className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
               >
+
                 <div className="text-3xl mb-4">
                   📊
                 </div>
@@ -986,12 +1335,16 @@ export default function AdminPage() {
                 <p className="text-zinc-600 dark:text-zinc-400 mt-2">
                   Bestellungen und Auswertungen
                 </p>
+
               </button>
+
+              {/* PREISE */}
 
               <button
                 onClick={openPrices}
                 className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
               >
+
                 <div className="text-3xl mb-4">
                   💶
                 </div>
@@ -1007,9 +1360,16 @@ export default function AdminPage() {
                 <p className="mt-4 font-semibold">
                   {products.length} Produkte
                 </p>
+
               </button>
 
-              <div className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow">
+              {/* PRODUKTE */}
+
+              <button
+                onClick={openProducts}
+                className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
+              >
+
                 <div className="text-3xl mb-4">
                   🍽️
                 </div>
@@ -1022,15 +1382,19 @@ export default function AdminPage() {
                   Produkte verwalten
                 </p>
 
-                <p className="mt-4 text-zinc-500">
-                  Bald verfügbar
+                <p className="mt-4 font-semibold">
+                  {products.length} Produkte
                 </p>
-              </div>
+
+              </button>
+
+              {/* EINSTELLUNGEN */}
 
               <button
                 onClick={openSettings}
                 className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
               >
+
                 <div className="text-3xl mb-4">
                   ⚙️
                 </div>
@@ -1042,23 +1406,568 @@ export default function AdminPage() {
                 <p className="text-zinc-600 dark:text-zinc-400 mt-2">
                   System-Einstellungen
                 </p>
+
               </button>
 
             </div>
           )}
 
-        {/* ZURÜCK BUTTON */}
+        {/* =====================================================
+            ZURÜCK
+            ===================================================== */}
+
         {(showEmployees ||
           showOrders ||
           showSettings ||
           showStatistics ||
-          showPrices) && (
+          showPrices ||
+          showProducts) && (
+
           <button
             onClick={closeAllPanels}
             className="mb-6 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 px-5 py-3 rounded-xl font-semibold"
           >
             ← Zurück
           </button>
+
+        )}
+
+        {/* =====================================================
+            PRODUKTE
+            ===================================================== */}
+
+        {showProducts && (
+
+          <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
+
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+
+              <div>
+
+                <h2 className="text-2xl font-bold">
+                  Produktverwaltung
+                </h2>
+
+                <p className="text-zinc-600 dark:text-zinc-400">
+                  Produkte erstellen, ändern und löschen.
+                </p>
+
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+
+                <button
+                  onClick={() => {
+                    setShowAddProduct(
+                      !showAddProduct
+                    );
+                    setProductCreateMessage("");
+                  }}
+                  className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-semibold"
+                >
+                  {showAddProduct
+                    ? "✕ Schließen"
+                    : "+ Produkt hinzufügen"}
+                </button>
+
+                <button
+                  onClick={loadProducts}
+                  disabled={productsLoading}
+                  className="bg-zinc-200 dark:bg-zinc-800 px-5 py-3 rounded-xl font-semibold"
+                >
+                  Aktualisieren
+                </button>
+
+              </div>
+
+            </div>
+
+            {/* =================================================
+                NEUES PRODUKT
+                ================================================= */}
+
+            {showAddProduct && (
+
+              <div className="mb-8 bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
+
+                <h3 className="text-xl font-bold mb-5">
+                  Neues Produkt
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                  <input
+                    value={newProductName}
+                    onChange={(e) =>
+                      setNewProductName(
+                        e.target.value
+                      )
+                    }
+                    placeholder="Produktname"
+                    className="w-full rounded-xl px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
+                  />
+
+                  <select
+                    value={newProductCategory}
+                    onChange={(e) =>
+                      setNewProductCategory(
+                        e.target.value
+                      )
+                    }
+                    className="w-full rounded-xl px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
+                  >
+
+                    {PRODUCT_CATEGORIES.map(
+                      (category) => (
+                        <option
+                          key={category}
+                          value={category}
+                        >
+                          {category}
+                        </option>
+                      )
+                    )}
+
+                  </select>
+
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.10"
+                    value={newProductPrice}
+                    onChange={(e) =>
+                      setNewProductPrice(
+                        e.target.value
+                      )
+                    }
+                    placeholder="Preis"
+                    className="w-full rounded-xl px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
+                  />
+
+                </div>
+
+                <button
+                  onClick={createProduct}
+                  disabled={productCreateLoading}
+                  className="mt-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-semibold"
+                >
+                  {productCreateLoading
+                    ? "Erstelle..."
+                    : "Produkt erstellen"}
+                </button>
+
+                {productCreateMessage && (
+
+                  <p className="mt-4 font-medium">
+                    {productCreateMessage}
+                  </p>
+
+                )}
+
+              </div>
+
+            )}
+
+            {/* =================================================
+                PRODUKTE
+                ================================================= */}
+
+            {productsLoading ? (
+
+              <div className="py-12 text-center">
+
+                <p className="text-zinc-600 dark:text-zinc-400">
+                  Produkte werden geladen...
+                </p>
+
+              </div>
+
+            ) : products.length === 0 ? (
+
+              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-8 text-center">
+
+                <div className="text-5xl mb-4">
+                  🍽️
+                </div>
+
+                <h3 className="text-xl font-bold mb-2">
+                  Keine Produkte vorhanden
+                </h3>
+
+                <p className="text-zinc-600 dark:text-zinc-400">
+                  Erstelle dein erstes Produkt
+                  mit dem Button oben.
+                </p>
+
+              </div>
+
+            ) : (
+
+              <div className="space-y-6">
+
+                {PRODUCT_CATALOG.map(
+                  (category) => {
+
+                    const categoryProducts =
+                      products.filter(
+                        (product) =>
+                          product.category ===
+                          category.category
+                      );
+
+                    if (
+                      categoryProducts.length === 0
+                    ) {
+                      return null;
+                    }
+
+                    return (
+
+                      <div
+                        key={category.category}
+                        className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden"
+                      >
+
+                        <div className="bg-zinc-100 dark:bg-zinc-800 px-5 py-4">
+
+                          <h3 className="text-xl font-bold">
+                            {category.category}
+                          </h3>
+
+                        </div>
+
+                        <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
+
+                          {categoryProducts.map(
+                            (product) => (
+
+                              <div
+                                key={product.id}
+                                className="p-5"
+                              >
+
+                                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-center">
+
+                                  {/* NAME */}
+
+                                  <div>
+
+                                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
+                                      Produktname
+                                    </p>
+
+                                    <input
+                                      id={`product-name-${product.id}`}
+                                      defaultValue={
+                                        product.name
+                                      }
+                                      className="w-full rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
+                                    />
+
+                                  </div>
+
+                                  {/* KATEGORIE */}
+
+                                  <div>
+
+                                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
+                                      Kategorie
+                                    </p>
+
+                                    <select
+                                      id={`product-category-${product.id}`}
+                                      defaultValue={
+                                        product.category
+                                      }
+                                      className="w-full rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
+                                    >
+
+                                      {PRODUCT_CATEGORIES.map(
+                                        (categoryName) => (
+
+                                          <option
+                                            key={
+                                              categoryName
+                                            }
+                                            value={
+                                              categoryName
+                                            }
+                                          >
+                                            {
+                                              categoryName
+                                            }
+                                          </option>
+
+                                        )
+                                      )}
+
+                                    </select>
+
+                                  </div>
+
+                                  {/* PREIS */}
+
+                                  <div>
+
+                                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
+                                      Preis
+                                    </p>
+
+                                    <input
+                                      id={`price-product-${product.id}`}
+                                      type="number"
+                                      min="0"
+                                      step="0.10"
+                                      defaultValue={product.price.toFixed(
+                                        2
+                                      )}
+                                      className="w-full rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
+                                    />
+
+                                  </div>
+
+                                  {/* BUTTONS */}
+
+                                  <div className="flex flex-wrap gap-2 lg:justify-end">
+
+                                    <button
+                                      onClick={() => {
+
+                                        const nameInput =
+                                          document.getElementById(
+                                            `product-name-${product.id}`
+                                          ) as HTMLInputElement | null;
+
+                                        const categoryInput =
+                                          document.getElementById(
+                                            `product-category-${product.id}`
+                                          ) as HTMLSelectElement | null;
+
+                                        const priceInput =
+                                          document.getElementById(
+                                            `price-product-${product.id}`
+                                          ) as HTMLInputElement | null;
+
+                                        if (
+                                          !nameInput ||
+                                          !categoryInput ||
+                                          !priceInput
+                                        ) {
+                                          return;
+                                        }
+
+                                        const price =
+                                          Number(
+                                            priceInput.value
+                                          );
+
+                                        updateProduct(
+                                          product.id,
+                                          nameInput.value,
+                                          categoryInput.value
+                                        );
+
+                                        updateProductPrice(
+                                          product.id,
+                                          price
+                                        );
+
+                                      }}
+                                      disabled={
+                                        savingProduct ===
+                                          product.id ||
+                                        savingPrice ===
+                                          product.id
+                                      }
+                                      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl font-semibold"
+                                    >
+                                      {savingProduct ===
+                                          product.id ||
+                                        savingPrice ===
+                                          product.id
+                                        ? "..."
+                                        : "Speichern"}
+                                    </button>
+
+                                    <button
+                                      onClick={() =>
+                                        deleteProduct(
+                                          product
+                                        )
+                                      }
+                                      disabled={
+                                        deletingProduct ===
+                                        product.id
+                                      }
+                                      className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl font-semibold"
+                                    >
+                                      {deletingProduct ===
+                                      product.id
+                                        ? "..."
+                                        : "Löschen"}
+                                    </button>
+
+                                  </div>
+
+                                </div>
+
+                              </div>
+
+                            )
+                          )}
+
+                        </div>
+
+                      </div>
+
+                    );
+                  }
+                )}
+
+                {/* PRODUKTE MIT EIGENER KATEGORIE */}
+
+                {products.filter(
+                  (product) =>
+                    !PRODUCT_CATEGORIES.includes(
+                      product.category
+                    )
+                ).length > 0 && (
+
+                  <div className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden">
+
+                    <div className="bg-zinc-100 dark:bg-zinc-800 px-5 py-4">
+
+                      <h3 className="text-xl font-bold">
+                        Weitere Produkte
+                      </h3>
+
+                    </div>
+
+                    <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
+
+                      {products
+                        .filter(
+                          (product) =>
+                            !PRODUCT_CATEGORIES.includes(
+                              product.category
+                            )
+                        )
+                        .map(
+                          (product) => (
+
+                            <div
+                              key={product.id}
+                              className="p-5"
+                            >
+
+                              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-center">
+
+                                <input
+                                  id={`other-name-${product.id}`}
+                                  defaultValue={
+                                    product.name
+                                  }
+                                  className="w-full rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
+                                />
+
+                                <input
+                                  id={`other-category-${product.id}`}
+                                  defaultValue={
+                                    product.category
+                                  }
+                                  className="w-full rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
+                                />
+
+                                <input
+                                  id={`other-price-${product.id}`}
+                                  type="number"
+                                  min="0"
+                                  step="0.10"
+                                  defaultValue={product.price.toFixed(
+                                    2
+                                  )}
+                                  className="w-full rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
+                                />
+
+                                <div className="flex flex-wrap gap-2 lg:justify-end">
+
+                                  <button
+                                    onClick={() => {
+
+                                      const nameInput =
+                                        document.getElementById(
+                                          `other-name-${product.id}`
+                                        ) as HTMLInputElement | null;
+
+                                      const categoryInput =
+                                        document.getElementById(
+                                          `other-category-${product.id}`
+                                        ) as HTMLInputElement | null;
+
+                                      const priceInput =
+                                        document.getElementById(
+                                          `other-price-${product.id}`
+                                        ) as HTMLInputElement | null;
+
+                                      if (
+                                        !nameInput ||
+                                        !categoryInput ||
+                                        !priceInput
+                                      ) {
+                                        return;
+                                      }
+
+                                      updateProduct(
+                                        product.id,
+                                        nameInput.value,
+                                        categoryInput.value
+                                      );
+
+                                      updateProductPrice(
+                                        product.id,
+                                        Number(
+                                          priceInput.value
+                                        )
+                                      );
+
+                                    }}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold"
+                                  >
+                                    Speichern
+                                  </button>
+
+                                  <button
+                                    onClick={() =>
+                                      deleteProduct(
+                                        product
+                                      )
+                                    }
+                                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold"
+                                  >
+                                    Löschen
+                                  </button>
+
+                                </div>
+
+                              </div>
+
+                            </div>
+
+                          )
+                        )}
+
+                    </div>
+
+                  </div>
+
+                )}
+
+              </div>
+
+            )}
+
+          </section>
+
         )}
 
         {/* =====================================================
@@ -1066,18 +1975,21 @@ export default function AdminPage() {
             ===================================================== */}
 
         {showPrices && (
+
           <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
 
               <div>
+
                 <h2 className="text-2xl font-bold">
                   Preisverwaltung
                 </h2>
 
                 <p className="text-zinc-600 dark:text-zinc-400">
-                  Hier kannst du später alle Preise ändern.
+                  Hier kannst du alle Preise ändern.
                 </p>
+
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -1101,21 +2013,29 @@ export default function AdminPage() {
                 </button>
 
               </div>
+
             </div>
 
             {productsMessage && (
+
               <div className="mb-6 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl p-4">
                 {productsMessage}
               </div>
+
             )}
 
             {productsLoading ? (
+
               <div className="py-12 text-center">
+
                 <p className="text-zinc-600 dark:text-zinc-400">
                   Produkte werden geladen...
                 </p>
+
               </div>
+
             ) : products.length === 0 ? (
+
               <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-8 text-center">
 
                 <div className="text-5xl mb-4">
@@ -1140,110 +2060,136 @@ export default function AdminPage() {
                 </button>
 
               </div>
+
             ) : (
+
               <div className="space-y-6">
 
-                {PRODUCT_CATALOG.map((category) => {
+                {PRODUCT_CATALOG.map(
+                  (category) => {
 
-                  const categoryProducts =
-                    products.filter(
-                      (product) =>
-                        product.category ===
-                        category.category
-                    );
+                    const categoryProducts =
+                      products.filter(
+                        (product) =>
+                          product.category ===
+                          category.category
+                      );
 
-                  if (categoryProducts.length === 0) {
-                    return null;
-                  }
+                    if (
+                      categoryProducts.length === 0
+                    ) {
+                      return null;
+                    }
 
-                  return (
-                    <div
-                      key={category.category}
-                      className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden"
-                    >
+                    return (
 
-                      <div className="bg-zinc-100 dark:bg-zinc-800 px-5 py-4">
-                        <h3 className="text-xl font-bold">
-                          {category.category}
-                        </h3>
-                      </div>
+                      <div
+                        key={category.category}
+                        className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden"
+                      >
 
-                      <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                        <div className="bg-zinc-100 dark:bg-zinc-800 px-5 py-4">
 
-                        {categoryProducts.map(
-                          (product) => (
-                            <div
-                              key={product.id}
-                              className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-                            >
+                          <h3 className="text-xl font-bold">
+                            {category.category}
+                          </h3>
 
-                              <div>
-                                <p className="font-semibold">
-                                  {product.name}
-                                </p>
+                        </div>
 
-                                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                  Aktueller Preis:{" "}
-                                  {product.price.toFixed(2)} €
-                                </p>
-                              </div>
+                        <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
 
-                              <div className="flex items-center gap-2">
+                          {categoryProducts.map(
+                            (product) => (
 
-                                <input
-                                  type="number"
-                                  min="0"
-                                  step="0.10"
-                                  defaultValue={product.price.toFixed(2)}
-                                  id={`price-${product.id}`}
-                                  className="w-28 rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none text-right"
-                                />
+                              <div
+                                key={product.id}
+                                className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                              >
 
-                                <button
-                                  onClick={() => {
-                                    const input =
-                                      document.getElementById(
-                                        `price-${product.id}`
-                                      ) as HTMLInputElement | null;
+                                <div>
 
-                                    if (!input) {
-                                      return;
+                                  <p className="font-semibold">
+                                    {product.name}
+                                  </p>
+
+                                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                                    Aktueller Preis:{" "}
+                                    {product.price.toFixed(
+                                      2
+                                    )} €
+                                  </p>
+
+                                </div>
+
+                                <div className="flex items-center gap-2">
+
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    step="0.10"
+                                    defaultValue={product.price.toFixed(
+                                      2
+                                    )}
+                                    id={`price-${product.id}`}
+                                    className="w-28 rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none text-right"
+                                  />
+
+                                  <button
+                                    onClick={() => {
+
+                                      const input =
+                                        document.getElementById(
+                                          `price-${product.id}`
+                                        ) as HTMLInputElement | null;
+
+                                      if (!input) {
+                                        return;
+                                      }
+
+                                      const price =
+                                        Number(
+                                          input.value
+                                        );
+
+                                      updateProductPrice(
+                                        product.id,
+                                        price
+                                      );
+
+                                    }}
+                                    disabled={
+                                      savingPrice ===
+                                      product.id
                                     }
-
-                                    const price =
-                                      Number(input.value);
-
-                                    updateProductPrice(
-                                      product.id,
-                                      price
-                                    );
-                                  }}
-                                  disabled={
-                                    savingPrice ===
+                                    className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl font-semibold"
+                                  >
+                                    {savingPrice ===
                                     product.id
-                                  }
-                                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl font-semibold"
-                                >
-                                  {savingPrice ===
-                                  product.id
-                                    ? "..."
-                                    : "Speichern"}
-                                </button>
+                                      ? "..."
+                                      : "Speichern"}
+                                  </button>
+
+                                </div>
 
                               </div>
-                            </div>
-                          )
-                        )}
+
+                            )
+                          )}
+
+                        </div>
 
                       </div>
-                    </div>
-                  );
-                })}
+
+                    );
+                  }
+                )}
 
               </div>
+
             )}
 
           </section>
+
         )}
 
         {/* =====================================================
@@ -1251,11 +2197,13 @@ export default function AdminPage() {
             ===================================================== */}
 
         {showEmployees && (
+
           <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
 
               <div>
+
                 <h2 className="text-2xl font-bold">
                   Mitarbeiter
                 </h2>
@@ -1263,6 +2211,7 @@ export default function AdminPage() {
                 <p className="text-zinc-600 dark:text-zinc-400">
                   Mitarbeiter verwalten
                 </p>
+
               </div>
 
               <button
@@ -1275,6 +2224,7 @@ export default function AdminPage() {
             </div>
 
             {showAddEmployee && (
+
               <div className="mb-8 bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
 
                 <div className="flex justify-between items-center mb-5">
@@ -1297,7 +2247,9 @@ export default function AdminPage() {
                   <input
                     value={employeeName}
                     onChange={(e) =>
-                      setEmployeeName(e.target.value)
+                      setEmployeeName(
+                        e.target.value
+                      )
                     }
                     placeholder="Name"
                     className="w-full rounded-xl px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
@@ -1306,7 +2258,9 @@ export default function AdminPage() {
                   <input
                     value={employeeEmail}
                     onChange={(e) =>
-                      setEmployeeEmail(e.target.value)
+                      setEmployeeEmail(
+                        e.target.value
+                      )
                     }
                     placeholder="E-Mail"
                     type="email"
@@ -1316,7 +2270,9 @@ export default function AdminPage() {
                   <input
                     value={employeePassword}
                     onChange={(e) =>
-                      setEmployeePassword(e.target.value)
+                      setEmployeePassword(
+                        e.target.value
+                      )
                     }
                     placeholder="Passwort"
                     type="password"
@@ -1335,6 +2291,7 @@ export default function AdminPage() {
                     }
                     className="w-full rounded-xl px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
                   >
+
                     <option value="waiter">
                       Kellner
                     </option>
@@ -1346,6 +2303,7 @@ export default function AdminPage() {
                     <option value="admin">
                       Admin
                     </option>
+
                   </select>
 
                 </div>
@@ -1361,115 +2319,138 @@ export default function AdminPage() {
                 </button>
 
                 {employeeMessage && (
+
                   <p className="mt-4 font-medium">
                     {employeeMessage}
                   </p>
+
                 )}
 
               </div>
+
             )}
 
             <div className="space-y-4">
 
-              {profiles.map((profile) => (
-                <div
-                  key={profile.id}
-                  className="border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5"
-                >
+              {profiles.map(
+                (profile) => (
 
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div
+                    key={profile.id}
+                    className="border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5"
+                  >
 
-                    <div>
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
-                      <h3 className="font-bold text-lg">
-                        {profile.name}
-                      </h3>
+                      <div>
 
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                        {profile.role === "waiter"
-                          ? "Kellner"
-                          : profile.role === "kitchen"
-                          ? "Küche"
-                          : "Admin"}
-                      </p>
+                        <h3 className="font-bold text-lg">
+                          {profile.name}
+                        </h3>
 
-                    </div>
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                          {profile.role ===
+                          "waiter"
+                            ? "Kellner"
+                            : profile.role ===
+                              "kitchen"
+                            ? "Küche"
+                            : "Admin"}
+                        </p>
 
-                    <div className="flex flex-wrap gap-2">
+                      </div>
 
-                      <button
-                        onClick={() => {
-                          const name =
-                            window.prompt(
-                              "Neuer Name:",
-                              profile.name
-                            );
+                      <div className="flex flex-wrap gap-2">
 
-                          if (!name) return;
+                        <button
+                          onClick={() => {
 
-                          updateEmployee(
-                            profile.id,
-                            name,
-                            profile.role
-                          );
-                        }}
-                        className="bg-zinc-200 dark:bg-zinc-800 px-4 py-2 rounded-lg font-medium"
-                      >
-                        Name ändern
-                      </button>
+                            const name =
+                              window.prompt(
+                                "Neuer Name:",
+                                profile.name
+                              );
 
-                      <button
-                        onClick={() => {
-                          const role =
-                            window.prompt(
-                              "Rolle: waiter, kitchen oder admin",
+                            if (!name) {
+                              return;
+                            }
+
+                            updateEmployee(
+                              profile.id,
+                              name,
                               profile.role
                             );
 
-                          if (
-                            role !== "waiter" &&
-                            role !== "kitchen" &&
-                            role !== "admin"
-                          ) {
-                            return;
+                          }}
+                          className="bg-zinc-200 dark:bg-zinc-800 px-4 py-2 rounded-lg font-medium"
+                        >
+                          Name ändern
+                        </button>
+
+                        <button
+                          onClick={() => {
+
+                            const role =
+                              window.prompt(
+                                "Rolle: waiter, kitchen oder admin",
+                                profile.role
+                              );
+
+                            if (
+                              role !==
+                                "waiter" &&
+                              role !==
+                                "kitchen" &&
+                              role !==
+                                "admin"
+                            ) {
+                              return;
+                            }
+
+                            updateEmployee(
+                              profile.id,
+                              profile.name,
+                              role
+                            );
+
+                          }}
+                          className="bg-zinc-200 dark:bg-zinc-800 px-4 py-2 rounded-lg font-medium"
+                        >
+                          Rolle ändern
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            updatePassword(
+                              profile.id
+                            )
                           }
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
+                        >
+                          Passwort
+                        </button>
 
-                          updateEmployee(
-                            profile.id,
-                            profile.name,
-                            role
-                          );
-                        }}
-                        className="bg-zinc-200 dark:bg-zinc-800 px-4 py-2 rounded-lg font-medium"
-                      >
-                        Rolle ändern
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          updatePassword(profile.id)
-                        }
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
-                      >
-                        Passwort
-                      </button>
+                      </div>
 
                     </div>
 
                   </div>
 
-                </div>
-              ))}
+                )
+              )}
 
               {profiles.length === 0 && (
+
                 <p className="text-zinc-600 dark:text-zinc-400">
                   Keine Mitarbeiter gefunden.
                 </p>
+
               )}
 
             </div>
 
           </section>
+
         )}
 
         {/* =====================================================
@@ -1477,11 +2458,13 @@ export default function AdminPage() {
             ===================================================== */}
 
         {showOrders && (
+
           <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
 
             <div className="flex items-center justify-between mb-6">
 
               <div>
+
                 <h2 className="text-2xl font-bold">
                   Bestellungen
                 </h2>
@@ -1489,6 +2472,7 @@ export default function AdminPage() {
                 <p className="text-zinc-600 dark:text-zinc-400">
                   Alle Bestellungen
                 </p>
+
               </div>
 
               <button
@@ -1502,146 +2486,179 @@ export default function AdminPage() {
 
             <div className="space-y-4">
 
-              {orders.map((order) => {
+              {orders.map(
+                (order) => {
 
-                const items =
-                  getItemsForOrder(order.id);
+                  const items =
+                    getItemsForOrder(
+                      order.id
+                    );
 
-                const isExpanded =
-                  expandedOrder === order.id;
+                  const isExpanded =
+                    expandedOrder ===
+                    order.id;
 
-                return (
-                  <div
-                    key={order.id}
-                    className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden"
-                  >
+                  return (
 
-                    <button
-                      onClick={() =>
-                        setExpandedOrder(
-                          isExpanded
-                            ? null
-                            : order.id
-                        )
-                      }
-                      className="w-full text-left p-5 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                    <div
+                      key={order.id}
+                      className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden"
                     >
 
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                      <button
+                        onClick={() =>
+                          setExpandedOrder(
+                            isExpanded
+                              ? null
+                              : order.id
+                          )
+                        }
+                        className="w-full text-left p-5 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      >
 
-                        <div>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
 
-                          <h3 className="font-bold text-lg">
-                            Bestellung #{order.id}
-                          </h3>
+                          <div>
 
-                          <p className="text-zinc-600 dark:text-zinc-400">
-                            Tisch {order.table_number}
-                          </p>
+                            <h3 className="font-bold text-lg">
+                              Bestellung #{order.id}
+                            </h3>
 
-                        </div>
+                            <p className="text-zinc-600 dark:text-zinc-400">
+                              Tisch{" "}
+                              {order.table_number}
+                            </p>
 
-                        <div className="flex flex-col md:items-end gap-1">
+                          </div>
 
-                          <span
-                            className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
-                              order.status === "fertig"
-                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                            }`}
-                          >
-                            {order.status === "fertig"
-                              ? "Fertig"
-                              : "Offen"}
-                          </span>
+                          <div className="flex flex-col md:items-end gap-1">
 
-                          <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                            {formatDate(
-                              order.created_at
-                            )}
-                          </span>
+                            <span
+                              className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
+                                order.status ===
+                                "fertig"
+                                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                  : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                              }`}
+                            >
+                              {order.status ===
+                              "fertig"
+                                ? "Fertig"
+                                : "Offen"}
+                            </span>
 
-                        </div>
-
-                      </div>
-
-                    </button>
-
-                    {isExpanded && (
-                      <div className="border-t border-zinc-200 dark:border-zinc-700 p-5">
-
-                        <div className="mb-4">
-
-                          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                            Kellner
-                          </p>
-
-                          <p className="font-semibold">
-                            {getProfileName(
-                              order.waiter_id
-                            )}
-                          </p>
-
-                        </div>
-
-                        <div>
-
-                          <p className="font-bold mb-3">
-                            Artikel
-                          </p>
-
-                          <div className="space-y-2">
-
-                            {items.map((item) => (
-                              <div
-                                key={item.id}
-                                className="flex justify-between bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3"
-                              >
-                                <span>
-                                  {item.product_name}
-                                </span>
-
-                                <span className="font-bold">
-                                  × {item.quantity}
-                                </span>
-                              </div>
-                            ))}
-
-                            {items.length === 0 && (
-                              <p className="text-zinc-600 dark:text-zinc-400">
-                                Keine Artikel gefunden.
-                              </p>
-                            )}
+                            <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                              {formatDate(
+                                order.created_at
+                              )}
+                            </span>
 
                           </div>
 
                         </div>
 
-                        {order.finished_at && (
-                          <p className="mt-4 text-sm text-green-600">
-                            Fertiggestellt:{" "}
-                            {formatDate(
-                              order.finished_at
-                            )}
-                          </p>
-                        )}
+                      </button>
 
-                      </div>
-                    )}
+                      {isExpanded && (
 
-                  </div>
-                );
-              })}
+                        <div className="border-t border-zinc-200 dark:border-zinc-700 p-5">
+
+                          <div className="mb-4">
+
+                            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                              Kellner
+                            </p>
+
+                            <p className="font-semibold">
+                              {getProfileName(
+                                order.waiter_id
+                              )}
+                            </p>
+
+                          </div>
+
+                          <div>
+
+                            <p className="font-bold mb-3">
+                              Artikel
+                            </p>
+
+                            <div className="space-y-2">
+
+                              {items.map(
+                                (item) => (
+
+                                  <div
+                                    key={
+                                      item.id
+                                    }
+                                    className="flex justify-between bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3"
+                                  >
+
+                                    <span>
+                                      {
+                                        item.product_name
+                                      }
+                                    </span>
+
+                                    <span className="font-bold">
+                                      ×{" "}
+                                      {
+                                        item.quantity
+                                      }
+                                    </span>
+
+                                  </div>
+
+                                )
+                              )}
+
+                              {items.length ===
+                                0 && (
+
+                                <p className="text-zinc-600 dark:text-zinc-400">
+                                  Keine Artikel gefunden.
+                                </p>
+
+                              )}
+
+                            </div>
+
+                          </div>
+
+                          {order.finished_at && (
+
+                            <p className="mt-4 text-sm text-green-600">
+                              Fertiggestellt:{" "}
+                              {formatDate(
+                                order.finished_at
+                              )}
+                            </p>
+
+                          )}
+
+                        </div>
+
+                      )}
+
+                    </div>
+
+                  );
+                }
+              )}
 
               {orders.length === 0 && (
+
                 <p className="text-zinc-600 dark:text-zinc-400">
                   Keine Bestellungen vorhanden.
                 </p>
+
               )}
 
             </div>
 
           </section>
+
         )}
 
         {/* =====================================================
@@ -1649,11 +2666,13 @@ export default function AdminPage() {
             ===================================================== */}
 
         {showStatistics && (
+
           <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 
               <div>
+
                 <h2 className="text-2xl font-bold">
                   Statistiken
                 </h2>
@@ -1661,6 +2680,7 @@ export default function AdminPage() {
                 <p className="text-zinc-600 dark:text-zinc-400">
                   Übersicht über deine Bestellungen
                 </p>
+
               </div>
 
               <button
@@ -1673,16 +2693,23 @@ export default function AdminPage() {
             </div>
 
             {statisticsLoading ? (
+
               <div className="py-12 text-center">
+
                 <p className="text-zinc-600 dark:text-zinc-400">
                   Statistiken werden geladen...
                 </p>
+
               </div>
+
             ) : statisticsError ? (
+
               <div className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-xl p-4">
                 {statisticsError}
               </div>
+
             ) : (
+
               <>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
@@ -1793,47 +2820,57 @@ export default function AdminPage() {
 
                   <div className="space-y-4">
 
-                    {dailyStatistics.map((day) => {
+                    {dailyStatistics.map(
+                      (day) => {
 
-                      const maxCount = Math.max(
-                        ...dailyStatistics.map(
-                          (item) => item.count
-                        ),
-                        1
-                      );
+                        const maxCount =
+                          Math.max(
+                            ...dailyStatistics.map(
+                              (item) =>
+                                item.count
+                            ),
+                            1
+                          );
 
-                      const width =
-                        (day.count / maxCount) * 100;
+                        const width =
+                          (day.count /
+                            maxCount) *
+                          100;
 
-                      return (
-                        <div key={day.date}>
+                        return (
 
-                          <div className="flex justify-between mb-2 text-sm">
+                          <div
+                            key={day.date}
+                          >
 
-                            <span className="font-medium">
-                              {day.label}
-                            </span>
+                            <div className="flex justify-between mb-2 text-sm">
 
-                            <span className="font-bold">
-                              {day.count}
-                            </span>
+                              <span className="font-medium">
+                                {day.label}
+                              </span>
+
+                              <span className="font-bold">
+                                {day.count}
+                              </span>
+
+                            </div>
+
+                            <div className="w-full h-4 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+
+                              <div
+                                className="h-full bg-blue-600 rounded-full transition-all"
+                                style={{
+                                  width: `${width}%`,
+                                }}
+                              />
+
+                            </div>
 
                           </div>
 
-                          <div className="w-full h-4 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-
-                            <div
-                              className="h-full bg-blue-600 rounded-full transition-all"
-                              style={{
-                                width: `${width}%`,
-                              }}
-                            />
-
-                          </div>
-
-                        </div>
-                      );
-                    })}
+                        );
+                      }
+                    )}
 
                   </div>
 
@@ -1854,9 +2891,11 @@ export default function AdminPage() {
                 </div>
 
               </>
+
             )}
 
           </section>
+
         )}
 
         {/* =====================================================
@@ -1864,6 +2903,7 @@ export default function AdminPage() {
             ===================================================== */}
 
         {showSettings && (
+
           <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
 
             <h2 className="text-2xl font-bold mb-2">
@@ -1891,7 +2931,9 @@ export default function AdminPage() {
               <div className="flex gap-2">
 
                 <button
-                  onClick={() => setTheme("light")}
+                  onClick={() =>
+                    setTheme("light")
+                  }
                   className={`px-5 py-3 rounded-xl font-semibold ${
                     theme === "light"
                       ? "bg-blue-600 text-white"
@@ -1902,7 +2944,9 @@ export default function AdminPage() {
                 </button>
 
                 <button
-                  onClick={() => setTheme("dark")}
+                  onClick={() =>
+                    setTheme("dark")
+                  }
                   className={`px-5 py-3 rounded-xl font-semibold ${
                     theme === "dark"
                       ? "bg-blue-600 text-white"
@@ -1917,9 +2961,11 @@ export default function AdminPage() {
             </div>
 
           </section>
+
         )}
 
       </div>
+
     </main>
   );
 }
