@@ -41,254 +41,578 @@ type Product = {
   created_at: string;
 };
 
-/* =========================================================
-   PRODUKTLISTE
-   ========================================================= */
+/*
+=========================================================
+START-SPEISEKARTE
+=========================================================
+*/
 
-const PRODUCT_CATALOG = [
-  {
-    category: "Lahmacun-Spezialitäten",
-    products: [
-      "Lahmacun",
-      "Lahmacun mit Salat und Soße (gerollt)",
-      "Lahmacun mit Käse",
-      "Lahmacun Spezial",
-      "Lahmacun Teller",
-      "Lahmacun Spezial Teller",
-    ],
-  },
+const PRODUCT_CATALOG: Record<
+  string,
+  { name: string; price: number }[]
+> = {
+  "Lahmacun-Spezialitäten": [
+    {
+      name: "Lahmacun",
+      price: 4.5,
+    },
+    {
+      name: "Lahmacun mit Salat und Soße (gerollt)",
+      price: 6.5,
+    },
+    {
+      name: "Lahmacun mit Käse",
+      price: 7,
+    },
+    {
+      name: "Lahmacun Spezial",
+      price: 9,
+    },
+    {
+      name: "Lahmacun Teller",
+      price: 7,
+    },
+    {
+      name: "Lahmacun Spezial Teller",
+      price: 10,
+    },
+  ],
 
-  {
-    category: "Grillspezialitäten",
-    products: [
-      "Lammspieße",
-      "Lammkoteletts",
-      "Adana Kebap",
-      "Steak",
-      "Gemischter Grill",
-      "Chicken Nuggets mit Pommes",
-      "Chicken Wings mit Pommes",
-    ],
-  },
+  Grillspezialitäten: [
+    {
+      name: "Lammspieße",
+      price: 15,
+    },
+    {
+      name: "Lammkoteletts",
+      price: 16,
+    },
+    {
+      name: "Adana Kebap",
+      price: 16,
+    },
+    {
+      name: "Steak",
+      price: 12,
+    },
+    {
+      name: "Gemischter Grill",
+      price: 16,
+    },
+    {
+      name: "Chicken Nuggets mit Pommes",
+      price: 7.5,
+    },
+    {
+      name: "Chicken Wings mit Pommes",
+      price: 8,
+    },
+  ],
 
-  {
-    category: "Burger",
-    products: [
-      "Hamburger (55 g)",
-      "Hamburger XXL (125 g)",
-      "Cheeseburger (55 g)",
-      "Cheeseburger XXL (125 g)",
-      "Chickenburger (90 g)",
-    ],
-  },
+  Burger: [
+    {
+      name: "Hamburger (55 g)",
+      price: 4,
+    },
+    {
+      name: "Hamburger XXL (125 g)",
+      price: 6,
+    },
+    {
+      name: "Cheeseburger (55 g)",
+      price: 4.5,
+    },
+    {
+      name: "Cheeseburger XXL (125 g)",
+      price: 6.5,
+    },
+    {
+      name: "Chickenburger (90 g)",
+      price: 5.5,
+    },
+  ],
 
-  {
-    category: "Salate",
-    products: [
-      "Gemischter Salat (klein)",
-      "Gemischter Salat (groß)",
-      "Hirten-Salat",
-      "Salat Tonno",
-      "Salat mit Putenstreifen",
-    ],
-  },
+  Salate: [
+    {
+      name: "Gemischter Salat (klein)",
+      price: 4.5,
+    },
+    {
+      name: "Gemischter Salat (groß)",
+      price: 6.5,
+    },
+    {
+      name: "Hirten-Salat",
+      price: 7,
+    },
+    {
+      name: "Salat Tonno",
+      price: 8,
+    },
+    {
+      name: "Salat mit Putenstreifen",
+      price: 8,
+    },
+  ],
 
-  {
-    category: "Pizza (Ø 30 cm)",
-    products: [
-      "Pizza Margherita",
-      "Pizza Funghi",
-      "Pizza Spinat",
-      "Pizza Peperoni",
-      "Pizza Salami",
-      "Pizza Schinken",
-      "Pizza Sucuk",
-      "Pizza Hawaii",
-      "Pizza Artischocken",
-      "Pizza Tonno",
-      "Pizza Kebap",
-      "Pizza Chipolla",
-      "Pizza Vegetarisch",
-      "Pizza Sucuk Spezial",
-      "Pizza Döner Spezial",
-      "Pizza Meeresfrüchte",
-      "Pizza Vier Jahreszeiten",
-      "Pizza Sardellen",
-      "Party-Pizza (60x40 cm)",
-    ],
-  },
+  "Pizza (Ø 30 cm)": [
+    {
+      name: "Pizza Margherita",
+      price: 7.5,
+    },
+    {
+      name: "Pizza Funghi",
+      price: 8,
+    },
+    {
+      name: "Pizza Spinat",
+      price: 8,
+    },
+    {
+      name: "Pizza Peperoni",
+      price: 8,
+    },
+    {
+      name: "Pizza Salami",
+      price: 8,
+    },
+    {
+      name: "Pizza Schinken",
+      price: 8,
+    },
+    {
+      name: "Pizza Sucuk",
+      price: 9,
+    },
+    {
+      name: "Pizza Hawaii",
+      price: 9,
+    },
+    {
+      name: "Pizza Artischocken",
+      price: 9,
+    },
+    {
+      name: "Pizza Tonno",
+      price: 9,
+    },
+    {
+      name: "Pizza Kebap",
+      price: 9.5,
+    },
+    {
+      name: "Pizza Chipolla",
+      price: 9.5,
+    },
+    {
+      name: "Pizza Vegetarisch",
+      price: 9.5,
+    },
+    {
+      name: "Pizza Sucuk Spezial",
+      price: 10.5,
+    },
+    {
+      name: "Pizza Döner Spezial",
+      price: 10.5,
+    },
+    {
+      name: "Pizza Meeresfrüchte",
+      price: 10.5,
+    },
+    {
+      name: "Pizza Vier Jahreszeiten",
+      price: 10,
+    },
+    {
+      name: "Pizza Sardellen",
+      price: 10.5,
+    },
+    {
+      name: "Party-Pizza (60x40 cm)",
+      price: 25,
+    },
+  ],
 
-  {
-    category: "Flammkuchen",
-    products: [
-      "Flammkuchen",
-    ],
-  },
+  Flammkuchen: [
+    {
+      name: "Flammkuchen",
+      price: 7,
+    },
+  ],
 
-  {
-    category: "Döner-Spezialitäten",
-    products: [
-      "Döner im Fladenbrot",
-      "Döner mit Käse im Fladenbrot",
-      "Yufka Döner",
-      "Döner Vegetarisch",
-      "Yufka Vegetarisch",
-      "Vegetarischer Teller",
-      "Döner Box",
-      "Döner Teller",
-      "Döner Teller (klein)",
-    ],
-  },
+  "Döner-Spezialitäten": [
+    {
+      name: "Döner im Fladenbrot",
+      price: 7.5,
+    },
+    {
+      name: "Döner mit Käse im Fladenbrot",
+      price: 8,
+    },
+    {
+      name: "Yufka Döner",
+      price: 8.5,
+    },
+    {
+      name: "Döner Vegetarisch",
+      price: 6,
+    },
+    {
+      name: "Yufka Vegetarisch",
+      price: 6.5,
+    },
+    {
+      name: "Vegetarischer Teller",
+      price: 8,
+    },
+    {
+      name: "Döner Box",
+      price: 6.5,
+    },
+    {
+      name: "Döner Teller",
+      price: 10,
+    },
+    {
+      name: "Döner Teller (klein)",
+      price: 9,
+    },
+  ],
 
-  {
-    category: "Falafel-Spezialitäten",
-    products: [
-      "Falafel im Fladenbrot",
-      "Falafel Box",
-      "Falafel Teller",
-    ],
-  },
+  "Falafel-Spezialitäten": [
+    {
+      name: "Falafel im Fladenbrot",
+      price: 6.5,
+    },
+    {
+      name: "Falafel Box",
+      price: 6.5,
+    },
+    {
+      name: "Falafel Teller",
+      price: 8,
+    },
+  ],
 
-  {
-    category: "Extras",
-    products: [
-      "Portion Pommes",
-      "Iskender",
-    ],
-  },
+  Extras: [
+    {
+      name: "Portion Pommes",
+      price: 3.5,
+    },
+    {
+      name: "Iskender",
+      price: 12,
+    },
+  ],
 
-  {
-    category: "Pide und Seele",
-    products: [
-      "Pide mit Käse",
-      "Pide mit Hackfleisch",
-      "Pide mit Spinat & Käse",
-      "Pide mit Sucuk & Käse",
-      "Seele mit Putenschinken und Käse",
-      "Seele mit Dönerfleisch, frischen Tomaten und Zwiebeln",
-    ],
-  },
+  "Pide und Seele": [
+    {
+      name: "Pide mit Käse",
+      price: 7.5,
+    },
+    {
+      name: "Pide mit Hackfleisch",
+      price: 8,
+    },
+    {
+      name: "Pide mit Spinat & Käse",
+      price: 8,
+    },
+    {
+      name: "Pide mit Sucuk & Käse",
+      price: 8.5,
+    },
+    {
+      name: "Seele mit Putenschinken und Käse",
+      price: 8.5,
+    },
+    {
+      name: "Seele mit Dönerfleisch, frischen Tomaten und Zwiebeln",
+      price: 8.5,
+    },
+  ],
 
-  {
-    category: "Warme Getränke",
-    products: [
-      "Tasse Kaffee (klein)",
-    ],
-  },
+  "Warme Getränke": [
+    {
+      name: "Tasse Kaffee (klein)",
+      price: 3.5,
+    },
+  ],
 
-  {
-    category: "Alkoholische Getränke",
-    products: [
-      "Hofbräu 0,5 l",
-      "Pils Hofbräu 0,5 l",
-      "Hefeweizen hell 0,5 l",
-      "Kristallweizen 0,5 l",
-      "Radler 0,5 l",
-      "Beck’s 0,33 l",
-      "Beck’s Lemon 0,33 l",
-      "Tannenzäpfle 0,33 l",
-      "Desperados 0,33 l",
-      "Rotwein Trollinger 0,25 l",
-      "Weißwein Riesling 0,25 l",
-      "Rosé Württemberger 0,25 l",
-      "Weinschorle 0,25 l",
-    ],
-  },
+  "Alkoholische Getränke": [
+    {
+      name: "Hofbräu 0,5 l",
+      price: 3.5,
+    },
+    {
+      name: "Pils Hofbräu 0,5 l",
+      price: 3.5,
+    },
+    {
+      name: "Hefeweizen hell 0,5 l",
+      price: 3.5,
+    },
+    {
+      name: "Kristallweizen 0,5 l",
+      price: 3.5,
+    },
+    {
+      name: "Radler 0,5 l",
+      price: 3.5,
+    },
+    {
+      name: "Beck’s 0,33 l",
+      price: 3.5,
+    },
+    {
+      name: "Beck’s Lemon 0,33 l",
+      price: 3.5,
+    },
+    {
+      name: "Tannenzäpfle 0,33 l",
+      price: 4,
+    },
+    {
+      name: "Desperados 0,33 l",
+      price: 4,
+    },
+    {
+      name: "Rotwein Trollinger 0,25 l",
+      price: 4,
+    },
+    {
+      name: "Weißwein Riesling 0,25 l",
+      price: 4,
+    },
+    {
+      name: "Rosé Württemberger 0,25 l",
+      price: 4,
+    },
+    {
+      name: "Weinschorle 0,25 l",
+      price: 3.5,
+    },
+  ],
 
-  {
-    category: "Kalte Getränke – Softdrinks",
-    products: [
-      "Fanta 0,3 l",
-      "Fanta 0,5 l",
-      "Coca-Cola 0,3 l",
-      "Coca-Cola 0,5 l",
-      "Coca-Cola Light 0,3 l",
-      "Coca-Cola Light 0,5 l",
-      "Sprite 0,3 l",
-      "Sprite 0,5 l",
-      "Spezi 0,3 l",
-      "Spezi 0,5 l",
-      "Red Bull 0,25 l",
-      "Wasser 0,3 l",
-      "Wasser 0,5 l",
-    ],
-  },
+  "Kalte Getränke – Softdrinks": [
+    {
+      name: "Fanta 0,3 l",
+      price: 2.5,
+    },
+    {
+      name: "Fanta 0,5 l",
+      price: 4,
+    },
+    {
+      name: "Coca-Cola 0,3 l",
+      price: 2.5,
+    },
+    {
+      name: "Coca-Cola 0,5 l",
+      price: 4,
+    },
+    {
+      name: "Coca-Cola Light 0,3 l",
+      price: 2.5,
+    },
+    {
+      name: "Coca-Cola Light 0,5 l",
+      price: 4,
+    },
+    {
+      name: "Sprite 0,3 l",
+      price: 2.5,
+    },
+    {
+      name: "Sprite 0,5 l",
+      price: 4,
+    },
+    {
+      name: "Spezi 0,3 l",
+      price: 2.5,
+    },
+    {
+      name: "Spezi 0,5 l",
+      price: 4,
+    },
+    {
+      name: "Red Bull 0,25 l",
+      price: 4,
+    },
+    {
+      name: "Wasser 0,3 l",
+      price: 2,
+    },
+    {
+      name: "Wasser 0,5 l",
+      price: 3.5,
+    },
+  ],
 
-  {
-    category: "Kalte Getränke – Säfte",
-    products: [
-      "Orangensaft 0,3 l",
-      "Kirschsaft 0,3 l",
-      "Kiba (Kirsch-Banane) 0,3 l",
-      "Bananensaft 0,3 l",
-      "Bananensaft 0,5 l",
-      "Apfelsaft 0,3 l",
-      "Apfelsaft 0,5 l",
-      "Johannisbeersaft 0,3 l",
-      "Johannisbeersaft 0,5 l",
-      "Apfelschorle 0,3 l",
-      "Apfelschorle 0,5 l",
-    ],
-  },
+  "Kalte Getränke – Säfte": [
+    {
+      name: "Orangensaft 0,3 l",
+      price: 3,
+    },
+    {
+      name: "Kirschsaft 0,3 l",
+      price: 3.5,
+    },
+    {
+      name: "Kiba (Kirsch-Banane) 0,3 l",
+      price: 3.5,
+    },
+    {
+      name: "Bananensaft 0,3 l",
+      price: 3.5,
+    },
+    {
+      name: "Bananensaft 0,5 l",
+      price: 4.5,
+    },
+    {
+      name: "Apfelsaft 0,3 l",
+      price: 3.5,
+    },
+    {
+      name: "Apfelsaft 0,5 l",
+      price: 4.5,
+    },
+    {
+      name: "Johannisbeersaft 0,3 l",
+      price: 3.5,
+    },
+    {
+      name: "Johannisbeersaft 0,5 l",
+      price: 4.5,
+    },
+    {
+      name: "Apfelschorle 0,3 l",
+      price: 2.5,
+    },
+    {
+      name: "Apfelschorle 0,5 l",
+      price: 4,
+    },
+  ],
 
-  {
-    category: "Schweppes",
-    products: [
-      "Ginger Ale",
-      "Tonic Water",
-      "Bitter Lemon",
-    ],
-  },
+  Schweppes: [
+    {
+      name: "Ginger Ale",
+      price: 3.5,
+    },
+    {
+      name: "Tonic Water",
+      price: 3.5,
+    },
+    {
+      name: "Bitter Lemon",
+      price: 3.5,
+    },
+  ],
 
-  {
-    category: "Cocktails",
-    products: [
-      "Aperol Spritz",
-      "Hugo",
-      "Campari Orange",
-      "Campari Soda",
-    ],
-  },
+  Cocktails: [
+    {
+      name: "Aperol Spritz",
+      price: 6,
+    },
+    {
+      name: "Hugo",
+      price: 6,
+    },
+    {
+      name: "Campari Orange",
+      price: 6,
+    },
+    {
+      name: "Campari Soda",
+      price: 6,
+    },
+  ],
 
-  {
-    category: "Longdrinks",
-    products: [
-      "Jacky Cola 2 cl",
-      "Jacky Cola 4 cl",
-      "Wodka Lemon 2 cl",
-      "Wodka Lemon 4 cl",
-      "Wodka Bull 2 cl",
-      "Wodka Bull 4 cl",
-      "Wodka Orange 2 cl",
-      "Wodka Orange 4 cl",
-      "Asbach Cola 2 cl",
-      "Asbach Cola 4 cl",
-      "Gin Tonic 2 cl",
-      "Gin Tonic 4 cl",
-    ],
-  },
+  Longdrinks: [
+    {
+      name: "Jacky Cola 2 cl",
+      price: 5,
+    },
+    {
+      name: "Jacky Cola 4 cl",
+      price: 6,
+    },
+    {
+      name: "Wodka Lemon 2 cl",
+      price: 5,
+    },
+    {
+      name: "Wodka Lemon 4 cl",
+      price: 6,
+    },
+    {
+      name: "Wodka Bull 2 cl",
+      price: 5,
+    },
+    {
+      name: "Wodka Bull 4 cl",
+      price: 6,
+    },
+    {
+      name: "Wodka Orange 2 cl",
+      price: 5,
+    },
+    {
+      name: "Wodka Orange 4 cl",
+      price: 6,
+    },
+    {
+      name: "Asbach Cola 2 cl",
+      price: 5,
+    },
+    {
+      name: "Asbach Cola 4 cl",
+      price: 6,
+    },
+    {
+      name: "Gin Tonic 2 cl",
+      price: 5,
+    },
+    {
+      name: "Gin Tonic 4 cl",
+      price: 6,
+    },
+  ],
 
-  {
-    category: "Spirituosen",
-    products: [
-      "Jägermeister",
-      "Ramazzotti",
-      "Wodka",
-      "Tequila",
-      "Asbach",
-      "Baileys",
-      "Williams",
-    ],
-  },
-];
-
-/* =========================================================
-   KATEGORIEN
-   ========================================================= */
-
-const PRODUCT_CATEGORIES = PRODUCT_CATALOG.map(
-  (category) => category.category
-);
+  Spirituosen: [
+    {
+      name: "Jägermeister",
+      price: 2,
+    },
+    {
+      name: "Ramazzotti",
+      price: 2,
+    },
+    {
+      name: "Wodka",
+      price: 2,
+    },
+    {
+      name: "Tequila",
+      price: 2,
+    },
+    {
+      name: "Asbach",
+      price: 2,
+    },
+    {
+      name: "Baileys",
+      price: 2,
+    },
+    {
+      name: "Williams",
+      price: 3.5,
+    },
+  ],
+};
 
 export default function AdminPage() {
   const { theme, setTheme } = useTheme();
@@ -298,348 +622,360 @@ export default function AdminPage() {
 
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-
-  const [products, setProducts] = useState<Product[]>([]);
-  const [productsLoading, setProductsLoading] = useState(false);
-  const [productsMessage, setProductsMessage] = useState("");
-  const [savingPrice, setSavingPrice] = useState<number | null>(null);
-  const [savingProduct, setSavingProduct] = useState<number | null>(null);
-  const [deletingProduct, setDeletingProduct] = useState<number | null>(null);
-
-  const [showEmployees, setShowEmployees] = useState(false);
-  const [showOrders, setShowOrders] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showAddEmployee, setShowAddEmployee] = useState(false);
-  const [showStatistics, setShowStatistics] = useState(false);
-  const [showPrices, setShowPrices] = useState(false);
-  const [showProducts, setShowProducts] = useState(false);
-  const [showAddProduct, setShowAddProduct] = useState(false);
-
-  const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
-
-  const [employeeName, setEmployeeName] = useState("");
-  const [employeeEmail, setEmployeeEmail] = useState("");
-  const [employeePassword, setEmployeePassword] = useState("");
-  const [employeeRole, setEmployeeRole] = useState<
-    "waiter" | "kitchen" | "admin"
-  >("waiter");
-
-  const [employeeMessage, setEmployeeMessage] = useState("");
-  const [employeeLoading, setEmployeeLoading] = useState(false);
-
-  const [statisticsLoading, setStatisticsLoading] = useState(false);
-  const [statisticsError, setStatisticsError] = useState("");
-  const [statisticsOrders, setStatisticsOrders] = useState<Order[]>([]);
-  const [dailyStatistics, setDailyStatistics] = useState<
-    DailyStatistic[]
-  >([]);
-
-  const [newProductName, setNewProductName] = useState("");
-  const [newProductCategory, setNewProductCategory] = useState(
-    PRODUCT_CATEGORIES[0]
+  const [orderItems, setOrderItems] = useState<OrderItem[]>(
+    []
   );
-  const [newProductPrice, setNewProductPrice] = useState("0.00");
-  const [productCreateMessage, setProductCreateMessage] = useState("");
-  const [productCreateLoading, setProductCreateLoading] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  const [activeSection, setActiveSection] =
+    useState("dashboard");
+
+  const [message, setMessage] = useState("");
+
+  /*
+  =========================================================
+  PRODUKT FORMULAR
+  =========================================================
+  */
+
+  const [showProductForm, setShowProductForm] =
+    useState(false);
+
+  const [editingProduct, setEditingProduct] =
+    useState<Product | null>(null);
+
+  const [productName, setProductName] = useState("");
+  const [productCategory, setProductCategory] =
+    useState("");
+  const [productPrice, setProductPrice] = useState("");
+
+  /*
+  =========================================================
+  MITARBEITER FORMULAR
+  =========================================================
+  */
+
+  const [showEmployeeForm, setShowEmployeeForm] =
+    useState(false);
+
+  const [employeeName, setEmployeeName] =
+    useState("");
+
+  const [employeeEmail, setEmployeeEmail] =
+    useState("");
+
+  const [employeePassword, setEmployeePassword] =
+    useState("");
+
+  const [employeeRole, setEmployeeRole] =
+    useState<"waiter" | "kitchen" | "admin">(
+      "waiter"
+    );
+
+  /*
+  =========================================================
+  DATEN LADEN
+  =========================================================
+  */
 
   useEffect(() => {
-    checkAdmin();
+    async function loadAdmin() {
+      setLoading(true);
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        window.location.href = "/";
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile || profile.role !== "admin") {
+        setAuthorized(false);
+        setLoading(false);
+        return;
+      }
+
+      setAuthorized(true);
+
+      await loadData();
+
+      setLoading(false);
+    }
+
+    loadAdmin();
   }, []);
 
-  /* =========================================================
-     ADMIN PRÜFEN
-     ========================================================= */
+  async function loadData() {
+    const [
+      profilesResult,
+      ordersResult,
+      orderItemsResult,
+      productsResult,
+    ] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", {
+          ascending: false,
+        }),
 
-  async function checkAdmin() {
-    setLoading(true);
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      window.location.href = "/login";
-      return;
-    }
-
-    const { data: profile, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-
-    if (error || !profile || profile.role !== "admin") {
-      setAuthorized(false);
-      setLoading(false);
-      return;
-    }
-
-    setAuthorized(true);
-
-    await loadProfiles();
-    await loadOrders();
-
-    setLoading(false);
-  }
-
-  /* =========================================================
-     MITARBEITER LADEN
-     ========================================================= */
-
-  async function loadProfiles() {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("PROFILE FEHLER:", error);
-      return;
-    }
-
-    setProfiles(data || []);
-  }
-
-  /* =========================================================
-     BESTELLUNGEN LADEN
-     ========================================================= */
-
-  async function loadOrders() {
-    const { data: ordersData, error: ordersError } =
-      await supabase
+      supabase
         .from("orders")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", {
+          ascending: false,
+        }),
 
-    if (ordersError) {
-      console.error("ORDERS FEHLER:", ordersError);
-      return;
-    }
-
-    const { data: itemsData, error: itemsError } =
-      await supabase
+      supabase
         .from("order_items")
         .select("*")
-        .order("id", { ascending: true });
+        .order("id", {
+          ascending: false,
+        }),
 
-    if (itemsError) {
-      console.error("ORDER ITEMS FEHLER:", itemsError);
-      return;
+      supabase
+        .from("products")
+        .select("*")
+        .order("category", {
+          ascending: true,
+        })
+        .order("name", {
+          ascending: true,
+        }),
+    ]);
+
+    if (profilesResult.data) {
+      setProfiles(profilesResult.data);
     }
 
-    setOrders(ordersData || []);
-    setOrderItems(itemsData || []);
+    if (ordersResult.data) {
+      setOrders(ordersResult.data);
+    }
+
+    if (orderItemsResult.data) {
+      setOrderItems(orderItemsResult.data);
+    }
+
+    if (productsResult.data) {
+      setProducts(productsResult.data);
+    }
   }
 
-  /* =========================================================
-     PRODUKTE LADEN
-     ========================================================= */
+  /*
+  =========================================================
+  LOGOUT
+  =========================================================
+  */
 
-  async function loadProducts() {
-    setProductsLoading(true);
-    setProductsMessage("");
+  async function logout() {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  }
 
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .order("category", { ascending: true })
-      .order("name", { ascending: true });
+  /*
+  =========================================================
+  SPEISEKARTE ERSTELLEN
+  =========================================================
+  */
 
-    if (error) {
-      console.error("PRODUCT FEHLER:", error);
+  async function createMenu() {
+    setMessage("");
 
-      setProductsMessage(
-        error.message ||
-          "Produkte konnten nicht geladen werden."
+    const allProducts = Object.entries(
+      PRODUCT_CATALOG
+    ).flatMap(([category, categoryProducts]) =>
+      categoryProducts.map((product) => ({
+        name: product.name,
+        price: product.price,
+        category,
+      }))
+    );
+
+    if (allProducts.length === 0) {
+      setMessage(
+        "Keine Produkte zum Anlegen vorhanden."
       );
-
-      setProductsLoading(false);
       return;
     }
-
-    setProducts((data || []) as Product[]);
-    setProductsLoading(false);
-  }
-
-  /* =========================================================
-     SPEISEKARTE AUTOMATISCH ANLEGEN
-     ========================================================= */
-
-  async function createCatalogProducts() {
-    setProductsLoading(true);
-    setProductsMessage("");
 
     const existingNames = new Set(
       products.map((product) => product.name)
     );
 
-    const missingProducts: {
-      name: string;
-      category: string;
-      price: number;
-    }[] = [];
+    const newProducts = allProducts.filter(
+      (product) => !existingNames.has(product.name)
+    );
 
-    for (const category of PRODUCT_CATALOG) {
-      for (const productName of category.products) {
-        if (!existingNames.has(productName)) {
-          missingProducts.push({
-            name: productName,
-            category: category.category,
-            price: 0,
-          });
-        }
-      }
-    }
-
-    if (missingProducts.length === 0) {
-      setProductsMessage(
-        "Alle Produkte sind bereits angelegt."
+    if (newProducts.length === 0) {
+      setMessage(
+        "Die komplette Speisekarte ist bereits angelegt."
       );
-
-      setProductsLoading(false);
       return;
     }
 
     const { error } = await supabase
       .from("products")
-      .insert(missingProducts);
+      .insert(newProducts);
 
     if (error) {
-      console.error(
-        "PRODUCT ERSTELLEN FEHLER:",
-        error
-      );
+      console.error("SPEISEKARTE FEHLER:", {
+        message: error.message,
+        code: error.code,
+      });
 
-      setProductsMessage(
+      setMessage(
         error.message ||
-          "Produkte konnten nicht angelegt werden."
+          "Die Speisekarte konnte nicht angelegt werden."
       );
 
-      setProductsLoading(false);
       return;
     }
 
-    setProductsMessage(
-      `${missingProducts.length} Produkte wurden angelegt.`
+    await loadData();
+
+    setMessage(
+      `${newProducts.length} Produkte wurden mit den Startpreisen angelegt.`
     );
-
-    await loadProducts();
-
-    setProductsLoading(false);
   }
 
-  /* =========================================================
-     PREIS ÄNDERN
-     ========================================================= */
+  /*
+  =========================================================
+  PRODUKT FORMULAR ÖFFNEN
+  =========================================================
+  */
 
-  async function updateProductPrice(
-    productId: number,
-    price: number
-  ) {
-    if (!Number.isFinite(price) || price < 0) {
-      alert("Bitte einen gültigen Preis eingeben.");
-      return;
-    }
-
-    setSavingPrice(productId);
-
-    const roundedPrice = Number(price.toFixed(2));
-
-    const { error } = await supabase
-      .from("products")
-      .update({
-        price: roundedPrice,
-      })
-      .eq("id", productId);
-
-    if (error) {
-      console.error("PREIS FEHLER:", error);
-
-      alert(
-        error.message ||
-          "Preis konnte nicht gespeichert werden."
-      );
-
-      setSavingPrice(null);
-      return;
-    }
-
-    setProducts((currentProducts) =>
-      currentProducts.map((product) =>
-        product.id === productId
-          ? {
-              ...product,
-              price: roundedPrice,
-            }
-          : product
-      )
-    );
-
-    setSavingPrice(null);
+  function openAddProduct() {
+    setEditingProduct(null);
+    setProductName("");
+    setProductCategory("");
+    setProductPrice("");
+    setShowProductForm(true);
   }
 
-  /* =========================================================
-     PRODUKT ÄNDERN
-     ========================================================= */
+  function openEditProduct(product: Product) {
+    setEditingProduct(product);
+    setProductName(product.name);
+    setProductCategory(product.category);
+    setProductPrice(String(product.price));
+    setShowProductForm(true);
+  }
 
-  async function updateProduct(
-    productId: number,
-    name: string,
-    category: string
-  ) {
-    const trimmedName = name.trim();
+  /*
+  =========================================================
+  PRODUKT SPEICHERN
+  =========================================================
+  */
 
-    if (!trimmedName) {
-      alert("Bitte einen Produktnamen eingeben.");
+  async function saveProduct() {
+    const name = productName.trim();
+    const category = productCategory.trim();
+    const price = Number(
+      productPrice.replace(",", ".")
+    );
+
+    if (!name) {
+      setMessage(
+        "Bitte einen Produktnamen eingeben."
+      );
       return;
     }
 
     if (!category) {
-      alert("Bitte eine Kategorie auswählen.");
-      return;
-    }
-
-    setSavingProduct(productId);
-
-    const { error } = await supabase
-      .from("products")
-      .update({
-        name: trimmedName,
-        category,
-      })
-      .eq("id", productId);
-
-    if (error) {
-      console.error("PRODUKT ÄNDERN FEHLER:", error);
-
-      alert(
-        error.message ||
-          "Produkt konnte nicht geändert werden."
+      setMessage(
+        "Bitte eine Kategorie eingeben."
       );
-
-      setSavingProduct(null);
       return;
     }
 
-    setProducts((currentProducts) =>
-      currentProducts.map((product) =>
-        product.id === productId
-          ? {
-              ...product,
-              name: trimmedName,
-              category,
-            }
-          : product
-      )
-    );
+    if (
+      productPrice.trim() === "" ||
+      Number.isNaN(price) ||
+      price < 0
+    ) {
+      setMessage(
+        "Bitte einen gültigen Preis eingeben."
+      );
+      return;
+    }
 
-    setSavingProduct(null);
+    if (editingProduct) {
+      const { error } = await supabase
+        .from("products")
+        .update({
+          name,
+          category,
+          price,
+        })
+        .eq("id", editingProduct.id);
+
+      if (error) {
+        console.error("PRODUKT UPDATE FEHLER:", {
+          message: error.message,
+          code: error.code,
+        });
+
+        setMessage(
+          error.message ||
+            "Das Produkt konnte nicht geändert werden."
+        );
+
+        return;
+      }
+
+      setMessage(
+        "Produkt wurde erfolgreich geändert."
+      );
+    } else {
+      const { error } = await supabase
+        .from("products")
+        .insert({
+          name,
+          category,
+          price,
+        });
+
+      if (error) {
+        console.error("PRODUKT ERSTELLEN FEHLER:", {
+          message: error.message,
+          code: error.code,
+        });
+
+        setMessage(
+          error.message ||
+            "Das Produkt konnte nicht erstellt werden."
+        );
+
+        return;
+      }
+
+      setMessage(
+        "Produkt wurde erfolgreich hinzugefügt."
+      );
+    }
+
+    setShowProductForm(false);
+    setEditingProduct(null);
+
+    setProductName("");
+    setProductCategory("");
+    setProductPrice("");
+
+    await loadData();
   }
 
-  /* =========================================================
-     PRODUKT LÖSCHEN
-     ========================================================= */
+  /*
+  =========================================================
+  PRODUKT LÖSCHEN
+  =========================================================
+  */
 
   async function deleteProduct(product: Product) {
     const confirmed = window.confirm(
@@ -650,321 +986,59 @@ export default function AdminPage() {
       return;
     }
 
-    setDeletingProduct(product.id);
-
     const { error } = await supabase
       .from("products")
       .delete()
       .eq("id", product.id);
 
     if (error) {
-      console.error(
-        "PRODUKT LÖSCHEN FEHLER:",
-        error
-      );
-
-      alert(
-        error.message ||
-          "Produkt konnte nicht gelöscht werden."
-      );
-
-      setDeletingProduct(null);
-      return;
-    }
-
-    setProducts((currentProducts) =>
-      currentProducts.filter(
-        (item) => item.id !== product.id
-      )
-    );
-
-    setDeletingProduct(null);
-  }
-
-  /* =========================================================
-     NEUES PRODUKT ERSTELLEN
-     ========================================================= */
-
-  async function createProduct() {
-    setProductCreateMessage("");
-
-    const name = newProductName.trim();
-
-    if (!name) {
-      setProductCreateMessage(
-        "Bitte einen Produktnamen eingeben."
-      );
-      return;
-    }
-
-    if (!newProductCategory) {
-      setProductCreateMessage(
-        "Bitte eine Kategorie auswählen."
-      );
-      return;
-    }
-
-    const price = Number(newProductPrice);
-
-    if (!Number.isFinite(price) || price < 0) {
-      setProductCreateMessage(
-        "Bitte einen gültigen Preis eingeben."
-      );
-      return;
-    }
-
-    const alreadyExists = products.some(
-      (product) =>
-        product.name.toLowerCase() === name.toLowerCase()
-    );
-
-    if (alreadyExists) {
-      setProductCreateMessage(
-        "Dieses Produkt existiert bereits."
-      );
-      return;
-    }
-
-    setProductCreateLoading(true);
-
-    const { data, error } = await supabase
-      .from("products")
-      .insert({
-        name,
-        category: newProductCategory,
-        price: Number(price.toFixed(2)),
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error(
-        "NEUES PRODUKT FEHLER:",
-        error
-      );
-
-      setProductCreateMessage(
-        error.message ||
-          "Produkt konnte nicht erstellt werden."
-      );
-
-      setProductCreateLoading(false);
-      return;
-    }
-
-    if (data) {
-      setProducts((currentProducts) => [
-        ...currentProducts,
-        data as Product,
-      ]);
-    }
-
-    setNewProductName("");
-    setNewProductPrice("0.00");
-
-    setProductCreateMessage(
-      "Produkt erfolgreich erstellt."
-    );
-
-    setProductCreateLoading(false);
-  }
-
-  /* =========================================================
-     PANELS
-     ========================================================= */
-
-  function closeAllPanels() {
-    setShowEmployees(false);
-    setShowOrders(false);
-    setShowSettings(false);
-    setShowAddEmployee(false);
-    setShowStatistics(false);
-    setShowPrices(false);
-    setShowProducts(false);
-    setShowAddProduct(false);
-  }
-
-  function openEmployees() {
-    closeAllPanels();
-    setShowEmployees(true);
-    loadProfiles();
-  }
-
-  function openOrders() {
-    closeAllPanels();
-    setShowOrders(true);
-    loadOrders();
-  }
-
-  function openSettings() {
-    closeAllPanels();
-    setShowSettings(true);
-  }
-
-  function openPrices() {
-    closeAllPanels();
-    setShowPrices(true);
-    loadProducts();
-  }
-
-  function openProducts() {
-    closeAllPanels();
-    setShowProducts(true);
-    loadProducts();
-  }
-
-  function openAddEmployee() {
-    setShowAddEmployee(true);
-    setEmployeeMessage("");
-  }
-
-  function closeAddEmployee() {
-    setShowAddEmployee(false);
-    setEmployeeName("");
-    setEmployeeEmail("");
-    setEmployeePassword("");
-    setEmployeeRole("waiter");
-    setEmployeeMessage("");
-  }
-
-  function openStatistics() {
-    closeAllPanels();
-    setShowStatistics(true);
-    loadStatistics();
-  }
-
-  /* =========================================================
-     STATISTIK
-     ========================================================= */
-
-  async function loadStatistics() {
-    setStatisticsLoading(true);
-    setStatisticsError("");
-
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("STATISTIK FEHLER:", error);
-
-      setStatisticsError(
-        error.message ||
-          "Statistiken konnten nicht geladen werden."
-      );
-
-      setStatisticsLoading(false);
-      return;
-    }
-
-    const loadedOrders = (data || []) as Order[];
-
-    setStatisticsOrders(loadedOrders);
-
-    const days: DailyStatistic[] = [];
-
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-
-      date.setHours(0, 0, 0, 0);
-      date.setDate(date.getDate() - i);
-
-      const nextDate = new Date(date);
-      nextDate.setDate(nextDate.getDate() + 1);
-
-      const count = loadedOrders.filter((order) => {
-        const orderDate = new Date(order.created_at);
-
-        return (
-          orderDate >= date &&
-          orderDate < nextDate
-        );
-      }).length;
-
-      days.push({
-        date: date.toISOString(),
-        label: date.toLocaleDateString("de-DE", {
-          weekday: "short",
-          day: "2-digit",
-          month: "2-digit",
-        }),
-        count,
+      console.error("PRODUKT LÖSCHEN FEHLER:", {
+        message: error.message,
+        code: error.code,
       });
+
+      setMessage(
+        error.message ||
+          "Das Produkt konnte nicht gelöscht werden."
+      );
+
+      return;
     }
 
-    setDailyStatistics(days);
-    setStatisticsLoading(false);
-  }
-
-  function getStartOfToday() {
-    const date = new Date();
-
-    date.setHours(0, 0, 0, 0);
-
-    return date;
-  }
-
-  function getStartOfWeek() {
-    const date = new Date();
-
-    date.setHours(0, 0, 0, 0);
-
-    const day = date.getDay();
-    const difference =
-      day === 0 ? 6 : day - 1;
-
-    date.setDate(
-      date.getDate() - difference
+    setMessage(
+      `"${product.name}" wurde gelöscht.`
     );
 
-    return date;
+    await loadData();
   }
 
-  function getStartOfMonth() {
-    const date = new Date();
-
-    date.setHours(0, 0, 0, 0);
-    date.setDate(1);
-
-    return date;
-  }
-
-  function getOrdersFromDate(date: Date) {
-    return statisticsOrders.filter(
-      (order) =>
-        new Date(order.created_at) >= date
-    );
-  }
-
-  /* =========================================================
-     MITARBEITER ERSTELLEN
-     ========================================================= */
+  /*
+  =========================================================
+  MITARBEITER ERSTELLEN
+  =========================================================
+  */
 
   async function createEmployee() {
     if (!employeeName.trim()) {
-      setEmployeeMessage(
+      setMessage(
         "Bitte einen Namen eingeben."
       );
       return;
     }
 
     if (!employeeEmail.trim()) {
-      setEmployeeMessage(
-        "Bitte eine E-Mail eingeben."
+      setMessage(
+        "Bitte eine E-Mail-Adresse eingeben."
       );
       return;
     }
 
     if (employeePassword.length < 6) {
-      setEmployeeMessage(
+      setMessage(
         "Das Passwort muss mindestens 6 Zeichen haben."
       );
       return;
     }
-
-    setEmployeeLoading(true);
-    setEmployeeMessage("");
 
     try {
       const response = await fetch(
@@ -975,8 +1049,8 @@ export default function AdminPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            name: employeeName,
-            email: employeeEmail,
+            name: employeeName.trim(),
+            email: employeeEmail.trim(),
             password: employeePassword,
             role: employeeRole,
           }),
@@ -986,954 +1060,1033 @@ export default function AdminPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        setEmployeeMessage(
+        setMessage(
           result.error ||
             "Mitarbeiter konnte nicht erstellt werden."
         );
-
-        setEmployeeLoading(false);
         return;
       }
 
-      setEmployeeMessage(
-        "Mitarbeiter erfolgreich erstellt."
+      setMessage(
+        "Mitarbeiter wurde erfolgreich erstellt."
       );
 
       setEmployeeName("");
       setEmployeeEmail("");
       setEmployeePassword("");
       setEmployeeRole("waiter");
+      setShowEmployeeForm(false);
 
-      await loadProfiles();
-
-      setEmployeeLoading(false);
+      await loadData();
     } catch (error) {
       console.error(error);
 
-      setEmployeeMessage(
-        "Beim Erstellen ist ein Fehler aufgetreten."
+      setMessage(
+        "Beim Erstellen des Mitarbeiters ist ein Fehler aufgetreten."
       );
-
-      setEmployeeLoading(false);
     }
   }
 
-  /* =========================================================
-     MITARBEITER ÄNDERN
-     ========================================================= */
+  /*
+  =========================================================
+  MITARBEITER LÖSCHEN
+  =========================================================
+  */
 
-  async function updateEmployee(
-    id: string,
-    name: string,
-    role: "waiter" | "kitchen" | "admin"
+  async function deleteEmployee(
+    profile: Profile
   ) {
-    const response = await fetch(
-      "/api/admin/update-user",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id,
-          name,
-          role,
-        }),
+    const confirmed = window.confirm(
+      `Möchtest du "${profile.name}" wirklich löschen?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "/api/admin/delete-user",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: profile.id,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setMessage(
+          result.error ||
+            "Mitarbeiter konnte nicht gelöscht werden."
+        );
+        return;
       }
-    );
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      alert(
-        result.error ||
-          "Mitarbeiter konnte nicht aktualisiert werden."
+      setMessage(
+        "Mitarbeiter wurde gelöscht."
       );
-      return;
-    }
 
-    await loadProfiles();
-  }
+      await loadData();
+    } catch (error) {
+      console.error(error);
 
-  /* =========================================================
-     PASSWORT ÄNDERN
-     ========================================================= */
-
-  async function updatePassword(id: string) {
-    const password = window.prompt(
-      "Neues Passwort eingeben:"
-    );
-
-    if (!password) {
-      return;
-    }
-
-    if (password.length < 6) {
-      alert(
-        "Das Passwort muss mindestens 6 Zeichen haben."
+      setMessage(
+        "Beim Löschen ist ein Fehler aufgetreten."
       );
+    }
+  }
+
+  /*
+  =========================================================
+  BESTELLUNG FERTIG
+  =========================================================
+  */
+
+  async function finishOrder(order: Order) {
+    if (order.status === "fertig") {
       return;
     }
 
-    const response = await fetch(
-      "/api/admin/update-password",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id,
-          password,
-        }),
-      }
-    );
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        status: "fertig",
+        finished_at: new Date().toISOString(),
+      })
+      .eq("id", order.id);
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      alert(
-        result.error ||
-          "Passwort konnte nicht geändert werden."
+    if (error) {
+      console.error(
+        "BESTELLUNG FERTIG FEHLER:",
+        {
+          message: error.message,
+          code: error.code,
+        }
       );
+
+      setMessage(
+        error.message ||
+          "Bestellung konnte nicht abgeschlossen werden."
+      );
+
       return;
     }
 
-    alert(
-      "Passwort erfolgreich geändert."
-    );
-  }
-
-  /* =========================================================
-     LOGOUT
-     ========================================================= */
-
-  async function logout() {
-    await supabase.auth.signOut();
-    window.location.href = "/login";
-  }
-
-  /* =========================================================
-     HILFSFUNKTIONEN
-     ========================================================= */
-
-  function getProfileName(id: string) {
-    const profile = profiles.find(
-      (profile) => profile.id === id
+    setMessage(
+      `Bestellung #${order.id} wurde fertig gemacht.`
     );
 
-    return profile?.name || "Unbekannt";
+    await loadData();
   }
 
-  function getItemsForOrder(orderId: number) {
-    return orderItems.filter(
-      (item) => item.order_id === orderId
+  /*
+  =========================================================
+  BESTELLUNG LÖSCHEN
+  =========================================================
+  */
+
+  async function deleteOrder(order: Order) {
+    const confirmed = window.confirm(
+      `Möchtest du Bestellung #${order.id} wirklich löschen?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from("orders")
+      .delete()
+      .eq("id", order.id);
+
+    if (error) {
+      console.error(
+        "BESTELLUNG LÖSCHEN FEHLER:",
+        {
+          message: error.message,
+          code: error.code,
+        }
+      );
+
+      setMessage(
+        error.message ||
+          "Bestellung konnte nicht gelöscht werden."
+      );
+
+      return;
+    }
+
+    setMessage(
+      `Bestellung #${order.id} wurde gelöscht.`
+    );
+
+    await loadData();
+  }
+
+  /*
+  =========================================================
+  HILFSFUNKTIONEN
+  =========================================================
+  */
+
+  function formatPrice(price: number) {
+    return (
+      Number(price)
+        .toFixed(2)
+        .replace(".", ",") + " €"
     );
   }
 
   function formatDate(date: string) {
     return new Date(date).toLocaleString(
-      "de-DE",
-      {
-        dateStyle: "short",
-        timeStyle: "short",
-      }
+      "de-DE"
     );
   }
 
-  /* =========================================================
-     LOADING
-     ========================================================= */
+  function getWaiterName(waiterId: string) {
+    const waiter = profiles.find(
+      (profile) => profile.id === waiterId
+    );
+
+    return waiter?.name || "Unbekannt";
+  }
+
+  function getOrderItems(orderId: number) {
+    return orderItems.filter(
+      (item) => item.order_id === orderId
+    );
+  }
+
+  /*
+  =========================================================
+  STATISTIKEN
+  =========================================================
+  */
+
+  const openOrders = orders.filter(
+    (order) => order.status === "offen"
+  ).length;
+
+  const finishedOrders = orders.filter(
+    (order) => order.status === "fertig"
+  ).length;
+
+  const waiterCount = profiles.filter(
+    (profile) => profile.role === "waiter"
+  ).length;
+
+  const kitchenCount = profiles.filter(
+    (profile) => profile.role === "kitchen"
+  ).length;
+
+  const adminCount = profiles.filter(
+    (profile) => profile.role === "admin"
+  ).length;
+
+  /*
+  =========================================================
+  TAGESSTATISTIK
+  =========================================================
+  */
+
+  const dailyStatistics: DailyStatistic[] =
+    Array.from({ length: 7 }).map(
+      (_, index) => {
+        const date = new Date();
+
+        date.setDate(
+          date.getDate() - index
+        );
+
+        const dateString =
+          date.toISOString().slice(0, 10);
+
+        const count = orders.filter(
+          (order) =>
+            order.created_at.slice(0, 10) ===
+            dateString
+        ).length;
+
+        return {
+          date: dateString,
+          label: date.toLocaleDateString(
+            "de-DE",
+            {
+              weekday: "short",
+              day: "2-digit",
+              month: "2-digit",
+            }
+          ),
+          count,
+        };
+      }
+    );
+
+  /*
+  =========================================================
+  KATEGORIEN
+  =========================================================
+  */
+
+  const productCategories = Array.from(
+    new Set(
+      products.map(
+        (product) => product.category
+      )
+    )
+  );
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center">
-        <div className="text-zinc-700 dark:text-zinc-200 text-lg">
-          Laden...
+      <main className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+          <div className="text-5xl mb-4">
+            ⏳
+          </div>
+
+          <h1 className="text-xl font-bold">
+            Adminbereich wird geladen...
+          </h1>
         </div>
       </main>
     );
   }
 
-  /* =========================================================
-     KEIN ZUGRIFF
-     ========================================================= */
-
   if (!authorized) {
     return (
-      <main className="min-h-screen bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center p-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-8 text-center max-w-md w-full">
+      <main className="min-h-screen bg-gray-100 flex items-center justify-center p-5">
+        <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-md w-full">
+          <div className="text-5xl mb-4">
+            🔒
+          </div>
 
-          <h1 className="text-2xl font-bold text-red-600 mb-3">
+          <h1 className="text-2xl font-bold">
             Kein Zugriff
           </h1>
 
-          <p className="text-zinc-600 dark:text-zinc-300 mb-6">
-            Du hast keine Berechtigung für den Adminbereich.
+          <p className="text-gray-600 mt-2">
+            Du hast keine Berechtigung für den
+            Adminbereich.
           </p>
 
           <button
             onClick={() => {
-              window.location.href =
-                "/dashboard";
+              window.location.href = "/";
             }}
-            className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl py-3 font-semibold"
+            className="mt-6 bg-black text-white px-6 py-3 rounded-xl font-semibold"
           >
-            Zum Dashboard
+            Zur Anmeldung
           </button>
-
         </div>
       </main>
     );
   }
 
-  /* =========================================================
-     STATISTIK-WERTE
-     ========================================================= */
-
-  const todayOrders =
-    getOrdersFromDate(
-      getStartOfToday()
-    );
-
-  const weekOrders =
-    getOrdersFromDate(
-      getStartOfWeek()
-    );
-
-  const monthOrders =
-    getOrdersFromDate(
-      getStartOfMonth()
-    );
-
-  const finishedOrders =
-    statisticsOrders.filter(
-      (order) =>
-        order.status === "fertig"
-    );
-
-  const openOrdersCount =
-    statisticsOrders.filter(
-      (order) =>
-        order.status === "offen"
-    ).length;
-
-  /* =========================================================
-     RENDER
-     ========================================================= */
-
   return (
-    <main className="min-h-screen bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white p-4 md:p-8">
+    <main
+      className={
+        theme === "dark"
+          ? "min-h-screen bg-gray-950 text-white"
+          : "min-h-screen bg-gray-100 text-gray-900"
+      }
+    >
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
-      <div className="max-w-7xl mx-auto">
-
-        {/* =====================================================
-            HEADER
-            ===================================================== */}
-
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-
+      <header
+        className={
+          theme === "dark"
+            ? "bg-gray-900 border-b border-gray-800 p-5 sticky top-0 z-30"
+            : "bg-white border-b border-gray-200 p-5 sticky top-0 z-30"
+        }
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div>
-
-            <h1 className="text-3xl md:text-4xl font-bold">
-              Adminbereich
+            <h1 className="text-2xl font-bold">
+              🌯 Döner POS
             </h1>
 
-            <p className="text-zinc-600 dark:text-zinc-400 mt-1">
-              Döner POS Verwaltung
+            <p
+              className={
+                theme === "dark"
+                  ? "text-gray-400 text-sm"
+                  : "text-gray-600 text-sm"
+              }
+            >
+              Adminbereich
             </p>
-
           </div>
 
-          <button
-            onClick={logout}
-            className="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl font-semibold"
-          >
-            Abmelden
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() =>
+                setTheme(
+                  theme === "dark"
+                    ? "light"
+                    : "dark"
+                )
+              }
+              className={
+                theme === "dark"
+                  ? "bg-gray-800 px-4 py-2 rounded-xl font-semibold hover:bg-gray-700"
+                  : "bg-gray-100 px-4 py-2 rounded-xl font-semibold hover:bg-gray-200"
+              }
+            >
+              {theme === "dark"
+                ? "☀️ Hell"
+                : "🌙 Dunkel"}
+            </button>
 
+            <button
+              onClick={logout}
+              className="bg-red-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-red-700"
+            >
+              Abmelden
+            </button>
+          </div>
         </div>
+      </header>
 
-        {/* =====================================================
-            HAUPTKARTEN
-            ===================================================== */}
+      {/* =====================================================
+          LAYOUT
+      ===================================================== */}
 
-        {!showEmployees &&
-          !showOrders &&
-          !showSettings &&
-          !showStatistics &&
-          !showPrices &&
-          !showProducts && (
+      <div className="max-w-7xl mx-auto p-5 md:p-8 flex flex-col lg:flex-row gap-6">
+        {/* ===================================================
+            SIDEBAR
+        =================================================== */}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-
-              {/* MITARBEITER */}
-
+        <aside className="lg:w-64 shrink-0">
+          <div
+            className={
+              theme === "dark"
+                ? "bg-gray-900 rounded-2xl p-3 shadow-lg"
+                : "bg-white rounded-2xl p-3 shadow-sm"
+            }
+          >
+            {[
+              ["dashboard", "📊 Dashboard"],
+              ["orders", "🧾 Bestellungen"],
+              ["employees", "👥 Mitarbeiter"],
+              ["products", "🍽️ Produkte"],
+              ["prices", "💶 Preise"],
+              ["statistics", "📈 Statistiken"],
+              ["settings", "⚙️ Einstellungen"],
+            ].map(([id, label]) => (
               <button
-                onClick={openEmployees}
-                className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
+                key={id}
+                onClick={() =>
+                  setActiveSection(id)
+                }
+                className={`w-full text-left px-4 py-3 rounded-xl font-semibold mb-1 transition ${
+                  activeSection === id
+                    ? "bg-black text-white"
+                    : theme === "dark"
+                    ? "hover:bg-gray-800"
+                    : "hover:bg-gray-100"
+                }`}
               >
-
-                <div className="text-3xl mb-4">
-                  👥
-                </div>
-
-                <h2 className="text-xl font-bold">
-                  Mitarbeiter
-                </h2>
-
-                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-                  Mitarbeiter verwalten
-                </p>
-
-                <p className="mt-4 font-semibold">
-                  {profiles.length} Mitarbeiter
-                </p>
-
+                {label}
               </button>
+            ))}
+          </div>
+        </aside>
 
-              {/* BESTELLUNGEN */}
+        {/* ===================================================
+            CONTENT
+        =================================================== */}
 
-              <button
-                onClick={openOrders}
-                className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
-              >
-
-                <div className="text-3xl mb-4">
-                  🧾
-                </div>
-
-                <h2 className="text-xl font-bold">
-                  Bestellungen
-                </h2>
-
-                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-                  Alle Bestellungen anzeigen
-                </p>
-
-                <p className="mt-4 font-semibold">
-                  {orders.length} Bestellungen
-                </p>
-
-              </button>
-
-              {/* STATISTIK */}
-
-              <button
-                onClick={openStatistics}
-                className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
-              >
-
-                <div className="text-3xl mb-4">
-                  📊
-                </div>
-
-                <h2 className="text-xl font-bold">
-                  Statistiken
-                </h2>
-
-                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-                  Bestellungen und Auswertungen
-                </p>
-
-              </button>
-
-              {/* PREISE */}
-
-              <button
-                onClick={openPrices}
-                className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
-              >
-
-                <div className="text-3xl mb-4">
-                  💶
-                </div>
-
-                <h2 className="text-xl font-bold">
-                  Preise
-                </h2>
-
-                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-                  Preise verwalten
-                </p>
-
-                <p className="mt-4 font-semibold">
-                  {products.length} Produkte
-                </p>
-
-              </button>
-
-              {/* PRODUKTE */}
-
-              <button
-                onClick={openProducts}
-                className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
-              >
-
-                <div className="text-3xl mb-4">
-                  🍽️
-                </div>
-
-                <h2 className="text-xl font-bold">
-                  Produkte
-                </h2>
-
-                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-                  Produkte verwalten
-                </p>
-
-                <p className="mt-4 font-semibold">
-                  {products.length} Produkte
-                </p>
-
-              </button>
-
-              {/* EINSTELLUNGEN */}
-
-              <button
-                onClick={openSettings}
-                className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
-              >
-
-                <div className="text-3xl mb-4">
-                  ⚙️
-                </div>
-
-                <h2 className="text-xl font-bold">
-                  Einstellungen
-                </h2>
-
-                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-                  System-Einstellungen
-                </p>
-
-              </button>
-
+        <section className="flex-1 min-w-0">
+          {message && (
+            <div
+              className={
+                theme === "dark"
+                  ? "bg-green-900/40 text-green-300 border border-green-800 rounded-2xl p-4 mb-6 font-semibold"
+                  : "bg-green-100 text-green-800 rounded-2xl p-4 mb-6 font-semibold"
+              }
+            >
+              {message}
             </div>
           )}
 
-        {/* =====================================================
-            ZURÜCK
-            ===================================================== */}
+          {/* =================================================
+              DASHBOARD
+          ================================================= */}
 
-        {(showEmployees ||
-          showOrders ||
-          showSettings ||
-          showStatistics ||
-          showPrices ||
-          showProducts) && (
-
-          <button
-            onClick={closeAllPanels}
-            className="mb-6 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 px-5 py-3 rounded-xl font-semibold"
-          >
-            ← Zurück
-          </button>
-
-        )}
-
-        {/* =====================================================
-            PRODUKTE
-            ===================================================== */}
-
-        {showProducts && (
-
-          <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
-
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-
-              <div>
-
-                <h2 className="text-2xl font-bold">
-                  Produktverwaltung
+          {activeSection === "dashboard" && (
+            <div>
+              <div className="mb-6">
+                <h2 className="text-3xl font-bold">
+                  Dashboard
                 </h2>
 
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  Produkte erstellen, ändern und löschen.
+                <p
+                  className={
+                    theme === "dark"
+                      ? "text-gray-400 mt-1"
+                      : "text-gray-600 mt-1"
+                  }
+                >
+                  Übersicht über dein Restaurant.
                 </p>
-
               </div>
 
-              <div className="flex flex-wrap gap-2">
-
-                <button
-                  onClick={() => {
-                    setShowAddProduct(
-                      !showAddProduct
-                    );
-                    setProductCreateMessage("");
-                  }}
-                  className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-semibold"
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div
+                  className={
+                    theme === "dark"
+                      ? "bg-gray-900 rounded-2xl p-6 shadow-lg"
+                      : "bg-white rounded-2xl p-6 shadow-sm"
+                  }
                 >
-                  {showAddProduct
-                    ? "✕ Schließen"
-                    : "+ Produkt hinzufügen"}
-                </button>
+                  <div className="text-3xl mb-3">
+                    🧾
+                  </div>
 
-                <button
-                  onClick={loadProducts}
-                  disabled={productsLoading}
-                  className="bg-zinc-200 dark:bg-zinc-800 px-5 py-3 rounded-xl font-semibold"
-                >
-                  Aktualisieren
-                </button>
-
-              </div>
-
-            </div>
-
-            {/* =================================================
-                NEUES PRODUKT
-                ================================================= */}
-
-            {showAddProduct && (
-
-              <div className="mb-8 bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
-
-                <h3 className="text-xl font-bold mb-5">
-                  Neues Produkt
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                  <input
-                    value={newProductName}
-                    onChange={(e) =>
-                      setNewProductName(
-                        e.target.value
-                      )
-                    }
-                    placeholder="Produktname"
-                    className="w-full rounded-xl px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                  />
-
-                  <select
-                    value={newProductCategory}
-                    onChange={(e) =>
-                      setNewProductCategory(
-                        e.target.value
-                      )
-                    }
-                    className="w-full rounded-xl px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                  >
-
-                    {PRODUCT_CATEGORIES.map(
-                      (category) => (
-                        <option
-                          key={category}
-                          value={category}
-                        >
-                          {category}
-                        </option>
-                      )
-                    )}
-
-                  </select>
-
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.10"
-                    value={newProductPrice}
-                    onChange={(e) =>
-                      setNewProductPrice(
-                        e.target.value
-                      )
-                    }
-                    placeholder="Preis"
-                    className="w-full rounded-xl px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                  />
-
-                </div>
-
-                <button
-                  onClick={createProduct}
-                  disabled={productCreateLoading}
-                  className="mt-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-semibold"
-                >
-                  {productCreateLoading
-                    ? "Erstelle..."
-                    : "Produkt erstellen"}
-                </button>
-
-                {productCreateMessage && (
-
-                  <p className="mt-4 font-medium">
-                    {productCreateMessage}
+                  <p className="text-gray-500">
+                    Bestellungen
                   </p>
 
-                )}
-
-              </div>
-
-            )}
-
-            {/* =================================================
-                PRODUKTE
-                ================================================= */}
-
-            {productsLoading ? (
-
-              <div className="py-12 text-center">
-
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  Produkte werden geladen...
-                </p>
-
-              </div>
-
-            ) : products.length === 0 ? (
-
-              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-8 text-center">
-
-                <div className="text-5xl mb-4">
-                  🍽️
+                  <p className="text-3xl font-bold mt-1">
+                    {orders.length}
+                  </p>
                 </div>
 
-                <h3 className="text-xl font-bold mb-2">
-                  Keine Produkte vorhanden
-                </h3>
+                <div
+                  className={
+                    theme === "dark"
+                      ? "bg-gray-900 rounded-2xl p-6 shadow-lg"
+                      : "bg-white rounded-2xl p-6 shadow-sm"
+                  }
+                >
+                  <div className="text-3xl mb-3">
+                    🔴
+                  </div>
 
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  Erstelle dein erstes Produkt
-                  mit dem Button oben.
-                </p>
+                  <p className="text-gray-500">
+                    Offene Bestellungen
+                  </p>
 
+                  <p className="text-3xl font-bold mt-1">
+                    {openOrders}
+                  </p>
+                </div>
+
+                <div
+                  className={
+                    theme === "dark"
+                      ? "bg-gray-900 rounded-2xl p-6 shadow-lg"
+                      : "bg-white rounded-2xl p-6 shadow-sm"
+                  }
+                >
+                  <div className="text-3xl mb-3">
+                    🍽️
+                  </div>
+
+                  <p className="text-gray-500">
+                    Produkte
+                  </p>
+
+                  <p className="text-3xl font-bold mt-1">
+                    {products.length}
+                  </p>
+                </div>
+
+                <div
+                  className={
+                    theme === "dark"
+                      ? "bg-gray-900 rounded-2xl p-6 shadow-lg"
+                      : "bg-white rounded-2xl p-6 shadow-sm"
+                  }
+                >
+                  <div className="text-3xl mb-3">
+                    👥
+                  </div>
+
+                  <p className="text-gray-500">
+                    Mitarbeiter
+                  </p>
+
+                  <p className="text-3xl font-bold mt-1">
+                    {profiles.length}
+                  </p>
+                </div>
               </div>
 
-            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <div
+                  className={
+                    theme === "dark"
+                      ? "bg-gray-900 rounded-2xl p-6"
+                      : "bg-white rounded-2xl p-6"
+                  }
+                >
+                  <p className="text-gray-500">
+                    Kellner
+                  </p>
+
+                  <p className="text-2xl font-bold mt-1">
+                    {waiterCount}
+                  </p>
+                </div>
+
+                <div
+                  className={
+                    theme === "dark"
+                      ? "bg-gray-900 rounded-2xl p-6"
+                      : "bg-white rounded-2xl p-6"
+                  }
+                >
+                  <p className="text-gray-500">
+                    Küche
+                  </p>
+
+                  <p className="text-2xl font-bold mt-1">
+                    {kitchenCount}
+                  </p>
+                </div>
+
+                <div
+                  className={
+                    theme === "dark"
+                      ? "bg-gray-900 rounded-2xl p-6"
+                      : "bg-white rounded-2xl p-6"
+                  }
+                >
+                  <p className="text-gray-500">
+                    Admins
+                  </p>
+
+                  <p className="text-2xl font-bold mt-1">
+                    {adminCount}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* =================================================
+              BESTELLUNGEN
+          ================================================= */}
+
+          {activeSection === "orders" && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-3xl font-bold">
+                    Bestellungen
+                  </h2>
+
+                  <p
+                    className={
+                      theme === "dark"
+                        ? "text-gray-400 mt-1"
+                        : "text-gray-600 mt-1"
+                    }
+                  >
+                    Alle Bestellungen im Überblick.
+                  </p>
+                </div>
+
+                <button
+                  onClick={loadData}
+                  className="bg-black text-white px-5 py-3 rounded-xl font-semibold"
+                >
+                  ↻ Aktualisieren
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {orders.length === 0 ? (
+                  <div
+                    className={
+                      theme === "dark"
+                        ? "bg-gray-900 rounded-2xl p-8 text-center"
+                        : "bg-white rounded-2xl p-8 text-center"
+                    }
+                  >
+                    Noch keine Bestellungen.
+                  </div>
+                ) : (
+                  orders.map((order) => (
+                    <div
+                      key={order.id}
+                      className={
+                        theme === "dark"
+                          ? "bg-gray-900 rounded-2xl p-5 shadow-lg"
+                          : "bg-white rounded-2xl p-5 shadow-sm"
+                      }
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-xl font-bold">
+                              Bestellung #{order.id}
+                            </h3>
+
+                            <span
+                              className={`px-3 py-1 rounded-full text-sm font-bold ${
+                                order.status ===
+                                "offen"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-green-100 text-green-800"
+                              }`}
+                            >
+                              {order.status ===
+                              "offen"
+                                ? "Offen"
+                                : "Fertig"}
+                            </span>
+                          </div>
+
+                          <p className="text-gray-500 mt-2">
+                            Tisch{" "}
+                            {order.table_number} ·{" "}
+                            {getWaiterName(
+                              order.waiter_id
+                            )}
+                          </p>
+
+                          <p className="text-gray-500 text-sm mt-1">
+                            {formatDate(
+                              order.created_at
+                            )}
+                          </p>
+                        </div>
+
+                        <div className="flex gap-2">
+                          {order.status ===
+                            "offen" && (
+                            <button
+                              onClick={() =>
+                                finishOrder(order)
+                              }
+                              className="bg-green-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-green-700"
+                            >
+                              ✓ Fertig
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() =>
+                              deleteOrder(order)
+                            }
+                            className="bg-red-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-red-700"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="border-t mt-4 pt-4">
+                        <p className="font-semibold mb-2">
+                          Artikel
+                        </p>
+
+                        <div className="space-y-2">
+                          {getOrderItems(
+                            order.id
+                          ).map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex justify-between bg-gray-50 dark:bg-gray-800 rounded-xl p-3"
+                            >
+                              <span>
+                                {item.product_name}
+                              </span>
+
+                              <span className="font-bold">
+                                ×{" "}
+                                {item.quantity}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* =================================================
+              MITARBEITER
+          ================================================= */}
+
+          {activeSection === "employees" && (
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-3xl font-bold">
+                    Mitarbeiter
+                  </h2>
+
+                  <p className="text-gray-500 mt-1">
+                    Mitarbeiter verwalten.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() =>
+                    setShowEmployeeForm(
+                      !showEmployeeForm
+                    )
+                  }
+                  className="bg-black text-white px-5 py-3 rounded-xl font-semibold"
+                >
+                  + Mitarbeiter hinzufügen
+                </button>
+              </div>
+
+              {showEmployeeForm && (
+                <div
+                  className={
+                    theme === "dark"
+                      ? "bg-gray-900 rounded-2xl p-6 mb-6"
+                      : "bg-white rounded-2xl shadow-sm p-6 mb-6"
+                  }
+                >
+                  <h3 className="text-xl font-bold mb-4">
+                    Neuer Mitarbeiter
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      value={employeeName}
+                      onChange={(event) =>
+                        setEmployeeName(
+                          event.target.value
+                        )
+                      }
+                      placeholder="Name"
+                      className="border rounded-xl px-4 py-3 bg-transparent"
+                    />
+
+                    <input
+                      value={employeeEmail}
+                      onChange={(event) =>
+                        setEmployeeEmail(
+                          event.target.value
+                        )
+                      }
+                      placeholder="E-Mail"
+                      type="email"
+                      className="border rounded-xl px-4 py-3 bg-transparent"
+                    />
+
+                    <input
+                      value={employeePassword}
+                      onChange={(event) =>
+                        setEmployeePassword(
+                          event.target.value
+                        )
+                      }
+                      placeholder="Passwort"
+                      type="password"
+                      className="border rounded-xl px-4 py-3 bg-transparent"
+                    />
+
+                    <select
+                      value={employeeRole}
+                      onChange={(event) =>
+                        setEmployeeRole(
+                          event.target.value as
+                            | "waiter"
+                            | "kitchen"
+                            | "admin"
+                        )
+                      }
+                      className="border rounded-xl px-4 py-3 bg-transparent"
+                    >
+                      <option value="waiter">
+                        Kellner
+                      </option>
+
+                      <option value="kitchen">
+                        Küche
+                      </option>
+
+                      <option value="admin">
+                        Admin
+                      </option>
+                    </select>
+                  </div>
+
+                  <div className="flex gap-3 mt-5">
+                    <button
+                      onClick={
+                        createEmployee
+                      }
+                      className="bg-green-600 text-white px-5 py-3 rounded-xl font-semibold"
+                    >
+                      Mitarbeiter erstellen
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setShowEmployeeForm(
+                          false
+                        )
+                      }
+                      className="bg-gray-200 text-gray-800 px-5 py-3 rounded-xl font-semibold"
+                    >
+                      Abbrechen
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {profiles.map((profile) => (
+                  <div
+                    key={profile.id}
+                    className={
+                      theme === "dark"
+                        ? "bg-gray-900 rounded-2xl p-5 flex items-center justify-between gap-4"
+                        : "bg-white rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4"
+                    }
+                  >
+                    <div>
+                      <h3 className="font-bold text-lg">
+                        {profile.name}
+                      </h3>
+
+                      <p className="text-gray-500">
+                        {profile.role ===
+                        "waiter"
+                          ? "Kellner"
+                          : profile.role ===
+                            "kitchen"
+                          ? "Küche"
+                          : "Admin"}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() =>
+                        deleteEmployee(
+                          profile
+                        )
+                      }
+                      className="bg-red-600 text-white px-4 py-2 rounded-xl font-semibold"
+                    >
+                      🗑️ Löschen
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* =================================================
+              PRODUKTE
+          ================================================= */}
+
+          {activeSection === "products" && (
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-3xl font-bold">
+                    Produkte
+                  </h2>
+
+                  <p className="text-gray-500 mt-1">
+                    Produkte und Preise verwalten.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={createMenu}
+                    className="bg-green-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-green-700"
+                  >
+                    🍽️ Speisekarte anlegen
+                  </button>
+
+                  <button
+                    onClick={openAddProduct}
+                    className="bg-black text-white px-5 py-3 rounded-xl font-semibold"
+                  >
+                    + Produkt
+                  </button>
+                </div>
+              </div>
 
               <div className="space-y-6">
-
-                {PRODUCT_CATALOG.map(
+                {productCategories.map(
                   (category) => {
-
                     const categoryProducts =
                       products.filter(
                         (product) =>
                           product.category ===
-                          category.category
+                          category
                       );
 
-                    if (
-                      categoryProducts.length === 0
-                    ) {
-                      return null;
-                    }
-
                     return (
-
                       <div
-                        key={category.category}
-                        className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden"
+                        key={category}
+                        className={
+                          theme === "dark"
+                            ? "bg-gray-900 rounded-2xl overflow-hidden"
+                            : "bg-white rounded-2xl shadow-sm overflow-hidden"
+                        }
                       >
-
-                        <div className="bg-zinc-100 dark:bg-zinc-800 px-5 py-4">
-
+                        <div className="p-5 border-b border-gray-200 dark:border-gray-800">
                           <h3 className="text-xl font-bold">
-                            {category.category}
+                            {category}
                           </h3>
 
+                          <p className="text-gray-500 text-sm mt-1">
+                            {
+                              categoryProducts.length
+                            }{" "}
+                            Produkte
+                          </p>
                         </div>
 
-                        <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
-
+                        <div className="divide-y dark:divide-gray-800">
                           {categoryProducts.map(
                             (product) => (
-
                               <div
-                                key={product.id}
-                                className="p-5"
+                                key={
+                                  product.id
+                                }
+                                className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                               >
+                                <div>
+                                  <h4 className="font-semibold">
+                                    {
+                                      product.name
+                                    }
+                                  </h4>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-center">
-
-                                  {/* NAME */}
-
-                                  <div>
-
-                                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
-                                      Produktname
-                                    </p>
-
-                                    <input
-                                      id={`product-name-${product.id}`}
-                                      defaultValue={
-                                        product.name
-                                      }
-                                      className="w-full rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                                    />
-
-                                  </div>
-
-                                  {/* KATEGORIE */}
-
-                                  <div>
-
-                                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
-                                      Kategorie
-                                    </p>
-
-                                    <select
-                                      id={`product-category-${product.id}`}
-                                      defaultValue={
-                                        product.category
-                                      }
-                                      className="w-full rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                                    >
-
-                                      {PRODUCT_CATEGORIES.map(
-                                        (categoryName) => (
-
-                                          <option
-                                            key={
-                                              categoryName
-                                            }
-                                            value={
-                                              categoryName
-                                            }
-                                          >
-                                            {
-                                              categoryName
-                                            }
-                                          </option>
-
-                                        )
-                                      )}
-
-                                    </select>
-
-                                  </div>
-
-                                  {/* PREIS */}
-
-                                  <div>
-
-                                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
-                                      Preis
-                                    </p>
-
-                                    <input
-                                      id={`price-product-${product.id}`}
-                                      type="number"
-                                      min="0"
-                                      step="0.10"
-                                      defaultValue={product.price.toFixed(
-                                        2
-                                      )}
-                                      className="w-full rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                                    />
-
-                                  </div>
-
-                                  {/* BUTTONS */}
-
-                                  <div className="flex flex-wrap gap-2 lg:justify-end">
-
-                                    <button
-                                      onClick={() => {
-
-                                        const nameInput =
-                                          document.getElementById(
-                                            `product-name-${product.id}`
-                                          ) as HTMLInputElement | null;
-
-                                        const categoryInput =
-                                          document.getElementById(
-                                            `product-category-${product.id}`
-                                          ) as HTMLSelectElement | null;
-
-                                        const priceInput =
-                                          document.getElementById(
-                                            `price-product-${product.id}`
-                                          ) as HTMLInputElement | null;
-
-                                        if (
-                                          !nameInput ||
-                                          !categoryInput ||
-                                          !priceInput
-                                        ) {
-                                          return;
-                                        }
-
-                                        const price =
-                                          Number(
-                                            priceInput.value
-                                          );
-
-                                        updateProduct(
-                                          product.id,
-                                          nameInput.value,
-                                          categoryInput.value
-                                        );
-
-                                        updateProductPrice(
-                                          product.id,
-                                          price
-                                        );
-
-                                      }}
-                                      disabled={
-                                        savingProduct ===
-                                          product.id ||
-                                        savingPrice ===
-                                          product.id
-                                      }
-                                      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl font-semibold"
-                                    >
-                                      {savingProduct ===
-                                          product.id ||
-                                        savingPrice ===
-                                          product.id
-                                        ? "..."
-                                        : "Speichern"}
-                                    </button>
-
-                                    <button
-                                      onClick={() =>
-                                        deleteProduct(
-                                          product
-                                        )
-                                      }
-                                      disabled={
-                                        deletingProduct ===
-                                        product.id
-                                      }
-                                      className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl font-semibold"
-                                    >
-                                      {deletingProduct ===
-                                      product.id
-                                        ? "..."
-                                        : "Löschen"}
-                                    </button>
-
-                                  </div>
-
+                                  <p className="text-xl font-bold mt-1">
+                                    {formatPrice(
+                                      Number(
+                                        product.price
+                                      )
+                                    )}
+                                  </p>
                                 </div>
 
-                              </div>
-
-                            )
-                          )}
-
-                        </div>
-
-                      </div>
-
-                    );
-                  }
-                )}
-
-                {/* PRODUKTE MIT EIGENER KATEGORIE */}
-
-                {products.filter(
-                  (product) =>
-                    !PRODUCT_CATEGORIES.includes(
-                      product.category
-                    )
-                ).length > 0 && (
-
-                  <div className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden">
-
-                    <div className="bg-zinc-100 dark:bg-zinc-800 px-5 py-4">
-
-                      <h3 className="text-xl font-bold">
-                        Weitere Produkte
-                      </h3>
-
-                    </div>
-
-                    <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
-
-                      {products
-                        .filter(
-                          (product) =>
-                            !PRODUCT_CATEGORIES.includes(
-                              product.category
-                            )
-                        )
-                        .map(
-                          (product) => (
-
-                            <div
-                              key={product.id}
-                              className="p-5"
-                            >
-
-                              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-center">
-
-                                <input
-                                  id={`other-name-${product.id}`}
-                                  defaultValue={
-                                    product.name
-                                  }
-                                  className="w-full rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                                />
-
-                                <input
-                                  id={`other-category-${product.id}`}
-                                  defaultValue={
-                                    product.category
-                                  }
-                                  className="w-full rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                                />
-
-                                <input
-                                  id={`other-price-${product.id}`}
-                                  type="number"
-                                  min="0"
-                                  step="0.10"
-                                  defaultValue={product.price.toFixed(
-                                    2
-                                  )}
-                                  className="w-full rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                                />
-
-                                <div className="flex flex-wrap gap-2 lg:justify-end">
-
+                                <div className="flex gap-2">
                                   <button
-                                    onClick={() => {
-
-                                      const nameInput =
-                                        document.getElementById(
-                                          `other-name-${product.id}`
-                                        ) as HTMLInputElement | null;
-
-                                      const categoryInput =
-                                        document.getElementById(
-                                          `other-category-${product.id}`
-                                        ) as HTMLInputElement | null;
-
-                                      const priceInput =
-                                        document.getElementById(
-                                          `other-price-${product.id}`
-                                        ) as HTMLInputElement | null;
-
-                                      if (
-                                        !nameInput ||
-                                        !categoryInput ||
-                                        !priceInput
-                                      ) {
-                                        return;
-                                      }
-
-                                      updateProduct(
-                                        product.id,
-                                        nameInput.value,
-                                        categoryInput.value
-                                      );
-
-                                      updateProductPrice(
-                                        product.id,
-                                        Number(
-                                          priceInput.value
-                                        )
-                                      );
-
-                                    }}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold"
+                                    onClick={() =>
+                                      openEditProduct(
+                                        product
+                                      )
+                                    }
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold"
                                   >
-                                    Speichern
+                                    ✏️ Bearbeiten
                                   </button>
 
                                   <button
@@ -1942,1030 +2095,413 @@ export default function AdminPage() {
                                         product
                                       )
                                     }
-                                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold"
+                                    className="bg-red-600 text-white px-4 py-2 rounded-xl font-semibold"
                                   >
-                                    Löschen
+                                    🗑️ Löschen
                                   </button>
-
                                 </div>
-
                               </div>
-
-                            </div>
-
-                          )
-                        )}
-
-                    </div>
-
-                  </div>
-
-                )}
-
-              </div>
-
-            )}
-
-          </section>
-
-        )}
-
-        {/* =====================================================
-            PREISE
-            ===================================================== */}
-
-        {showPrices && (
-
-          <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
-
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-
-              <div>
-
-                <h2 className="text-2xl font-bold">
-                  Preisverwaltung
-                </h2>
-
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  Hier kannst du alle Preise ändern.
-                </p>
-
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-
-                <button
-                  onClick={createCatalogProducts}
-                  disabled={productsLoading}
-                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-5 py-3 rounded-xl font-semibold"
-                >
-                  {productsLoading
-                    ? "Bitte warten..."
-                    : "🍽️ Speisekarte anlegen"}
-                </button>
-
-                <button
-                  onClick={loadProducts}
-                  disabled={productsLoading}
-                  className="bg-zinc-200 dark:bg-zinc-800 px-5 py-3 rounded-xl font-semibold"
-                >
-                  Aktualisieren
-                </button>
-
-              </div>
-
-            </div>
-
-            {productsMessage && (
-
-              <div className="mb-6 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl p-4">
-                {productsMessage}
-              </div>
-
-            )}
-
-            {productsLoading ? (
-
-              <div className="py-12 text-center">
-
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  Produkte werden geladen...
-                </p>
-
-              </div>
-
-            ) : products.length === 0 ? (
-
-              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-8 text-center">
-
-                <div className="text-5xl mb-4">
-                  🍽️
-                </div>
-
-                <h3 className="text-xl font-bold mb-2">
-                  Noch keine Produkte angelegt
-                </h3>
-
-                <p className="text-zinc-600 dark:text-zinc-400 mb-5">
-                  Klicke auf „Speisekarte anlegen“.
-                  Dann werden alle Produkte automatisch
-                  mit 0,00 € angelegt.
-                </p>
-
-                <button
-                  onClick={createCatalogProducts}
-                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold"
-                >
-                  Speisekarte anlegen
-                </button>
-
-              </div>
-
-            ) : (
-
-              <div className="space-y-6">
-
-                {PRODUCT_CATALOG.map(
-                  (category) => {
-
-                    const categoryProducts =
-                      products.filter(
-                        (product) =>
-                          product.category ===
-                          category.category
-                      );
-
-                    if (
-                      categoryProducts.length === 0
-                    ) {
-                      return null;
-                    }
-
-                    return (
-
-                      <div
-                        key={category.category}
-                        className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden"
-                      >
-
-                        <div className="bg-zinc-100 dark:bg-zinc-800 px-5 py-4">
-
-                          <h3 className="text-xl font-bold">
-                            {category.category}
-                          </h3>
-
-                        </div>
-
-                        <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
-
-                          {categoryProducts.map(
-                            (product) => (
-
-                              <div
-                                key={product.id}
-                                className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-                              >
-
-                                <div>
-
-                                  <p className="font-semibold">
-                                    {product.name}
-                                  </p>
-
-                                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                    Aktueller Preis:{" "}
-                                    {product.price.toFixed(
-                                      2
-                                    )} €
-                                  </p>
-
-                                </div>
-
-                                <div className="flex items-center gap-2">
-
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    step="0.10"
-                                    defaultValue={product.price.toFixed(
-                                      2
-                                    )}
-                                    id={`price-${product.id}`}
-                                    className="w-28 rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none text-right"
-                                  />
-
-                                  <button
-                                    onClick={() => {
-
-                                      const input =
-                                        document.getElementById(
-                                          `price-${product.id}`
-                                        ) as HTMLInputElement | null;
-
-                                      if (!input) {
-                                        return;
-                                      }
-
-                                      const price =
-                                        Number(
-                                          input.value
-                                        );
-
-                                      updateProductPrice(
-                                        product.id,
-                                        price
-                                      );
-
-                                    }}
-                                    disabled={
-                                      savingPrice ===
-                                      product.id
-                                    }
-                                    className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl font-semibold"
-                                  >
-                                    {savingPrice ===
-                                    product.id
-                                      ? "..."
-                                      : "Speichern"}
-                                  </button>
-
-                                </div>
-
-                              </div>
-
                             )
                           )}
-
                         </div>
-
                       </div>
-
                     );
                   }
                 )}
-
               </div>
 
-            )}
-
-          </section>
-
-        )}
-
-        {/* =====================================================
-            MITARBEITER
-            ===================================================== */}
-
-        {showEmployees && (
-
-          <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
-
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-
-              <div>
-
-                <h2 className="text-2xl font-bold">
-                  Mitarbeiter
-                </h2>
-
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  Mitarbeiter verwalten
-                </p>
-
-              </div>
-
-              <button
-                onClick={openAddEmployee}
-                className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-semibold"
-              >
-                + Mitarbeiter hinzufügen
-              </button>
-
-            </div>
-
-            {showAddEmployee && (
-
-              <div className="mb-8 bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
-
-                <div className="flex justify-between items-center mb-5">
-
-                  <h3 className="text-xl font-bold">
-                    Mitarbeiter erstellen
-                  </h3>
-
-                  <button
-                    onClick={closeAddEmployee}
-                    className="text-zinc-500 hover:text-red-500 text-xl"
-                  >
-                    ✕
-                  </button>
-
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                  <input
-                    value={employeeName}
-                    onChange={(e) =>
-                      setEmployeeName(
-                        e.target.value
-                      )
-                    }
-                    placeholder="Name"
-                    className="w-full rounded-xl px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                  />
-
-                  <input
-                    value={employeeEmail}
-                    onChange={(e) =>
-                      setEmployeeEmail(
-                        e.target.value
-                      )
-                    }
-                    placeholder="E-Mail"
-                    type="email"
-                    className="w-full rounded-xl px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                  />
-
-                  <input
-                    value={employeePassword}
-                    onChange={(e) =>
-                      setEmployeePassword(
-                        e.target.value
-                      )
-                    }
-                    placeholder="Passwort"
-                    type="password"
-                    className="w-full rounded-xl px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                  />
-
-                  <select
-                    value={employeeRole}
-                    onChange={(e) =>
-                      setEmployeeRole(
-                        e.target.value as
-                          | "waiter"
-                          | "kitchen"
-                          | "admin"
-                      )
-                    }
-                    className="w-full rounded-xl px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none"
-                  >
-
-                    <option value="waiter">
-                      Kellner
-                    </option>
-
-                    <option value="kitchen">
-                      Küche
-                    </option>
-
-                    <option value="admin">
-                      Admin
-                    </option>
-
-                  </select>
-
-                </div>
-
-                <button
-                  onClick={createEmployee}
-                  disabled={employeeLoading}
-                  className="mt-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-semibold"
+              {products.filter(
+                (product) =>
+                  !productCategories.includes(
+                    product.category
+                  )
+              ).length > 0 && (
+                <div
+                  className={
+                    theme === "dark"
+                      ? "bg-gray-900 rounded-2xl mt-6 overflow-hidden"
+                      : "bg-white rounded-2xl shadow-sm mt-6 overflow-hidden"
+                  }
                 >
-                  {employeeLoading
-                    ? "Erstelle..."
-                    : "Mitarbeiter erstellen"}
-                </button>
-
-                {employeeMessage && (
-
-                  <p className="mt-4 font-medium">
-                    {employeeMessage}
-                  </p>
-
-                )}
-
-              </div>
-
-            )}
-
-            <div className="space-y-4">
-
-              {profiles.map(
-                (profile) => (
-
-                  <div
-                    key={profile.id}
-                    className="border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5"
-                  >
-
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-
-                      <div>
-
-                        <h3 className="font-bold text-lg">
-                          {profile.name}
-                        </h3>
-
-                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                          {profile.role ===
-                          "waiter"
-                            ? "Kellner"
-                            : profile.role ===
-                              "kitchen"
-                            ? "Küche"
-                            : "Admin"}
-                        </p>
-
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-
-                        <button
-                          onClick={() => {
-
-                            const name =
-                              window.prompt(
-                                "Neuer Name:",
-                                profile.name
-                              );
-
-                            if (!name) {
-                              return;
-                            }
-
-                            updateEmployee(
-                              profile.id,
-                              name,
-                              profile.role
-                            );
-
-                          }}
-                          className="bg-zinc-200 dark:bg-zinc-800 px-4 py-2 rounded-lg font-medium"
-                        >
-                          Name ändern
-                        </button>
-
-                        <button
-                          onClick={() => {
-
-                            const role =
-                              window.prompt(
-                                "Rolle: waiter, kitchen oder admin",
-                                profile.role
-                              );
-
-                            if (
-                              role !==
-                                "waiter" &&
-                              role !==
-                                "kitchen" &&
-                              role !==
-                                "admin"
-                            ) {
-                              return;
-                            }
-
-                            updateEmployee(
-                              profile.id,
-                              profile.name,
-                              role
-                            );
-
-                          }}
-                          className="bg-zinc-200 dark:bg-zinc-800 px-4 py-2 rounded-lg font-medium"
-                        >
-                          Rolle ändern
-                        </button>
-
-                        <button
-                          onClick={() =>
-                            updatePassword(
-                              profile.id
-                            )
-                          }
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
-                        >
-                          Passwort
-                        </button>
-
-                      </div>
-
-                    </div>
-
+                  <div className="p-5 border-b border-gray-200 dark:border-gray-800">
+                    <h3 className="text-xl font-bold">
+                      Weitere Produkte
+                    </h3>
                   </div>
 
-                )
-              )}
-
-              {profiles.length === 0 && (
-
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  Keine Mitarbeiter gefunden.
-                </p>
-
-              )}
-
-            </div>
-
-          </section>
-
-        )}
-
-        {/* =====================================================
-            BESTELLUNGEN
-            ===================================================== */}
-
-        {showOrders && (
-
-          <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
-
-            <div className="flex items-center justify-between mb-6">
-
-              <div>
-
-                <h2 className="text-2xl font-bold">
-                  Bestellungen
-                </h2>
-
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  Alle Bestellungen
-                </p>
-
-              </div>
-
-              <button
-                onClick={loadOrders}
-                className="bg-zinc-200 dark:bg-zinc-800 px-4 py-2 rounded-xl font-semibold"
-              >
-                Aktualisieren
-              </button>
-
-            </div>
-
-            <div className="space-y-4">
-
-              {orders.map(
-                (order) => {
-
-                  const items =
-                    getItemsForOrder(
-                      order.id
-                    );
-
-                  const isExpanded =
-                    expandedOrder ===
-                    order.id;
-
-                  return (
-
-                    <div
-                      key={order.id}
-                      className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden"
-                    >
-
-                      <button
-                        onClick={() =>
-                          setExpandedOrder(
-                            isExpanded
-                              ? null
-                              : order.id
+                  <div className="divide-y dark:divide-gray-800">
+                    {products
+                      .filter(
+                        (product) =>
+                          !productCategories.includes(
+                            product.category
                           )
-                        }
-                        className="w-full text-left p-5 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                      >
-
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-
+                      )
+                      .map((product) => (
+                        <div
+                          key={product.id}
+                          className="p-5 flex items-center justify-between gap-4"
+                        >
                           <div>
+                            <h4 className="font-semibold">
+                              {product.name}
+                            </h4>
 
-                            <h3 className="font-bold text-lg">
-                              Bestellung #{order.id}
-                            </h3>
-
-                            <p className="text-zinc-600 dark:text-zinc-400">
-                              Tisch{" "}
-                              {order.table_number}
+                            <p className="text-gray-500 text-sm">
+                              {
+                                product.category
+                              }
                             </p>
 
-                          </div>
-
-                          <div className="flex flex-col md:items-end gap-1">
-
-                            <span
-                              className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
-                                order.status ===
-                                "fertig"
-                                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                  : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                              }`}
-                            >
-                              {order.status ===
-                              "fertig"
-                                ? "Fertig"
-                                : "Offen"}
-                            </span>
-
-                            <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                              {formatDate(
-                                order.created_at
-                              )}
-                            </span>
-
-                          </div>
-
-                        </div>
-
-                      </button>
-
-                      {isExpanded && (
-
-                        <div className="border-t border-zinc-200 dark:border-zinc-700 p-5">
-
-                          <div className="mb-4">
-
-                            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                              Kellner
-                            </p>
-
-                            <p className="font-semibold">
-                              {getProfileName(
-                                order.waiter_id
-                              )}
-                            </p>
-
-                          </div>
-
-                          <div>
-
-                            <p className="font-bold mb-3">
-                              Artikel
-                            </p>
-
-                            <div className="space-y-2">
-
-                              {items.map(
-                                (item) => (
-
-                                  <div
-                                    key={
-                                      item.id
-                                    }
-                                    className="flex justify-between bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3"
-                                  >
-
-                                    <span>
-                                      {
-                                        item.product_name
-                                      }
-                                    </span>
-
-                                    <span className="font-bold">
-                                      ×{" "}
-                                      {
-                                        item.quantity
-                                      }
-                                    </span>
-
-                                  </div>
-
+                            <p className="font-bold mt-1">
+                              {formatPrice(
+                                Number(
+                                  product.price
                                 )
                               )}
-
-                              {items.length ===
-                                0 && (
-
-                                <p className="text-zinc-600 dark:text-zinc-400">
-                                  Keine Artikel gefunden.
-                                </p>
-
-                              )}
-
-                            </div>
-
+                            </p>
                           </div>
 
-                          {order.finished_at && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() =>
+                                openEditProduct(
+                                  product
+                                )
+                              }
+                              className="bg-blue-600 text-white px-4 py-2 rounded-xl font-semibold"
+                            >
+                              ✏️
+                            </button>
 
-                            <p className="mt-4 text-sm text-green-600">
-                              Fertiggestellt:{" "}
-                              {formatDate(
-                                order.finished_at
-                              )}
-                            </p>
-
-                          )}
-
+                            <button
+                              onClick={() =>
+                                deleteProduct(
+                                  product
+                                )
+                              }
+                              className="bg-red-600 text-white px-4 py-2 rounded-xl font-semibold"
+                            >
+                              🗑️
+                            </button>
+                          </div>
                         </div>
-
-                      )}
-
-                    </div>
-
-                  );
-                }
+                      ))}
+                  </div>
+                </div>
               )}
+            </div>
+          )}
 
-              {orders.length === 0 && (
+          {/* =================================================
+              PREISE
+          ================================================= */}
 
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  Keine Bestellungen vorhanden.
+          {activeSection === "prices" && (
+            <div>
+              <div className="mb-6">
+                <h2 className="text-3xl font-bold">
+                  Preise
+                </h2>
+
+                <p className="text-gray-500 mt-1">
+                  Hier kannst du die Preise deiner
+                  Produkte verwalten.
+                </p>
+              </div>
+
+              <div
+                className={
+                  theme === "dark"
+                    ? "bg-gray-900 rounded-2xl p-6"
+                    : "bg-white rounded-2xl shadow-sm p-6"
+                }
+              >
+                <h3 className="text-xl font-bold">
+                  Aktuelle Speisekarte
+                </h3>
+
+                <p className="text-gray-500 mt-2">
+                  Die Preise werden direkt aus der
+                  Produkt-Datenbank verwendet.
                 </p>
 
-              )}
-
+                <button
+                  onClick={() =>
+                    setActiveSection(
+                      "products"
+                    )
+                  }
+                  className="mt-5 bg-black text-white px-5 py-3 rounded-xl font-semibold"
+                >
+                  Preise bearbeiten
+                </button>
+              </div>
             </div>
+          )}
 
-          </section>
+          {/* =================================================
+              STATISTIKEN
+          ================================================= */}
 
-        )}
-
-        {/* =====================================================
-            STATISTIK
-            ===================================================== */}
-
-        {showStatistics && (
-
-          <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
-
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-
-              <div>
-
-                <h2 className="text-2xl font-bold">
+          {activeSection === "statistics" && (
+            <div>
+              <div className="mb-6">
+                <h2 className="text-3xl font-bold">
                   Statistiken
                 </h2>
 
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  Übersicht über deine Bestellungen
+                <p className="text-gray-500 mt-1">
+                  Bestellungen der letzten Tage.
                 </p>
-
               </div>
 
-              <button
-                onClick={loadStatistics}
-                className="bg-zinc-200 dark:bg-zinc-800 px-4 py-2 rounded-xl font-semibold"
+              <div
+                className={
+                  theme === "dark"
+                    ? "bg-gray-900 rounded-2xl p-6"
+                    : "bg-white rounded-2xl shadow-sm p-6"
+                }
               >
-                Aktualisieren
-              </button>
+                <h3 className="text-xl font-bold mb-5">
+                  Letzte 7 Tage
+                </h3>
 
-            </div>
+                <div className="space-y-4">
+                  {dailyStatistics.map(
+                    (statistic) => (
+                      <div
+                        key={
+                          statistic.date
+                        }
+                      >
+                        <div className="flex justify-between mb-1">
+                          <span className="font-semibold">
+                            {
+                              statistic.label
+                            }
+                          </span>
 
-            {statisticsLoading ? (
+                          <span className="font-bold">
+                            {
+                              statistic.count
+                            }
+                          </span>
+                        </div>
 
-              <div className="py-12 text-center">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-black dark:bg-white rounded-full"
+                            style={{
+                              width: `${
+                                Math.min(
+                                  statistic.count *
+                                    10,
+                                  100
+                                )
+                              }%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
 
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  Statistiken werden geladen...
-                </p>
-
-              </div>
-
-            ) : statisticsError ? (
-
-              <div className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-xl p-4">
-                {statisticsError}
-              </div>
-
-            ) : (
-
-              <>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-
-                  <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
-
-                    <p className="text-zinc-600 dark:text-zinc-400">
-                      Heute
-                    </p>
-
-                    <p className="text-4xl font-bold mt-2">
-                      {todayOrders.length}
-                    </p>
-
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                      Bestellungen
-                    </p>
-
-                  </div>
-
-                  <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
-
-                    <p className="text-zinc-600 dark:text-zinc-400">
-                      Diese Woche
-                    </p>
-
-                    <p className="text-4xl font-bold mt-2">
-                      {weekOrders.length}
-                    </p>
-
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                      Bestellungen
-                    </p>
-
-                  </div>
-
-                  <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
-
-                    <p className="text-zinc-600 dark:text-zinc-400">
-                      Dieser Monat
-                    </p>
-
-                    <p className="text-4xl font-bold mt-2">
-                      {monthOrders.length}
-                    </p>
-
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                      Bestellungen
-                    </p>
-
-                  </div>
-
-                  <div className="bg-green-100 dark:bg-green-900/20 rounded-2xl p-6">
-
-                    <p className="text-green-700 dark:text-green-400">
-                      Fertige Bestellungen
-                    </p>
-
-                    <p className="text-4xl font-bold mt-2 text-green-700 dark:text-green-400">
-                      {finishedOrders.length}
-                    </p>
-
-                    <p className="text-sm text-green-600 dark:text-green-500 mt-1">
-                      Insgesamt
-                    </p>
-
-                  </div>
-
-                  <div className="bg-yellow-100 dark:bg-yellow-900/20 rounded-2xl p-6">
-
-                    <p className="text-yellow-700 dark:text-yellow-400">
-                      Offene Bestellungen
-                    </p>
-
-                    <p className="text-4xl font-bold mt-2 text-yellow-700 dark:text-yellow-400">
-                      {openOrdersCount}
-                    </p>
-
-                    <p className="text-sm text-yellow-600 dark:text-yellow-500 mt-1">
-                      Insgesamt
-                    </p>
-
-                  </div>
-
-                  <div className="bg-blue-100 dark:bg-blue-900/20 rounded-2xl p-6">
-
-                    <p className="text-blue-700 dark:text-blue-400">
+                <div className="grid grid-cols-2 gap-4 mt-8">
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl p-5">
+                    <p className="text-gray-500">
                       Gesamt
                     </p>
 
-                    <p className="text-4xl font-bold mt-2 text-blue-700 dark:text-blue-400">
-                      {statisticsOrders.length}
+                    <p className="text-3xl font-bold mt-1">
+                      {orders.length}
                     </p>
-
-                    <p className="text-sm text-blue-600 dark:text-blue-500 mt-1">
-                      Bestellungen
-                    </p>
-
                   </div>
 
-                </div>
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl p-5">
+                    <p className="text-gray-500">
+                      Fertig
+                    </p>
 
-                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
-
-                  <h3 className="text-xl font-bold mb-6">
-                    Bestellungen der letzten 7 Tage
-                  </h3>
-
-                  <div className="space-y-4">
-
-                    {dailyStatistics.map(
-                      (day) => {
-
-                        const maxCount =
-                          Math.max(
-                            ...dailyStatistics.map(
-                              (item) =>
-                                item.count
-                            ),
-                            1
-                          );
-
-                        const width =
-                          (day.count /
-                            maxCount) *
-                          100;
-
-                        return (
-
-                          <div
-                            key={day.date}
-                          >
-
-                            <div className="flex justify-between mb-2 text-sm">
-
-                              <span className="font-medium">
-                                {day.label}
-                              </span>
-
-                              <span className="font-bold">
-                                {day.count}
-                              </span>
-
-                            </div>
-
-                            <div className="w-full h-4 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-
-                              <div
-                                className="h-full bg-blue-600 rounded-full transition-all"
-                                style={{
-                                  width: `${width}%`,
-                                }}
-                              />
-
-                            </div>
-
-                          </div>
-
-                        );
-                      }
-                    )}
-
+                    <p className="text-3xl font-bold mt-1">
+                      {finishedOrders}
+                    </p>
                   </div>
-
                 </div>
+              </div>
+            </div>
+          )}
 
-                <div className="mt-6 bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-5">
+          {/* =================================================
+              EINSTELLUNGEN
+          ================================================= */}
 
-                  <p className="font-semibold">
-                    💡 Hinweis
-                  </p>
+          {activeSection === "settings" && (
+            <div>
+              <div className="mb-6">
+                <h2 className="text-3xl font-bold">
+                  Einstellungen
+                </h2>
 
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
-                    Der Umsatz wird später berechnet,
-                    sobald die Produktpreise im System
-                    gespeichert werden.
-                  </p>
+                <p className="text-gray-500 mt-1">
+                  Einstellungen für dein POS-System.
+                </p>
+              </div>
 
-                </div>
-
-              </>
-
-            )}
-
-          </section>
-
-        )}
-
-        {/* =====================================================
-            EINSTELLUNGEN
-            ===================================================== */}
-
-        {showSettings && (
-
-          <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
-
-            <h2 className="text-2xl font-bold mb-2">
-              Einstellungen
-            </h2>
-
-            <p className="text-zinc-600 dark:text-zinc-400 mb-8">
-              Einstellungen des POS-Systems
-            </p>
-
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-zinc-200 dark:border-zinc-700 pb-6">
-
-              <div>
-
-                <h3 className="font-bold text-lg">
+              <div
+                className={
+                  theme === "dark"
+                    ? "bg-gray-900 rounded-2xl p-6"
+                    : "bg-white rounded-2xl shadow-sm p-6"
+                }
+              >
+                <h3 className="text-xl font-bold">
                   Erscheinungsbild
                 </h3>
 
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  Hell- oder Dunkelmodus
-                </p>
+                <div className="flex items-center justify-between mt-5">
+                  <div>
+                    <p className="font-semibold">
+                      Dark Mode
+                    </p>
 
+                    <p className="text-gray-500 text-sm">
+                      Aktuelles Design:
+                      {" "}
+                      {theme === "dark"
+                        ? "Dunkel"
+                        : "Hell"}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      setTheme(
+                        theme === "dark"
+                          ? "light"
+                          : "dark"
+                      )
+                    }
+                    className="bg-black text-white px-5 py-3 rounded-xl font-semibold"
+                  >
+                    {theme === "dark"
+                      ? "☀️ Hell"
+                      : "🌙 Dunkel"}
+                  </button>
+                </div>
               </div>
-
-              <div className="flex gap-2">
-
-                <button
-                  onClick={() =>
-                    setTheme("light")
-                  }
-                  className={`px-5 py-3 rounded-xl font-semibold ${
-                    theme === "light"
-                      ? "bg-blue-600 text-white"
-                      : "bg-zinc-200 dark:bg-zinc-800"
-                  }`}
-                >
-                  ☀️ Hell
-                </button>
-
-                <button
-                  onClick={() =>
-                    setTheme("dark")
-                  }
-                  className={`px-5 py-3 rounded-xl font-semibold ${
-                    theme === "dark"
-                      ? "bg-blue-600 text-white"
-                      : "bg-zinc-200 dark:bg-zinc-800"
-                  }`}
-                >
-                  🌙 Dunkel
-                </button>
-
-              </div>
-
             </div>
-
-          </section>
-
-        )}
-
+          )}
+        </section>
       </div>
 
+      {/* =====================================================
+          PRODUKT MODAL
+      ===================================================== */}
+
+      {showProductForm && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-5">
+          <div
+            className={
+              theme === "dark"
+                ? "bg-gray-900 text-white rounded-2xl shadow-2xl w-full max-w-lg p-6"
+                : "bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6"
+            }
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-2xl font-bold">
+                {editingProduct
+                  ? "Produkt bearbeiten"
+                  : "Produkt hinzufügen"}
+              </h2>
+
+              <button
+                onClick={() =>
+                  setShowProductForm(false)
+                }
+                className="text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block font-semibold mb-2">
+                  Produktname
+                </label>
+
+                <input
+                  value={productName}
+                  onChange={(event) =>
+                    setProductName(
+                      event.target.value
+                    )
+                  }
+                  placeholder="z. B. Döner Spezial"
+                  className="w-full border rounded-xl px-4 py-3 bg-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-2">
+                  Kategorie
+                </label>
+
+                <input
+                  value={productCategory}
+                  onChange={(event) =>
+                    setProductCategory(
+                      event.target.value
+                    )
+                  }
+                  placeholder="z. B. Döner-Spezialitäten"
+                  className="w-full border rounded-xl px-4 py-3 bg-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-2">
+                  Preis
+                </label>
+
+                <input
+                  value={productPrice}
+                  onChange={(event) =>
+                    setProductPrice(
+                      event.target.value
+                    )
+                  }
+                  placeholder="z. B. 7,50"
+                  inputMode="decimal"
+                  className="w-full border rounded-xl px-4 py-3 bg-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={saveProduct}
+                className="flex-1 bg-black text-white rounded-xl py-3 font-bold"
+              >
+                {editingProduct
+                  ? "Änderungen speichern"
+                  : "Produkt hinzufügen"}
+              </button>
+
+              <button
+                onClick={() =>
+                  setShowProductForm(false)
+                }
+                className="bg-gray-200 text-gray-800 rounded-xl px-5 py-3 font-semibold"
+              >
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
