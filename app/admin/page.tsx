@@ -33,6 +33,255 @@ type DailyStatistic = {
   count: number;
 };
 
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+  created_at: string;
+};
+
+/* =========================================================
+   PRODUKTLISTE
+   ========================================================= */
+
+const PRODUCT_CATALOG = [
+  {
+    category: "Lahmacun-Spezialitäten",
+    products: [
+      "Lahmacun",
+      "Lahmacun mit Salat und Soße (gerollt)",
+      "Lahmacun mit Käse",
+      "Lahmacun Spezial",
+      "Lahmacun Teller",
+      "Lahmacun Spezial Teller",
+    ],
+  },
+
+  {
+    category: "Grillspezialitäten",
+    products: [
+      "Lammspieße",
+      "Lammkoteletts",
+      "Adana Kebap",
+      "Steak",
+      "Gemischter Grill",
+      "Chicken Nuggets mit Pommes",
+      "Chicken Wings mit Pommes",
+    ],
+  },
+
+  {
+    category: "Burger",
+    products: [
+      "Hamburger (55 g)",
+      "Hamburger XXL (125 g)",
+      "Cheeseburger (55 g)",
+      "Cheeseburger XXL (125 g)",
+      "Chickenburger (90 g)",
+    ],
+  },
+
+  {
+    category: "Salate",
+    products: [
+      "Gemischter Salat (klein)",
+      "Gemischter Salat (groß)",
+      "Hirten-Salat",
+      "Salat Tonno",
+      "Salat mit Putenstreifen",
+    ],
+  },
+
+  {
+    category: "Pizza (Ø 30 cm)",
+    products: [
+      "Pizza Margherita",
+      "Pizza Funghi",
+      "Pizza Spinat",
+      "Pizza Peperoni",
+      "Pizza Salami",
+      "Pizza Schinken",
+      "Pizza Sucuk",
+      "Pizza Hawaii",
+      "Pizza Artischocken",
+      "Pizza Tonno",
+      "Pizza Kebap",
+      "Pizza Chipolla",
+      "Pizza Vegetarisch",
+      "Pizza Sucuk Spezial",
+      "Pizza Döner Spezial",
+      "Pizza Meeresfrüchte",
+      "Pizza Vier Jahreszeiten",
+      "Pizza Sardellen",
+      "Party-Pizza (60x40 cm)",
+    ],
+  },
+
+  {
+    category: "Flammkuchen",
+    products: [
+      "Flammkuchen",
+    ],
+  },
+
+  {
+    category: "Döner-Spezialitäten",
+    products: [
+      "Döner im Fladenbrot",
+      "Döner mit Käse im Fladenbrot",
+      "Yufka Döner",
+      "Döner Vegetarisch",
+      "Yufka Vegetarisch",
+      "Vegetarischer Teller",
+      "Döner Box",
+      "Döner Teller",
+      "Döner Teller (klein)",
+    ],
+  },
+
+  {
+    category: "Falafel-Spezialitäten",
+    products: [
+      "Falafel im Fladenbrot",
+      "Falafel Box",
+      "Falafel Teller",
+    ],
+  },
+
+  {
+    category: "Extras",
+    products: [
+      "Portion Pommes",
+      "Iskender",
+    ],
+  },
+
+  {
+    category: "Pide und Seele",
+    products: [
+      "Pide mit Käse",
+      "Pide mit Hackfleisch",
+      "Pide mit Spinat & Käse",
+      "Pide mit Sucuk & Käse",
+      "Seele mit Putenschinken und Käse",
+      "Seele mit Dönerfleisch, frischen Tomaten und Zwiebeln",
+    ],
+  },
+
+  {
+    category: "Warme Getränke",
+    products: [
+      "Tasse Kaffee (klein)",
+    ],
+  },
+
+  {
+    category: "Alkoholische Getränke",
+    products: [
+      "Hofbräu 0,5 l",
+      "Pils Hofbräu 0,5 l",
+      "Hefeweizen hell 0,5 l",
+      "Kristallweizen 0,5 l",
+      "Radler 0,5 l",
+      "Beck’s 0,33 l",
+      "Beck’s Lemon 0,33 l",
+      "Tannenzäpfle 0,33 l",
+      "Desperados 0,33 l",
+      "Rotwein Trollinger 0,25 l",
+      "Weißwein Riesling 0,25 l",
+      "Rosé Württemberger 0,25 l",
+      "Weinschorle 0,25 l",
+    ],
+  },
+
+  {
+    category: "Kalte Getränke – Softdrinks",
+    products: [
+      "Fanta 0,3 l",
+      "Fanta 0,5 l",
+      "Coca-Cola 0,3 l",
+      "Coca-Cola 0,5 l",
+      "Coca-Cola Light 0,3 l",
+      "Coca-Cola Light 0,5 l",
+      "Sprite 0,3 l",
+      "Sprite 0,5 l",
+      "Spezi 0,3 l",
+      "Spezi 0,5 l",
+      "Red Bull 0,25 l",
+      "Wasser 0,3 l",
+      "Wasser 0,5 l",
+    ],
+  },
+
+  {
+    category: "Kalte Getränke – Säfte",
+    products: [
+      "Orangensaft 0,3 l",
+      "Kirschsaft 0,3 l",
+      "Kiba (Kirsch-Banane) 0,3 l",
+      "Bananensaft 0,3 l",
+      "Bananensaft 0,5 l",
+      "Apfelsaft 0,3 l",
+      "Apfelsaft 0,5 l",
+      "Johannisbeersaft 0,3 l",
+      "Johannisbeersaft 0,5 l",
+      "Apfelschorle 0,3 l",
+      "Apfelschorle 0,5 l",
+    ],
+  },
+
+  {
+    category: "Schweppes",
+    products: [
+      "Ginger Ale",
+      "Tonic Water",
+      "Bitter Lemon",
+    ],
+  },
+
+  {
+    category: "Cocktails",
+    products: [
+      "Aperol Spritz",
+      "Hugo",
+      "Campari Orange",
+      "Campari Soda",
+    ],
+  },
+
+  {
+    category: "Longdrinks",
+    products: [
+      "Jacky Cola 2 cl",
+      "Jacky Cola 4 cl",
+      "Wodka Lemon 2 cl",
+      "Wodka Lemon 4 cl",
+      "Wodka Bull 2 cl",
+      "Wodka Bull 4 cl",
+      "Wodka Orange 2 cl",
+      "Wodka Orange 4 cl",
+      "Asbach Cola 2 cl",
+      "Asbach Cola 4 cl",
+      "Gin Tonic 2 cl",
+      "Gin Tonic 4 cl",
+    ],
+  },
+
+  {
+    category: "Spirituosen",
+    products: [
+      "Jägermeister",
+      "Ramazzotti",
+      "Wodka",
+      "Tequila",
+      "Asbach",
+      "Baileys",
+      "Williams",
+    ],
+  },
+];
+
 export default function AdminPage() {
   const { theme, setTheme } = useTheme();
 
@@ -43,11 +292,17 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsMessage, setProductsMessage] = useState("");
+  const [savingPrice, setSavingPrice] = useState<number | null>(null);
+
   const [showEmployees, setShowEmployees] = useState(false);
   const [showOrders, setShowOrders] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
+  const [showPrices, setShowPrices] = useState(false);
 
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
 
@@ -143,12 +398,141 @@ export default function AdminPage() {
     setOrderItems(itemsData || []);
   }
 
+  async function loadProducts() {
+    setProductsLoading(true);
+    setProductsMessage("");
+
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .order("category", { ascending: true })
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.error("PRODUCT FEHLER:", error);
+
+      setProductsMessage(
+        error.message || "Produkte konnten nicht geladen werden."
+      );
+
+      setProductsLoading(false);
+      return;
+    }
+
+    setProducts((data || []) as Product[]);
+    setProductsLoading(false);
+  }
+
+  async function createCatalogProducts() {
+    setProductsLoading(true);
+    setProductsMessage("");
+
+    const existingNames = new Set(
+      products.map((product) => product.name)
+    );
+
+    const missingProducts: {
+      name: string;
+      category: string;
+      price: number;
+    }[] = [];
+
+    for (const category of PRODUCT_CATALOG) {
+      for (const productName of category.products) {
+        if (!existingNames.has(productName)) {
+          missingProducts.push({
+            name: productName,
+            category: category.category,
+            price: 0,
+          });
+        }
+      }
+    }
+
+    if (missingProducts.length === 0) {
+      setProductsMessage(
+        "Alle Produkte sind bereits angelegt."
+      );
+      setProductsLoading(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("products")
+      .insert(missingProducts);
+
+    if (error) {
+      console.error("PRODUCT ERSTELLEN FEHLER:", error);
+
+      setProductsMessage(
+        error.message ||
+          "Produkte konnten nicht angelegt werden."
+      );
+
+      setProductsLoading(false);
+      return;
+    }
+
+    setProductsMessage(
+      `${missingProducts.length} Produkte wurden angelegt.`
+    );
+
+    await loadProducts();
+
+    setProductsLoading(false);
+  }
+
+  async function updateProductPrice(
+    productId: number,
+    price: number
+  ) {
+    if (!Number.isFinite(price) || price < 0) {
+      alert("Bitte einen gültigen Preis eingeben.");
+      return;
+    }
+
+    setSavingPrice(productId);
+
+    const { error } = await supabase
+      .from("products")
+      .update({
+        price: Number(price.toFixed(2)),
+      })
+      .eq("id", productId);
+
+    if (error) {
+      console.error("PREIS FEHLER:", error);
+
+      alert(
+        error.message ||
+          "Preis konnte nicht gespeichert werden."
+      );
+
+      setSavingPrice(null);
+      return;
+    }
+
+    setProducts((currentProducts) =>
+      currentProducts.map((product) =>
+        product.id === productId
+          ? {
+              ...product,
+              price: Number(price.toFixed(2)),
+            }
+          : product
+      )
+    );
+
+    setSavingPrice(null);
+  }
+
   function closeAllPanels() {
     setShowEmployees(false);
     setShowOrders(false);
     setShowSettings(false);
     setShowAddEmployee(false);
     setShowStatistics(false);
+    setShowPrices(false);
   }
 
   function openEmployees() {
@@ -166,6 +550,12 @@ export default function AdminPage() {
   function openSettings() {
     closeAllPanels();
     setShowSettings(true);
+  }
+
+  function openPrices() {
+    closeAllPanels();
+    setShowPrices(true);
+    loadProducts();
   }
 
   function openAddEmployee() {
@@ -199,9 +589,12 @@ export default function AdminPage() {
 
     if (error) {
       console.error("STATISTIK FEHLER:", error);
+
       setStatisticsError(
-        error.message || "Statistiken konnten nicht geladen werden."
+        error.message ||
+          "Statistiken konnten nicht geladen werden."
       );
+
       setStatisticsLoading(false);
       return;
     }
@@ -320,14 +713,17 @@ export default function AdminPage() {
 
       if (!response.ok) {
         setEmployeeMessage(
-          result.error || "Mitarbeiter konnte nicht erstellt werden."
+          result.error ||
+            "Mitarbeiter konnte nicht erstellt werden."
         );
 
         setEmployeeLoading(false);
         return;
       }
 
-      setEmployeeMessage("Mitarbeiter erfolgreich erstellt.");
+      setEmployeeMessage(
+        "Mitarbeiter erfolgreich erstellt."
+      );
 
       setEmployeeName("");
       setEmployeeEmail("");
@@ -394,16 +790,19 @@ export default function AdminPage() {
       return;
     }
 
-    const response = await fetch("/api/admin/update-password", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id,
-        password,
-      }),
-    });
+    const response = await fetch(
+      "/api/admin/update-password",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+          password,
+        }),
+      }
+    );
 
     const result = await response.json();
 
@@ -509,7 +908,7 @@ export default function AdminPage() {
               Adminbereich
             </h1>
 
-            <p className="text-zinc-500 dark:text-zinc-400 mt-1">
+            <p className="text-zinc-600 dark:text-zinc-400 mt-1">
               Döner POS Verwaltung
             </p>
           </div>
@@ -526,7 +925,8 @@ export default function AdminPage() {
         {!showEmployees &&
           !showOrders &&
           !showSettings &&
-          !showStatistics && (
+          !showStatistics &&
+          !showPrices && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
               <button
@@ -541,7 +941,7 @@ export default function AdminPage() {
                   Mitarbeiter
                 </h2>
 
-                <p className="text-zinc-500 dark:text-zinc-400 mt-2">
+                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
                   Mitarbeiter verwalten
                 </p>
 
@@ -562,7 +962,7 @@ export default function AdminPage() {
                   Bestellungen
                 </h2>
 
-                <p className="text-zinc-500 dark:text-zinc-400 mt-2">
+                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
                   Alle Bestellungen anzeigen
                 </p>
 
@@ -583,12 +983,15 @@ export default function AdminPage() {
                   Statistiken
                 </h2>
 
-                <p className="text-zinc-500 dark:text-zinc-400 mt-2">
+                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
                   Bestellungen und Auswertungen
                 </p>
               </button>
 
-              <div className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow">
+              <button
+                onClick={openPrices}
+                className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow hover:shadow-lg transition"
+              >
                 <div className="text-3xl mb-4">
                   💶
                 </div>
@@ -597,14 +1000,14 @@ export default function AdminPage() {
                   Preise
                 </h2>
 
-                <p className="text-zinc-500 dark:text-zinc-400 mt-2">
-                  Preisverwaltung
+                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+                  Preise verwalten
                 </p>
 
-                <p className="mt-4 text-zinc-400">
-                  Bald verfügbar
+                <p className="mt-4 font-semibold">
+                  {products.length} Produkte
                 </p>
-              </div>
+              </button>
 
               <div className="text-left bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow">
                 <div className="text-3xl mb-4">
@@ -615,11 +1018,11 @@ export default function AdminPage() {
                   Produkte
                 </h2>
 
-                <p className="text-zinc-500 dark:text-zinc-400 mt-2">
+                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
                   Produkte verwalten
                 </p>
 
-                <p className="mt-4 text-zinc-400">
+                <p className="mt-4 text-zinc-500">
                   Bald verfügbar
                 </p>
               </div>
@@ -636,7 +1039,7 @@ export default function AdminPage() {
                   Einstellungen
                 </h2>
 
-                <p className="text-zinc-500 dark:text-zinc-400 mt-2">
+                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
                   System-Einstellungen
                 </p>
               </button>
@@ -648,7 +1051,8 @@ export default function AdminPage() {
         {(showEmployees ||
           showOrders ||
           showSettings ||
-          showStatistics) && (
+          showStatistics ||
+          showPrices) && (
           <button
             onClick={closeAllPanels}
             className="mb-6 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 px-5 py-3 rounded-xl font-semibold"
@@ -657,17 +1061,206 @@ export default function AdminPage() {
           </button>
         )}
 
-        {/* MITARBEITER */}
+        {/* =====================================================
+            PREISE
+            ===================================================== */}
+
+        {showPrices && (
+          <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
+
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+
+              <div>
+                <h2 className="text-2xl font-bold">
+                  Preisverwaltung
+                </h2>
+
+                <p className="text-zinc-600 dark:text-zinc-400">
+                  Hier kannst du später alle Preise ändern.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+
+                <button
+                  onClick={createCatalogProducts}
+                  disabled={productsLoading}
+                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-5 py-3 rounded-xl font-semibold"
+                >
+                  {productsLoading
+                    ? "Bitte warten..."
+                    : "🍽️ Speisekarte anlegen"}
+                </button>
+
+                <button
+                  onClick={loadProducts}
+                  disabled={productsLoading}
+                  className="bg-zinc-200 dark:bg-zinc-800 px-5 py-3 rounded-xl font-semibold"
+                >
+                  Aktualisieren
+                </button>
+
+              </div>
+            </div>
+
+            {productsMessage && (
+              <div className="mb-6 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl p-4">
+                {productsMessage}
+              </div>
+            )}
+
+            {productsLoading ? (
+              <div className="py-12 text-center">
+                <p className="text-zinc-600 dark:text-zinc-400">
+                  Produkte werden geladen...
+                </p>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-8 text-center">
+
+                <div className="text-5xl mb-4">
+                  🍽️
+                </div>
+
+                <h3 className="text-xl font-bold mb-2">
+                  Noch keine Produkte angelegt
+                </h3>
+
+                <p className="text-zinc-600 dark:text-zinc-400 mb-5">
+                  Klicke auf „Speisekarte anlegen“.
+                  Dann werden alle Produkte automatisch
+                  mit 0,00 € angelegt.
+                </p>
+
+                <button
+                  onClick={createCatalogProducts}
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold"
+                >
+                  Speisekarte anlegen
+                </button>
+
+              </div>
+            ) : (
+              <div className="space-y-6">
+
+                {PRODUCT_CATALOG.map((category) => {
+
+                  const categoryProducts =
+                    products.filter(
+                      (product) =>
+                        product.category ===
+                        category.category
+                    );
+
+                  if (categoryProducts.length === 0) {
+                    return null;
+                  }
+
+                  return (
+                    <div
+                      key={category.category}
+                      className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden"
+                    >
+
+                      <div className="bg-zinc-100 dark:bg-zinc-800 px-5 py-4">
+                        <h3 className="text-xl font-bold">
+                          {category.category}
+                        </h3>
+                      </div>
+
+                      <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
+
+                        {categoryProducts.map(
+                          (product) => (
+                            <div
+                              key={product.id}
+                              className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                            >
+
+                              <div>
+                                <p className="font-semibold">
+                                  {product.name}
+                                </p>
+
+                                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                                  Aktueller Preis:{" "}
+                                  {product.price.toFixed(2)} €
+                                </p>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="0.10"
+                                  defaultValue={product.price.toFixed(2)}
+                                  id={`price-${product.id}`}
+                                  className="w-28 rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 outline-none text-right"
+                                />
+
+                                <button
+                                  onClick={() => {
+                                    const input =
+                                      document.getElementById(
+                                        `price-${product.id}`
+                                      ) as HTMLInputElement | null;
+
+                                    if (!input) {
+                                      return;
+                                    }
+
+                                    const price =
+                                      Number(input.value);
+
+                                    updateProductPrice(
+                                      product.id,
+                                      price
+                                    );
+                                  }}
+                                  disabled={
+                                    savingPrice ===
+                                    product.id
+                                  }
+                                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl font-semibold"
+                                >
+                                  {savingPrice ===
+                                  product.id
+                                    ? "..."
+                                    : "Speichern"}
+                                </button>
+
+                              </div>
+                            </div>
+                          )
+                        )}
+
+                      </div>
+                    </div>
+                  );
+                })}
+
+              </div>
+            )}
+
+          </section>
+        )}
+
+        {/* =====================================================
+            MITARBEITER
+            ===================================================== */}
+
         {showEmployees && (
           <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+
               <div>
                 <h2 className="text-2xl font-bold">
                   Mitarbeiter
                 </h2>
 
-                <p className="text-zinc-500 dark:text-zinc-400">
+                <p className="text-zinc-600 dark:text-zinc-400">
                   Mitarbeiter verwalten
                 </p>
               </div>
@@ -678,12 +1271,14 @@ export default function AdminPage() {
               >
                 + Mitarbeiter hinzufügen
               </button>
+
             </div>
 
             {showAddEmployee && (
               <div className="mb-8 bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
 
                 <div className="flex justify-between items-center mb-5">
+
                   <h3 className="text-xl font-bold">
                     Mitarbeiter erstellen
                   </h3>
@@ -694,6 +1289,7 @@ export default function AdminPage() {
                   >
                     ✕
                   </button>
+
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -751,6 +1347,7 @@ export default function AdminPage() {
                       Admin
                     </option>
                   </select>
+
                 </div>
 
                 <button
@@ -768,29 +1365,34 @@ export default function AdminPage() {
                     {employeeMessage}
                   </p>
                 )}
+
               </div>
             )}
 
             <div className="space-y-4">
+
               {profiles.map((profile) => (
                 <div
                   key={profile.id}
                   className="border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5"
                 >
+
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
                     <div>
+
                       <h3 className="font-bold text-lg">
                         {profile.name}
                       </h3>
 
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400">
                         {profile.role === "waiter"
                           ? "Kellner"
                           : profile.role === "kitchen"
                           ? "Küche"
                           : "Admin"}
                       </p>
+
                     </div>
 
                     <div className="flex flex-wrap gap-2">
@@ -853,30 +1455,38 @@ export default function AdminPage() {
                       </button>
 
                     </div>
+
                   </div>
+
                 </div>
               ))}
 
               {profiles.length === 0 && (
-                <p className="text-zinc-500">
+                <p className="text-zinc-600 dark:text-zinc-400">
                   Keine Mitarbeiter gefunden.
                 </p>
               )}
+
             </div>
+
           </section>
         )}
 
-        {/* BESTELLUNGEN */}
+        {/* =====================================================
+            BESTELLUNGEN
+            ===================================================== */}
+
         {showOrders && (
           <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
 
             <div className="flex items-center justify-between mb-6">
+
               <div>
                 <h2 className="text-2xl font-bold">
                   Bestellungen
                 </h2>
 
-                <p className="text-zinc-500 dark:text-zinc-400">
+                <p className="text-zinc-600 dark:text-zinc-400">
                   Alle Bestellungen
                 </p>
               </div>
@@ -887,11 +1497,13 @@ export default function AdminPage() {
               >
                 Aktualisieren
               </button>
+
             </div>
 
             <div className="space-y-4">
 
               {orders.map((order) => {
+
                 const items =
                   getItemsForOrder(order.id);
 
@@ -903,24 +1515,30 @@ export default function AdminPage() {
                     key={order.id}
                     className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden"
                   >
+
                     <button
                       onClick={() =>
                         setExpandedOrder(
-                          isExpanded ? null : order.id
+                          isExpanded
+                            ? null
+                            : order.id
                         )
                       }
                       className="w-full text-left p-5 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                     >
+
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
 
                         <div>
+
                           <h3 className="font-bold text-lg">
                             Bestellung #{order.id}
                           </h3>
 
-                          <p className="text-zinc-500 dark:text-zinc-400">
+                          <p className="text-zinc-600 dark:text-zinc-400">
                             Tisch {order.table_number}
                           </p>
+
                         </div>
 
                         <div className="flex flex-col md:items-end gap-1">
@@ -937,21 +1555,24 @@ export default function AdminPage() {
                               : "Offen"}
                           </span>
 
-                          <span className="text-sm text-zinc-500">
+                          <span className="text-sm text-zinc-600 dark:text-zinc-400">
                             {formatDate(
                               order.created_at
                             )}
                           </span>
 
                         </div>
+
                       </div>
+
                     </button>
 
                     {isExpanded && (
                       <div className="border-t border-zinc-200 dark:border-zinc-700 p-5">
 
                         <div className="mb-4">
-                          <p className="text-sm text-zinc-500">
+
+                          <p className="text-sm text-zinc-600 dark:text-zinc-400">
                             Kellner
                           </p>
 
@@ -960,14 +1581,17 @@ export default function AdminPage() {
                               order.waiter_id
                             )}
                           </p>
+
                         </div>
 
                         <div>
+
                           <p className="font-bold mb-3">
                             Artikel
                           </p>
 
                           <div className="space-y-2">
+
                             {items.map((item) => (
                               <div
                                 key={item.id}
@@ -984,11 +1608,13 @@ export default function AdminPage() {
                             ))}
 
                             {items.length === 0 && (
-                              <p className="text-zinc-500">
+                              <p className="text-zinc-600 dark:text-zinc-400">
                                 Keine Artikel gefunden.
                               </p>
                             )}
+
                           </div>
+
                         </div>
 
                         {order.finished_at && (
@@ -1002,21 +1628,26 @@ export default function AdminPage() {
 
                       </div>
                     )}
+
                   </div>
                 );
               })}
 
               {orders.length === 0 && (
-                <p className="text-zinc-500">
+                <p className="text-zinc-600 dark:text-zinc-400">
                   Keine Bestellungen vorhanden.
                 </p>
               )}
 
             </div>
+
           </section>
         )}
 
-        {/* STATISTIK */}
+        {/* =====================================================
+            STATISTIK
+            ===================================================== */}
+
         {showStatistics && (
           <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
 
@@ -1027,7 +1658,7 @@ export default function AdminPage() {
                   Statistiken
                 </h2>
 
-                <p className="text-zinc-500 dark:text-zinc-400">
+                <p className="text-zinc-600 dark:text-zinc-400">
                   Übersicht über deine Bestellungen
                 </p>
               </div>
@@ -1043,7 +1674,7 @@ export default function AdminPage() {
 
             {statisticsLoading ? (
               <div className="py-12 text-center">
-                <p className="text-zinc-500">
+                <p className="text-zinc-600 dark:text-zinc-400">
                   Statistiken werden geladen...
                 </p>
               </div>
@@ -1053,11 +1684,12 @@ export default function AdminPage() {
               </div>
             ) : (
               <>
-                {/* STATISTIK-KARTEN */}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
 
                   <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
-                    <p className="text-zinc-500 dark:text-zinc-400">
+
+                    <p className="text-zinc-600 dark:text-zinc-400">
                       Heute
                     </p>
 
@@ -1065,13 +1697,15 @@ export default function AdminPage() {
                       {todayOrders.length}
                     </p>
 
-                    <p className="text-sm text-zinc-500 mt-1">
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
                       Bestellungen
                     </p>
+
                   </div>
 
                   <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
-                    <p className="text-zinc-500 dark:text-zinc-400">
+
+                    <p className="text-zinc-600 dark:text-zinc-400">
                       Diese Woche
                     </p>
 
@@ -1079,13 +1713,15 @@ export default function AdminPage() {
                       {weekOrders.length}
                     </p>
 
-                    <p className="text-sm text-zinc-500 mt-1">
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
                       Bestellungen
                     </p>
+
                   </div>
 
                   <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
-                    <p className="text-zinc-500 dark:text-zinc-400">
+
+                    <p className="text-zinc-600 dark:text-zinc-400">
                       Dieser Monat
                     </p>
 
@@ -1093,12 +1729,14 @@ export default function AdminPage() {
                       {monthOrders.length}
                     </p>
 
-                    <p className="text-sm text-zinc-500 mt-1">
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
                       Bestellungen
                     </p>
+
                   </div>
 
                   <div className="bg-green-100 dark:bg-green-900/20 rounded-2xl p-6">
+
                     <p className="text-green-700 dark:text-green-400">
                       Fertige Bestellungen
                     </p>
@@ -1110,9 +1748,11 @@ export default function AdminPage() {
                     <p className="text-sm text-green-600 dark:text-green-500 mt-1">
                       Insgesamt
                     </p>
+
                   </div>
 
                   <div className="bg-yellow-100 dark:bg-yellow-900/20 rounded-2xl p-6">
+
                     <p className="text-yellow-700 dark:text-yellow-400">
                       Offene Bestellungen
                     </p>
@@ -1124,9 +1764,11 @@ export default function AdminPage() {
                     <p className="text-sm text-yellow-600 dark:text-yellow-500 mt-1">
                       Insgesamt
                     </p>
+
                   </div>
 
                   <div className="bg-blue-100 dark:bg-blue-900/20 rounded-2xl p-6">
+
                     <p className="text-blue-700 dark:text-blue-400">
                       Gesamt
                     </p>
@@ -1138,11 +1780,11 @@ export default function AdminPage() {
                     <p className="text-sm text-blue-600 dark:text-blue-500 mt-1">
                       Bestellungen
                     </p>
+
                   </div>
 
                 </div>
 
-                {/* LETZTE 7 TAGE */}
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-6">
 
                   <h3 className="text-xl font-bold mb-6">
@@ -1167,6 +1809,7 @@ export default function AdminPage() {
                         <div key={day.date}>
 
                           <div className="flex justify-between mb-2 text-sm">
+
                             <span className="font-medium">
                               {day.label}
                             </span>
@@ -1174,6 +1817,7 @@ export default function AdminPage() {
                             <span className="font-bold">
                               {day.count}
                             </span>
+
                           </div>
 
                           <div className="w-full h-4 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
@@ -1186,31 +1830,39 @@ export default function AdminPage() {
                             />
 
                           </div>
+
                         </div>
                       );
                     })}
 
                   </div>
+
                 </div>
 
-                {/* HINWEIS */}
                 <div className="mt-6 bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-5">
+
                   <p className="font-semibold">
                     💡 Hinweis
                   </p>
 
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
                     Der Umsatz wird später berechnet,
                     sobald die Produktpreise im System
                     gespeichert werden.
                   </p>
+
                 </div>
+
               </>
             )}
+
           </section>
         )}
 
-        {/* EINSTELLUNGEN */}
+        {/* =====================================================
+            EINSTELLUNGEN
+            ===================================================== */}
+
         {showSettings && (
           <section className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-6">
 
@@ -1218,20 +1870,22 @@ export default function AdminPage() {
               Einstellungen
             </h2>
 
-            <p className="text-zinc-500 dark:text-zinc-400 mb-8">
+            <p className="text-zinc-600 dark:text-zinc-400 mb-8">
               Einstellungen des POS-Systems
             </p>
 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-zinc-200 dark:border-zinc-700 pb-6">
 
               <div>
+
                 <h3 className="font-bold text-lg">
                   Erscheinungsbild
                 </h3>
 
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
                   Hell- oder Dunkelmodus
                 </p>
+
               </div>
 
               <div className="flex gap-2">
@@ -1259,6 +1913,7 @@ export default function AdminPage() {
                 </button>
 
               </div>
+
             </div>
 
           </section>

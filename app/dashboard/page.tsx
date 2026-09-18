@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -242,7 +243,6 @@ export default function Dashboard() {
     loadUser();
   }, []);
 
-  // LIVE-BENACHRICHTIGUNG FÜR FERTIGE BESTELLUNGEN
   useEffect(() => {
     if (!userId) return;
 
@@ -399,7 +399,6 @@ export default function Dashboard() {
     setSending(true);
     setMessage("");
 
-    // Benutzer direkt von Supabase holen
     const {
       data: { user },
       error: userError,
@@ -508,7 +507,6 @@ export default function Dashboard() {
 
   return (
     <main className="min-h-screen bg-gray-100">
-      {/* BENACHRICHTIGUNGEN */}
       {notifications.length > 0 && (
         <div className="fixed top-5 right-5 z-[100] w-full max-w-sm space-y-3">
           {notifications.map((notification) => (
@@ -546,14 +544,13 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* HEADER */}
       <header className="bg-white shadow-sm p-5 flex items-center justify-between sticky top-0 z-20">
         <div>
           <h1 className="text-2xl font-bold">
             🌯 Döner POS
           </h1>
 
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-600 text-sm">
             Kellner-Bereich
           </p>
         </div>
@@ -582,18 +579,16 @@ export default function Dashboard() {
       </header>
 
       <div className="p-5 md:p-8 max-w-7xl mx-auto">
-        {/* USER */}
         <div className="bg-white rounded-2xl shadow-sm p-5 mb-6">
           <h2 className="text-xl font-bold">
             Willkommen 👋
           </h2>
 
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-700 mt-1">
             Angemeldet als: {email}
           </p>
         </div>
 
-        {/* MELDUNG */}
         {message && (
           <div
             className={`rounded-2xl p-4 mb-6 font-semibold ${
@@ -608,14 +603,13 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* TISCH AUSWÄHLEN */}
         {tableNumber === null && (
           <>
             <h2 className="text-2xl font-bold mb-2">
               Tisch auswählen
             </h2>
 
-            <p className="text-gray-500 mb-5">
+            <p className="text-gray-600 mb-5">
               Wähle den Tisch für die Bestellung.
             </p>
 
@@ -639,7 +633,6 @@ export default function Dashboard() {
           </>
         )}
 
-        {/* KATEGORIEN */}
         {tableNumber !== null && !selectedCategory && (
           <>
             <div className="flex items-center justify-between mb-5">
@@ -648,7 +641,7 @@ export default function Dashboard() {
                   Bestellung für Tisch {tableNumber}
                 </h2>
 
-                <p className="text-gray-500 mt-1">
+                <p className="text-gray-600 mt-1">
                   Kategorie auswählen
                 </p>
               </div>
@@ -675,7 +668,7 @@ export default function Dashboard() {
                       {category}
                     </h3>
 
-                    <p className="text-gray-500 mt-2">
+                    <p className="text-gray-600 mt-2">
                       {
                         categories[
                           category as keyof typeof categories
@@ -690,7 +683,6 @@ export default function Dashboard() {
           </>
         )}
 
-        {/* PRODUKTE */}
         {tableNumber !== null &&
           selectedCategory && (
             <>
@@ -726,7 +718,7 @@ export default function Dashboard() {
                       {product}
                     </h3>
 
-                    <p className="text-gray-400 text-sm mt-2">
+                    <p className="text-gray-600 text-sm mt-2">
                       + Zum Warenkorb
                     </p>
                   </button>
@@ -736,18 +728,16 @@ export default function Dashboard() {
           )}
       </div>
 
-      {/* WARENKORB */}
       {showCart && (
         <div className="fixed inset-0 bg-black/50 z-50 flex justify-end">
           <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col">
-            {/* CART HEADER */}
             <div className="p-5 border-b flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold">
                   🛒 Warenkorb
                 </h2>
 
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-600 text-sm">
                   Tisch {tableNumber} · {totalItems} Artikel
                 </p>
               </div>
@@ -760,10 +750,9 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {/* CART ITEMS */}
             <div className="flex-1 overflow-y-auto p-5">
               {cart.length === 0 ? (
-                <div className="text-center text-gray-500 py-16">
+                <div className="text-center text-gray-600 py-16">
                   <div className="text-5xl mb-4">
                     🛒
                   </div>
@@ -838,7 +827,6 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* CART FOOTER */}
             <div className="border-t p-5 space-y-3">
               {cart.length > 0 && (
                 <button
