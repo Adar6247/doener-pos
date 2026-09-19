@@ -65,9 +65,21 @@ type StatisticsPeriod =
 
 const PRODUCT_CATALOG: CatalogProduct[] = [
   { name: "Lahmacun", price: 6.5, category: "Lahmacun-Spezialitäten" },
-  { name: "Lahmacun mit Salat", price: 7.5, category: "Lahmacun-Spezialitäten" },
-  { name: "Lahmacun mit Dönerfleisch", price: 9.5, category: "Lahmacun-Spezialitäten" },
-  { name: "Lahmacun mit Dönerfleisch und Käse", price: 10.5, category: "Lahmacun-Spezialitäten" },
+  {
+    name: "Lahmacun mit Salat",
+    price: 7.5,
+    category: "Lahmacun-Spezialitäten",
+  },
+  {
+    name: "Lahmacun mit Dönerfleisch",
+    price: 9.5,
+    category: "Lahmacun-Spezialitäten",
+  },
+  {
+    name: "Lahmacun mit Dönerfleisch und Käse",
+    price: 10.5,
+    category: "Lahmacun-Spezialitäten",
+  },
 
   { name: "Adana Kebab", price: 14.5, category: "Grillspezialitäten" },
   { name: "Urfa Kebab", price: 14.5, category: "Grillspezialitäten" },
@@ -101,22 +113,74 @@ const PRODUCT_CATALOG: CatalogProduct[] = [
 
   { name: "Flammkuchen Klassisch", price: 9.0, category: "Flammkuchen" },
   { name: "Flammkuchen Speck", price: 10.0, category: "Flammkuchen" },
-  { name: "Flammkuchen Vegetarisch", price: 10.0, category: "Flammkuchen" },
+  {
+    name: "Flammkuchen Vegetarisch",
+    price: 10.0,
+    category: "Flammkuchen",
+  },
   { name: "Flammkuchen Döner", price: 11.0, category: "Flammkuchen" },
 
-  { name: "Döner im Fladenbrot", price: 8.0, category: "Döner-Spezialitäten" },
-  { name: "Döner mit Käse", price: 9.0, category: "Döner-Spezialitäten" },
-  { name: "Döner Teller", price: 12.5, category: "Döner-Spezialitäten" },
-  { name: "Döner Teller mit Pommes", price: 14.0, category: "Döner-Spezialitäten" },
-  { name: "Döner Box", price: 8.5, category: "Döner-Spezialitäten" },
-  { name: "Döner Box mit Salat", price: 8.5, category: "Döner-Spezialitäten" },
-  { name: "Dürüm Döner", price: 8.5, category: "Döner-Spezialitäten" },
-  { name: "Dürüm Döner mit Käse", price: 9.5, category: "Döner-Spezialitäten" },
+  {
+    name: "Döner im Fladenbrot",
+    price: 8.0,
+    category: "Döner-Spezialitäten",
+  },
+  {
+    name: "Döner mit Käse",
+    price: 9.0,
+    category: "Döner-Spezialitäten",
+  },
+  {
+    name: "Döner Teller",
+    price: 12.5,
+    category: "Döner-Spezialitäten",
+  },
+  {
+    name: "Döner Teller mit Pommes",
+    price: 14.0,
+    category: "Döner-Spezialitäten",
+  },
+  {
+    name: "Döner Box",
+    price: 8.5,
+    category: "Döner-Spezialitäten",
+  },
+  {
+    name: "Döner Box mit Salat",
+    price: 8.5,
+    category: "Döner-Spezialitäten",
+  },
+  {
+    name: "Dürüm Döner",
+    price: 8.5,
+    category: "Döner-Spezialitäten",
+  },
+  {
+    name: "Dürüm Döner mit Käse",
+    price: 9.5,
+    category: "Döner-Spezialitäten",
+  },
 
-  { name: "Falafel im Brot", price: 7.0, category: "Falafel-Spezialitäten" },
-  { name: "Falafel Dürüm", price: 7.5, category: "Falafel-Spezialitäten" },
-  { name: "Falafel Teller", price: 10.5, category: "Falafel-Spezialitäten" },
-  { name: "Falafel Box", price: 7.5, category: "Falafel-Spezialitäten" },
+  {
+    name: "Falafel im Brot",
+    price: 7.0,
+    category: "Falafel-Spezialitäten",
+  },
+  {
+    name: "Falafel Dürüm",
+    price: 7.5,
+    category: "Falafel-Spezialitäten",
+  },
+  {
+    name: "Falafel Teller",
+    price: 10.5,
+    category: "Falafel-Spezialitäten",
+  },
+  {
+    name: "Falafel Box",
+    price: 7.5,
+    category: "Falafel-Spezialitäten",
+  },
 
   { name: "Pommes klein", price: 3.5, category: "Extras" },
   { name: "Pommes groß", price: 5.0, category: "Extras" },
@@ -127,9 +191,17 @@ const PRODUCT_CATALOG: CatalogProduct[] = [
   { name: "Peperoni", price: 1.0, category: "Extras" },
 
   { name: "Pide mit Käse", price: 9.0, category: "Pide und Seele" },
-  { name: "Pide mit Hackfleisch", price: 10.0, category: "Pide und Seele" },
+  {
+    name: "Pide mit Hackfleisch",
+    price: 10.0,
+    category: "Pide und Seele",
+  },
   { name: "Pide mit Spinat", price: 10.0, category: "Pide und Seele" },
-  { name: "Pide mit Dönerfleisch", price: 11.0, category: "Pide und Seele" },
+  {
+    name: "Pide mit Dönerfleisch",
+    price: 11.0,
+    category: "Pide und Seele",
+  },
   { name: "Seele mit Käse", price: 9.0, category: "Pide und Seele" },
   { name: "Seele mit Salami", price: 10.0, category: "Pide und Seele" },
 
@@ -140,23 +212,79 @@ const PRODUCT_CATALOG: CatalogProduct[] = [
   { name: "Cappuccino", price: 3.5, category: "Warme Getränke" },
   { name: "Latte Macchiato", price: 3.8, category: "Warme Getränke" },
 
-  { name: "Coca Cola", price: 3.0, category: "Kalte Getränke – Softdrinks" },
-  { name: "Coca Cola Zero", price: 3.0, category: "Kalte Getränke – Softdrinks" },
-  { name: "Fanta", price: 3.0, category: "Kalte Getränke – Softdrinks" },
-  { name: "Sprite", price: 3.0, category: "Kalte Getränke – Softdrinks" },
-  { name: "Mezzo Mix", price: 3.0, category: "Kalte Getränke – Softdrinks" },
-  { name: "Spezi", price: 3.0, category: "Kalte Getränke – Softdrinks" },
-  { name: "Mineralwasser", price: 2.5, category: "Kalte Getränke – Softdrinks" },
-  { name: "Stilles Wasser", price: 2.5, category: "Kalte Getränke – Softdrinks" },
+  {
+    name: "Coca Cola",
+    price: 3.0,
+    category: "Kalte Getränke – Softdrinks",
+  },
+  {
+    name: "Coca Cola Zero",
+    price: 3.0,
+    category: "Kalte Getränke – Softdrinks",
+  },
+  {
+    name: "Fanta",
+    price: 3.0,
+    category: "Kalte Getränke – Softdrinks",
+  },
+  {
+    name: "Sprite",
+    price: 3.0,
+    category: "Kalte Getränke – Softdrinks",
+  },
+  {
+    name: "Mezzo Mix",
+    price: 3.0,
+    category: "Kalte Getränke – Softdrinks",
+  },
+  {
+    name: "Spezi",
+    price: 3.0,
+    category: "Kalte Getränke – Softdrinks",
+  },
+  {
+    name: "Mineralwasser",
+    price: 2.5,
+    category: "Kalte Getränke – Softdrinks",
+  },
+  {
+    name: "Stilles Wasser",
+    price: 2.5,
+    category: "Kalte Getränke – Softdrinks",
+  },
 
-  { name: "Orangensaft", price: 3.5, category: "Kalte Getränke – Säfte" },
-  { name: "Apfelsaft", price: 3.5, category: "Kalte Getränke – Säfte" },
-  { name: "Kirschsaft", price: 3.5, category: "Kalte Getränke – Säfte" },
-  { name: "Multivitaminsaft", price: 3.5, category: "Kalte Getränke – Säfte" },
+  {
+    name: "Orangensaft",
+    price: 3.5,
+    category: "Kalte Getränke – Säfte",
+  },
+  {
+    name: "Apfelsaft",
+    price: 3.5,
+    category: "Kalte Getränke – Säfte",
+  },
+  {
+    name: "Kirschsaft",
+    price: 3.5,
+    category: "Kalte Getränke – Säfte",
+  },
+  {
+    name: "Multivitaminsaft",
+    price: 3.5,
+    category: "Kalte Getränke – Säfte",
+  },
 
   { name: "Schweppes Tonic", price: 3.5, category: "Schweppes" },
-  { name: "Schweppes Bitter Lemon", price: 3.5, category: "Schweppes" },
-  { name: "Schweppes Ginger Ale", price: 3.5, category: "Schweppes" },
+  {
+    name: "Schweppes Bitter Lemon",
+    price: 3.5,
+    category: "Schweppes",
+  },
+  {
+    name: "Schweppes Ginger Ale",
+    price: 3.5,
+    category: "Schweppes",
+  },
 
   { name: "Mojito", price: 8.5, category: "Cocktails" },
   { name: "Caipirinha", price: 8.5, category: "Cocktails" },
@@ -271,6 +399,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
 
+  const [currentUserId, setCurrentUserId] = useState("");
+
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
@@ -278,7 +408,12 @@ export default function AdminPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
 
   const [activeSection, setActiveSection] = useState<
-    "dashboard" | "orders" | "employees" | "products" | "statistics" | "settings"
+    | "dashboard"
+    | "orders"
+    | "employees"
+    | "products"
+    | "statistics"
+    | "settings"
   >("dashboard");
 
   const [statisticsPeriod, setStatisticsPeriod] =
@@ -287,20 +422,30 @@ export default function AdminPage() {
   const [message, setMessage] = useState("");
 
   const [productModal, setProductModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] =
+    useState<Product | null>(null);
   const [productName, setProductName] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [productCategory, setProductCategory] = useState("");
 
   const [employeeModal, setEmployeeModal] = useState(false);
+  const [editingEmployee, setEditingEmployee] =
+    useState<Profile | null>(null);
+
   const [employeeName, setEmployeeName] = useState("");
   const [employeeEmail, setEmployeeEmail] = useState("");
-  const [employeePassword, setEmployeePassword] = useState("");
+  const [employeePassword, setEmployeePassword] =
+    useState("");
   const [employeeRole, setEmployeeRole] =
     useState<"waiter" | "kitchen" | "admin">("waiter");
 
+  const [employeeSaving, setEmployeeSaving] = useState(false);
+  const [employeeDeletingId, setEmployeeDeletingId] =
+    useState<string | null>(null);
+
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("Alle");
+  const [categoryFilter, setCategoryFilter] =
+    useState("Alle");
 
   /* =========================================================
      AUTH
@@ -323,6 +468,8 @@ export default function AdminPage() {
         setLoading(false);
         return;
       }
+
+      setCurrentUserId(user.id);
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -401,7 +548,10 @@ export default function AdminPage() {
     }
 
     if (paymentsResult.error) {
-      console.error("Payments konnten nicht geladen werden:", paymentsResult.error);
+      console.error(
+        "Payments konnten nicht geladen werden:",
+        paymentsResult.error
+      );
     }
   }
 
@@ -418,7 +568,9 @@ export default function AdminPage() {
     setEditingProduct(null);
     setProductName("");
     setProductPrice("");
-    setProductCategory(PRODUCT_CATALOG[0]?.category ?? "");
+    setProductCategory(
+      PRODUCT_CATALOG[0]?.category ?? ""
+    );
     setProductModal(true);
   }
 
@@ -432,11 +584,20 @@ export default function AdminPage() {
 
   async function saveProduct() {
     const name = productName.trim();
-    const price = Number(productPrice.replace(",", "."));
+    const price = Number(
+      productPrice.replace(",", ".")
+    );
     const category = productCategory.trim();
 
-    if (!name || !category || !Number.isFinite(price) || price < 0) {
-      setMessage("Bitte alle Felder korrekt ausfüllen.");
+    if (
+      !name ||
+      !category ||
+      !Number.isFinite(price) ||
+      price < 0
+    ) {
+      setMessage(
+        "Bitte alle Felder korrekt ausfüllen."
+      );
       return;
     }
 
@@ -452,7 +613,9 @@ export default function AdminPage() {
 
       if (error) {
         console.error(error);
-        setMessage("Produkt konnte nicht geändert werden.");
+        setMessage(
+          "Produkt konnte nicht geändert werden."
+        );
         return;
       }
 
@@ -468,7 +631,9 @@ export default function AdminPage() {
 
       if (error) {
         console.error(error);
-        setMessage("Produkt konnte nicht erstellt werden.");
+        setMessage(
+          "Produkt konnte nicht erstellt werden."
+        );
         return;
       }
 
@@ -480,7 +645,9 @@ export default function AdminPage() {
   }
 
   async function deleteProduct(id: number) {
-    const product = products.find((item) => item.id === id);
+    const product = products.find(
+      (item) => item.id === id
+    );
 
     if (!product) return;
 
@@ -497,7 +664,9 @@ export default function AdminPage() {
 
     if (error) {
       console.error(error);
-      setMessage("Produkt konnte nicht gelöscht werden.");
+      setMessage(
+        "Produkt konnte nicht gelöscht werden."
+      );
       return;
     }
 
@@ -554,7 +723,9 @@ export default function AdminPage() {
 
     if (error) {
       console.error(error);
-      setMessage("Bestellung konnte nicht abgeschlossen werden.");
+      setMessage(
+        "Bestellung konnte nicht abgeschlossen werden."
+      );
       return;
     }
 
@@ -576,7 +747,9 @@ export default function AdminPage() {
 
     if (error) {
       console.error(error);
-      setMessage("Bestellung konnte nicht gelöscht werden.");
+      setMessage(
+        "Bestellung konnte nicht gelöscht werden."
+      );
       return;
     }
 
@@ -588,81 +761,205 @@ export default function AdminPage() {
      MITARBEITER
      ========================================================= */
 
+  function resetEmployeeForm() {
+    setEditingEmployee(null);
+    setEmployeeName("");
+    setEmployeeEmail("");
+    setEmployeePassword("");
+    setEmployeeRole("waiter");
+  }
+
+  function openAddEmployee() {
+    resetEmployeeForm();
+    setEmployeeModal(true);
+  }
+
+  function openEditEmployee(profile: Profile) {
+    setEditingEmployee(profile);
+    setEmployeeName(profile.name);
+    setEmployeeEmail("");
+    setEmployeePassword("");
+    setEmployeeRole(profile.role);
+    setEmployeeModal(true);
+  }
+
+  function closeEmployeeModal() {
+    if (employeeSaving) return;
+
+    setEmployeeModal(false);
+    resetEmployeeForm();
+  }
+
   async function createEmployee() {
     if (
       !employeeName.trim() ||
       !employeeEmail.trim() ||
       !employeePassword.trim()
     ) {
-      setMessage("Bitte alle Mitarbeiterfelder ausfüllen.");
+      setMessage(
+        "Bitte alle Mitarbeiterfelder ausfüllen."
+      );
       return;
     }
 
+    if (employeePassword.length < 6) {
+      setMessage(
+        "Das Passwort muss mindestens 6 Zeichen lang sein."
+      );
+      return;
+    }
+
+    setEmployeeSaving(true);
+
     try {
-      const response = await fetch("/api/admin/create-user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: employeeName.trim(),
-          email: employeeEmail.trim(),
-          password: employeePassword,
-          role: employeeRole,
-        }),
-      });
+      const response = await fetch(
+        "/api/admin/create-user",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: employeeName.trim(),
+            email: employeeEmail.trim(),
+            password: employeePassword,
+            role: employeeRole,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         setMessage(
-          data.error || "Mitarbeiter konnte nicht erstellt werden."
+          data.error ||
+            "Mitarbeiter konnte nicht erstellt werden."
         );
         return;
       }
 
-      setMessage("Mitarbeiter erfolgreich erstellt.");
+      setMessage(
+        "Mitarbeiter erfolgreich erstellt."
+      );
 
       setEmployeeModal(false);
-      setEmployeeName("");
-      setEmployeeEmail("");
-      setEmployeePassword("");
-      setEmployeeRole("waiter");
+      resetEmployeeForm();
 
       await loadData();
     } catch (error) {
       console.error(error);
-      setMessage("Fehler beim Erstellen des Mitarbeiters.");
+      setMessage(
+        "Fehler beim Erstellen des Mitarbeiters."
+      );
+    } finally {
+      setEmployeeSaving(false);
     }
   }
 
-  async function deleteEmployee(id: string) {
-    const profile = profiles.find((item) => item.id === id);
+  async function updateEmployee() {
+    if (!editingEmployee) return;
 
-    if (!profile) return;
+    if (!employeeName.trim()) {
+      setMessage("Bitte einen Namen eingeben.");
+      return;
+    }
 
-    const confirmed = window.confirm(
-      `Möchtest du "${profile.name}" wirklich löschen?`
-    );
+    if (employeePassword && employeePassword.length < 6) {
+      setMessage(
+        "Das neue Passwort muss mindestens 6 Zeichen lang sein."
+      );
+      return;
+    }
 
-    if (!confirmed) return;
+    setEmployeeSaving(true);
 
     try {
-      const response = await fetch("/api/admin/delete-user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: id,
-        }),
-      });
+      const response = await fetch(
+        "/api/admin/update-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: editingEmployee.id,
+            name: employeeName.trim(),
+            role: employeeRole,
+            password: employeePassword,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         setMessage(
-          data.error || "Mitarbeiter konnte nicht gelöscht werden."
+          data.error ||
+            "Mitarbeiter konnte nicht geändert werden."
+        );
+        return;
+      }
+
+      setMessage(
+        "Mitarbeiter erfolgreich geändert."
+      );
+
+      setEmployeeModal(false);
+      resetEmployeeForm();
+
+      await loadData();
+    } catch (error) {
+      console.error(error);
+      setMessage(
+        "Fehler beim Bearbeiten des Mitarbeiters."
+      );
+    } finally {
+      setEmployeeSaving(false);
+    }
+  }
+
+  async function deleteEmployee(id: string) {
+    const profile = profiles.find(
+      (item) => item.id === id
+    );
+
+    if (!profile) return;
+
+    if (id === currentUserId) {
+      setMessage(
+        "Du kannst deinen eigenen Admin-Account nicht löschen."
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Möchtest du "${profile.name}" wirklich löschen?\n\nDer Mitarbeiter kann sich danach nicht mehr anmelden.`
+    );
+
+    if (!confirmed) return;
+
+    setEmployeeDeletingId(id);
+
+    try {
+      const response = await fetch(
+        "/api/admin/delete-user",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(
+          data.error ||
+            "Mitarbeiter konnte nicht gelöscht werden."
         );
         return;
       }
@@ -672,6 +969,8 @@ export default function AdminPage() {
     } catch (error) {
       console.error(error);
       setMessage("Fehler beim Löschen.");
+    } finally {
+      setEmployeeDeletingId(null);
     }
   }
 
@@ -702,7 +1001,9 @@ export default function AdminPage() {
   const categories = [
     "Alle",
     ...Array.from(
-      new Set(products.map((product) => product.category))
+      new Set(
+        products.map((product) => product.category)
+      )
     ),
   ];
 
@@ -711,8 +1012,12 @@ export default function AdminPage() {
 
     return products.filter((product) => {
       const matchesSearch =
-        product.name.toLowerCase().includes(searchLower) ||
-        product.category.toLowerCase().includes(searchLower);
+        product.name
+          .toLowerCase()
+          .includes(searchLower) ||
+        product.category
+          .toLowerCase()
+          .includes(searchLower);
 
       const matchesCategory =
         categoryFilter === "Alle" ||
@@ -722,25 +1027,28 @@ export default function AdminPage() {
     });
   }, [products, search, categoryFilter]);
 
-  const totalOrderValue = orders.reduce((total, order) => {
-    const items = orderItems.filter(
-      (item) => item.order_id === order.id
-    );
+  const totalOrderValue = orders.reduce(
+    (total, order) => {
+      const items = orderItems.filter(
+        (item) => item.order_id === order.id
+      );
 
-    return (
-      total +
-      items.reduce((sum, item) => {
-        const product = products.find(
-          (p) => p.name === item.product_name
-        );
+      return (
+        total +
+        items.reduce((sum, item) => {
+          const product = products.find(
+            (p) => p.name === item.product_name
+          );
 
-        return (
-          sum +
-          (product?.price ?? 0) * item.quantity
-        );
-      }, 0)
-    );
-  }, 0);
+          return (
+            sum +
+            (product?.price ?? 0) * item.quantity
+          );
+        }, 0)
+      );
+    },
+    0
+  );
 
   /* =========================================================
      STATISTIKEN
@@ -764,35 +1072,56 @@ export default function AdminPage() {
 
   const periodOrders = useMemo(() => {
     const orderIds = new Set(
-      periodPayments.map((payment) => payment.order_id)
+      periodPayments.map(
+        (payment) => payment.order_id
+      )
     );
 
-    return orders.filter((order) => orderIds.has(order.id));
+    return orders.filter((order) =>
+      orderIds.has(order.id)
+    );
   }, [orders, periodPayments]);
 
   const periodRevenue = useMemo(() => {
     return periodPayments.reduce(
-      (sum, payment) => sum + Number(payment.amount),
+      (sum, payment) =>
+        sum + Number(payment.amount),
       0
     );
   }, [periodPayments]);
 
   const cashRevenue = useMemo(() => {
     return periodPayments
-      .filter((payment) => payment.payment_method === "bar")
-      .reduce((sum, payment) => sum + Number(payment.amount), 0);
+      .filter(
+        (payment) =>
+          payment.payment_method === "bar"
+      )
+      .reduce(
+        (sum, payment) =>
+          sum + Number(payment.amount),
+        0
+      );
   }, [periodPayments]);
 
   const cardRevenue = useMemo(() => {
     return periodPayments
-      .filter((payment) => payment.payment_method === "karte")
-      .reduce((sum, payment) => sum + Number(payment.amount), 0);
+      .filter(
+        (payment) =>
+          payment.payment_method === "karte"
+      )
+      .reduce(
+        (sum, payment) =>
+          sum + Number(payment.amount),
+        0
+      );
   }, [periodPayments]);
 
   const averagePayment = useMemo(() => {
     if (periodPayments.length === 0) return 0;
 
-    return periodRevenue / periodPayments.length;
+    return (
+      periodRevenue / periodPayments.length
+    );
   }, [periodPayments, periodRevenue]);
 
   const averageOrderValue = useMemo(() => {
@@ -817,7 +1146,9 @@ export default function AdminPage() {
         (item) => item.id === payment.waiter_id
       );
 
-      const current = waiterMap.get(payment.waiter_id);
+      const current = waiterMap.get(
+        payment.waiter_id
+      );
 
       if (current) {
         current.amount += Number(payment.amount);
@@ -838,7 +1169,9 @@ export default function AdminPage() {
   }, [periodPayments, profiles]);
 
   const maxWaiterRevenue = Math.max(
-    ...waiterStatistics.map((item) => item.amount),
+    ...waiterStatistics.map(
+      (item) => item.amount
+    ),
     1
   );
 
@@ -872,16 +1205,20 @@ export default function AdminPage() {
 
         const price = product?.price ?? 0;
 
-        const current = productMap.get(item.product_name);
+        const current = productMap.get(
+          item.product_name
+        );
 
         if (current) {
           current.quantity += paidQuantity;
-          current.revenue += paidQuantity * price;
+          current.revenue +=
+            paidQuantity * price;
         } else {
           productMap.set(item.product_name, {
             name: item.product_name,
             quantity: paidQuantity,
-            revenue: paidQuantity * price,
+            revenue:
+              paidQuantity * price,
           });
         }
       });
@@ -893,7 +1230,9 @@ export default function AdminPage() {
   }, [periodOrders, orderItems, products]);
 
   const maxProductRevenue = Math.max(
-    ...productStatistics.map((item) => item.revenue),
+    ...productStatistics.map(
+      (item) => item.revenue
+    ),
     1
   );
 
@@ -901,22 +1240,28 @@ export default function AdminPage() {
     return orders
       .filter((order) => order.finished_at)
       .filter((order) => {
-        const paymentsForOrder = payments.filter(
-          (payment) => payment.order_id === order.id
-        );
+        const paymentsForOrder =
+          payments.filter(
+            (payment) =>
+              payment.order_id === order.id
+          );
 
         if (paymentsForOrder.length === 0) {
           return false;
         }
 
-        return paymentsForOrder.some((payment) => {
-          const date = new Date(payment.created_at);
+        return paymentsForOrder.some(
+          (payment) => {
+            const date = new Date(
+              payment.created_at
+            );
 
-          return (
-            date >= statisticsRange.start &&
-            date <= statisticsRange.end
-          );
-        });
+            return (
+              date >= statisticsRange.start &&
+              date <= statisticsRange.end
+            );
+          }
+        );
       })
       .sort((a, b) => {
         const aDate = new Date(
@@ -940,10 +1285,16 @@ export default function AdminPage() {
     }
 
     return {
-      cash: (cashRevenue / periodRevenue) * 100,
-      card: (cardRevenue / periodRevenue) * 100,
+      cash:
+        (cashRevenue / periodRevenue) * 100,
+      card:
+        (cardRevenue / periodRevenue) * 100,
     };
-  }, [cashRevenue, cardRevenue, periodRevenue]);
+  }, [
+    cashRevenue,
+    cardRevenue,
+    periodRevenue,
+  ]);
 
   const statisticsPeriodLabel = {
     today: "Heute",
@@ -983,6 +1334,7 @@ export default function AdminPage() {
         <div className="flex min-h-screen items-center justify-center">
           <div className="text-center">
             <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-300 border-t-blue-600" />
+
             <p className={muted}>
               Adminbereich wird geladen...
             </p>
@@ -996,7 +1348,9 @@ export default function AdminPage() {
     return (
       <main className={page}>
         <div className="flex min-h-screen items-center justify-center p-6">
-          <div className={`${card} w-full max-w-md p-8 text-center`}>
+          <div
+            className={`${card} w-full max-w-md p-8 text-center`}
+          >
             <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 text-3xl">
               🔒
             </div>
@@ -1010,7 +1364,9 @@ export default function AdminPage() {
             </p>
 
             <button
-              onClick={() => (window.location.href = "/")}
+              onClick={() =>
+                (window.location.href = "/")
+              }
               className="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-700"
             >
               Zurück
@@ -1091,7 +1447,9 @@ export default function AdminPage() {
             {navigation.map((item) => (
               <button
                 key={item.id}
-                onClick={() => setActiveSection(item.id)}
+                onClick={() =>
+                  setActiveSection(item.id)
+                }
                 className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition ${
                   activeSection === item.id
                     ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
@@ -1111,7 +1469,11 @@ export default function AdminPage() {
 
           <div className="border-t border-inherit p-4">
             <button
-              onClick={() => setTheme(dark ? "light" : "dark")}
+              onClick={() =>
+                setTheme(
+                  dark ? "light" : "dark"
+                )
+              }
               className={`mb-2 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm ${
                 dark
                   ? "text-slate-300 hover:bg-white/5"
@@ -1119,7 +1481,9 @@ export default function AdminPage() {
               }`}
             >
               {dark ? "☀️" : "🌙"}
-              {dark ? "Heller Modus" : "Dunkler Modus"}
+              {dark
+                ? "Heller Modus"
+                : "Dunkler Modus"}
             </button>
 
             <button
@@ -1146,7 +1510,8 @@ export default function AdminPage() {
                 <h1 className="text-xl font-bold md:text-2xl">
                   {
                     navigation.find(
-                      (item) => item.id === activeSection
+                      (item) =>
+                        item.id === activeSection
                     )?.label
                   }
                 </h1>
@@ -1287,7 +1652,10 @@ export default function AdminPage() {
                       {formatPrice(
                         payments.reduce(
                           (sum, payment) =>
-                            sum + Number(payment.amount),
+                            sum +
+                            Number(
+                              payment.amount
+                            ),
                           0
                         )
                       )}
@@ -1300,7 +1668,9 @@ export default function AdminPage() {
                 </div>
 
                 <div className="grid gap-6 xl:grid-cols-3">
-                  <div className={`${card} p-6 xl:col-span-2`}>
+                  <div
+                    className={`${card} p-6 xl:col-span-2`}
+                  >
                     <div className="mb-5 flex items-center justify-between">
                       <div>
                         <h3 className="font-bold">
@@ -1314,7 +1684,9 @@ export default function AdminPage() {
 
                       <button
                         onClick={() =>
-                          setActiveSection("orders")
+                          setActiveSection(
+                            "orders"
+                          )
                         }
                         className="text-sm font-semibold text-blue-500"
                       >
@@ -1323,46 +1695,53 @@ export default function AdminPage() {
                     </div>
 
                     <div className="space-y-3">
-                      {orders.slice(0, 6).map((order) => (
-                        <div
-                          key={order.id}
-                          className={`flex items-center justify-between rounded-xl border p-4 ${
-                            dark
-                              ? "border-white/5 bg-white/[0.02]"
-                              : "border-slate-100 bg-slate-50"
-                          }`}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600/10 font-bold text-blue-500">
-                              {order.table_number}
-                            </div>
-
-                            <div>
-                              <div className="font-semibold">
-                                Tisch {order.table_number}
-                              </div>
-
-                              <div
-                                className={`text-xs ${muted}`}
-                              >
-                                {formatDate(order.created_at)}
-                              </div>
-                            </div>
-                          </div>
-
-                          <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                              order.status === "fertig"
-                                ? "bg-green-500/10 text-green-500"
-                                : "bg-orange-500/10 text-orange-500"
+                      {orders
+                        .slice(0, 6)
+                        .map((order) => (
+                          <div
+                            key={order.id}
+                            className={`flex items-center justify-between rounded-xl border p-4 ${
+                              dark
+                                ? "border-white/5 bg-white/[0.02]"
+                                : "border-slate-100 bg-slate-50"
                             }`}
                           >
-                            {order.status === "fertig"
-                              ? "Fertig"
-                              : "Offen"}
-                          </span>
-                        </div>
-                      ))}
+                            <div className="flex items-center gap-4">
+                              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600/10 font-bold text-blue-500">
+                                {order.table_number}
+                              </div>
+
+                              <div>
+                                <div className="font-semibold">
+                                  Tisch{" "}
+                                  {order.table_number}
+                                </div>
+
+                                <div
+                                  className={`text-xs ${muted}`}
+                                >
+                                  {formatDate(
+                                    order.created_at
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                order.status ===
+                                "fertig"
+                                  ? "bg-green-500/10 text-green-500"
+                                  : "bg-orange-500/10 text-orange-500"
+                              }`}
+                            >
+                              {order.status ===
+                              "fertig"
+                                ? "Fertig"
+                                : "Offen"}
+                            </span>
+                          </div>
+                        ))}
 
                       {orders.length === 0 && (
                         <div
@@ -1449,7 +1828,9 @@ export default function AdminPage() {
 
                     <button
                       onClick={() =>
-                        setActiveSection("statistics")
+                        setActiveSection(
+                          "statistics"
+                        )
                       }
                       className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
                     >
@@ -1461,16 +1842,25 @@ export default function AdminPage() {
                     {formatPrice(
                       payments
                         .filter((payment) => {
-                          const today = startOfDay(new Date());
-                          const paymentDate = new Date(
-                            payment.created_at
-                          );
+                          const today =
+                            startOfDay(
+                              new Date()
+                            );
+                          const paymentDate =
+                            new Date(
+                              payment.created_at
+                            );
 
-                          return paymentDate >= today;
+                          return (
+                            paymentDate >= today
+                          );
                         })
                         .reduce(
                           (sum, payment) =>
-                            sum + Number(payment.amount),
+                            sum +
+                            Number(
+                              payment.amount
+                            ),
                           0
                         )
                     )}
@@ -1497,16 +1887,21 @@ export default function AdminPage() {
 
                 <div className="grid gap-4 xl:grid-cols-2">
                   {orders.map((order) => {
-                    const items = orderItems.filter(
-                      (item) => item.order_id === order.id
-                    );
+                    const items =
+                      orderItems.filter(
+                        (item) =>
+                          item.order_id ===
+                          order.id
+                      );
 
                     const total = items.reduce(
                       (sum, item) => {
-                        const product = products.find(
-                          (p) =>
-                            p.name === item.product_name
-                        );
+                        const product =
+                          products.find(
+                            (p) =>
+                              p.name ===
+                              item.product_name
+                          );
 
                         return (
                           sum +
@@ -1517,10 +1912,12 @@ export default function AdminPage() {
                       0
                     );
 
-                    const waiter = profiles.find(
-                      (profile) =>
-                        profile.id === order.waiter_id
-                    );
+                    const waiter =
+                      profiles.find(
+                        (profile) =>
+                          profile.id ===
+                          order.waiter_id
+                      );
 
                     return (
                       <div
@@ -1541,7 +1938,8 @@ export default function AdminPage() {
 
                             <div>
                               <div className="font-bold">
-                                Tisch {order.table_number}
+                                Tisch{" "}
+                                {order.table_number}
                               </div>
 
                               <div
@@ -1559,12 +1957,14 @@ export default function AdminPage() {
 
                           <span
                             className={`rounded-full px-3 py-1 text-xs font-bold ${
-                              order.status === "fertig"
+                              order.status ===
+                              "fertig"
                                 ? "bg-green-500/10 text-green-500"
                                 : "bg-orange-500/10 text-orange-500"
                             }`}
                           >
-                            {order.status === "fertig"
+                            {order.status ===
+                            "fertig"
                               ? "Fertig"
                               : "Offen"}
                           </span>
@@ -1583,7 +1983,9 @@ export default function AdminPage() {
                               >
                                 <span>
                                   {item.quantity}×{" "}
-                                  {item.product_name}
+                                  {
+                                    item.product_name
+                                  }
                                 </span>
 
                                 <span className="font-semibold">
@@ -1592,7 +1994,8 @@ export default function AdminPage() {
                                       (p) =>
                                         p.name ===
                                         item.product_name
-                                    )?.price ?? 0) *
+                                    )?.price ??
+                                      0) *
                                       item.quantity
                                   )}
                                 </span>
@@ -1609,7 +2012,9 @@ export default function AdminPage() {
                           }`}
                         >
                           <div>
-                            <div className={`text-xs ${muted}`}>
+                            <div
+                              className={`text-xs ${muted}`}
+                            >
                               Gesamt
                             </div>
 
@@ -1619,10 +2024,13 @@ export default function AdminPage() {
                           </div>
 
                           <div className="flex gap-2">
-                            {order.status === "offen" && (
+                            {order.status ===
+                              "offen" && (
                               <button
                                 onClick={() =>
-                                  finishOrder(order.id)
+                                  finishOrder(
+                                    order.id
+                                  )
                                 }
                                 className="rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
                               >
@@ -1632,7 +2040,9 @@ export default function AdminPage() {
 
                             <button
                               onClick={() =>
-                                deleteOrder(order.id)
+                                deleteOrder(
+                                  order.id
+                                )
                               }
                               className="rounded-xl bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-500 hover:bg-red-500/20"
                             >
@@ -1646,8 +2056,12 @@ export default function AdminPage() {
                 </div>
 
                 {orders.length === 0 && (
-                  <div className={`${card} p-12 text-center`}>
-                    <div className="text-4xl">🧾</div>
+                  <div
+                    className={`${card} p-12 text-center`}
+                  >
+                    <div className="text-4xl">
+                      🧾
+                    </div>
 
                     <h3 className="mt-4 font-bold">
                       Keine Bestellungen
@@ -1680,7 +2094,7 @@ export default function AdminPage() {
                   </div>
 
                   <button
-                    onClick={() => setEmployeeModal(true)}
+                    onClick={openAddEmployee}
                     className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700"
                   >
                     + Mitarbeiter
@@ -1688,62 +2102,122 @@ export default function AdminPage() {
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {profiles.map((profile) => (
-                    <div
-                      key={profile.id}
-                      className={`${card} p-5`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-lg font-bold text-white">
-                            {profile.name
-                              .charAt(0)
-                              .toUpperCase()}
-                          </div>
+                  {profiles.map((profile) => {
+                    const isCurrentUser =
+                      profile.id === currentUserId;
 
-                          <div>
-                            <div className="font-bold">
-                              {profile.name}
+                    return (
+                      <div
+                        key={profile.id}
+                        className={`${card} p-5`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-lg font-bold text-white">
+                              {profile.name
+                                .charAt(0)
+                                .toUpperCase()}
                             </div>
 
-                            <div
-                              className={`text-xs ${muted}`}
-                            >
-                              Mitarbeiter
+                            <div>
+                              <div className="font-bold">
+                                {profile.name}
+                              </div>
+
+                              <div
+                                className={`text-xs ${muted}`}
+                              >
+                                {isCurrentUser
+                                  ? "Dein Admin-Konto"
+                                  : "Mitarbeiter"}
+                              </div>
                             </div>
                           </div>
+
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-bold ${
+                              profile.role ===
+                              "admin"
+                                ? "bg-purple-500/10 text-purple-500"
+                                : profile.role ===
+                                  "kitchen"
+                                ? "bg-orange-500/10 text-orange-500"
+                                : "bg-blue-500/10 text-blue-500"
+                            }`}
+                          >
+                            {profile.role ===
+                            "admin"
+                              ? "Admin"
+                              : profile.role ===
+                                "kitchen"
+                              ? "Küche"
+                              : "Kellner"}
+                          </span>
                         </div>
 
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-bold ${
-                            profile.role === "admin"
-                              ? "bg-purple-500/10 text-purple-500"
-                              : profile.role === "kitchen"
-                              ? "bg-orange-500/10 text-orange-500"
-                              : "bg-blue-500/10 text-blue-500"
-                          }`}
-                        >
-                          {profile.role === "admin"
-                            ? "Admin"
-                            : profile.role === "kitchen"
-                            ? "Küche"
-                            : "Kellner"}
-                        </span>
-                      </div>
+                        <div className="mt-6 grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() =>
+                              openEditEmployee(
+                                profile
+                              )
+                            }
+                            className={`rounded-xl px-4 py-2.5 text-sm font-semibold ${
+                              dark
+                                ? "bg-white/5 hover:bg-white/10"
+                                : "bg-slate-100 hover:bg-slate-200"
+                            }`}
+                          >
+                            ✏️ Bearbeiten
+                          </button>
 
-                      <div className="mt-6">
-                        <button
-                          onClick={() =>
-                            deleteEmployee(profile.id)
-                          }
-                          className="w-full rounded-xl bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-500/20"
-                        >
-                          Mitarbeiter löschen
-                        </button>
+                          <button
+                            onClick={() =>
+                              deleteEmployee(
+                                profile.id
+                              )
+                            }
+                            disabled={
+                              isCurrentUser ||
+                              employeeDeletingId ===
+                                profile.id
+                            }
+                            className={`rounded-xl px-4 py-2.5 text-sm font-semibold ${
+                              isCurrentUser
+                                ? "cursor-not-allowed bg-slate-500/10 text-slate-500"
+                                : "bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                            }`}
+                          >
+                            {employeeDeletingId ===
+                            profile.id
+                              ? "Löschen..."
+                              : isCurrentUser
+                              ? "Eigenes Konto"
+                              : "🗑️ Löschen"}
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
+
+                {profiles.length === 0 && (
+                  <div
+                    className={`${card} p-12 text-center`}
+                  >
+                    <div className="text-4xl">
+                      👥
+                    </div>
+
+                    <h3 className="mt-4 font-bold">
+                      Keine Mitarbeiter
+                    </h3>
+
+                    <p className={`mt-1 ${muted}`}>
+                      Erstelle den ersten Mitarbeiter.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1790,7 +2264,9 @@ export default function AdminPage() {
                     <input
                       value={search}
                       onChange={(event) =>
-                        setSearch(event.target.value)
+                        setSearch(
+                          event.target.value
+                        )
                       }
                       placeholder="Produkt suchen..."
                       className={inputClass}
@@ -1799,77 +2275,92 @@ export default function AdminPage() {
                     <select
                       value={categoryFilter}
                       onChange={(event) =>
-                        setCategoryFilter(event.target.value)
+                        setCategoryFilter(
+                          event.target.value
+                        )
                       }
                       className={inputClass}
                     >
-                      {categories.map((category) => (
-                        <option
-                          key={category}
-                          value={category}
-                        >
-                          {category}
-                        </option>
-                      ))}
+                      {categories.map(
+                        (category) => (
+                          <option
+                            key={category}
+                            value={category}
+                          >
+                            {category}
+                          </option>
+                        )
+                      )}
                     </select>
                   </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                  {filteredProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className={`${card} group overflow-hidden transition hover:-translate-y-0.5 hover:shadow-xl`}
-                    >
-                      <div className="p-5">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="truncate text-base font-bold">
-                              {product.name}
+                  {filteredProducts.map(
+                    (product) => (
+                      <div
+                        key={product.id}
+                        className={`${card} group overflow-hidden transition hover:-translate-y-0.5 hover:shadow-xl`}
+                      >
+                        <div className="p-5">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="truncate text-base font-bold">
+                                {product.name}
+                              </div>
+
+                              <div
+                                className={`mt-1 text-xs ${muted}`}
+                              >
+                                {product.category}
+                              </div>
                             </div>
 
-                            <div
-                              className={`mt-1 text-xs ${muted}`}
+                            <div className="shrink-0 rounded-xl bg-blue-500/10 px-3 py-2 text-sm font-bold text-blue-500">
+                              {formatPrice(
+                                product.price
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="mt-5 grid grid-cols-2 gap-2">
+                            <button
+                              onClick={() =>
+                                openEditProduct(
+                                  product
+                                )
+                              }
+                              className={`rounded-xl px-3 py-2.5 text-sm font-semibold ${
+                                dark
+                                  ? "bg-white/5 hover:bg-white/10"
+                                  : "bg-slate-100 hover:bg-slate-200"
+                              }`}
                             >
-                              {product.category}
-                            </div>
+                              ✏️ Bearbeiten
+                            </button>
+
+                            <button
+                              onClick={() =>
+                                deleteProduct(
+                                  product.id
+                                )
+                              }
+                              className="rounded-xl bg-red-500/10 px-3 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-500/20"
+                            >
+                              🗑️ Löschen
+                            </button>
                           </div>
-
-                          <div className="shrink-0 rounded-xl bg-blue-500/10 px-3 py-2 text-sm font-bold text-blue-500">
-                            {formatPrice(product.price)}
-                          </div>
-                        </div>
-
-                        <div className="mt-5 grid grid-cols-2 gap-2">
-                          <button
-                            onClick={() =>
-                              openEditProduct(product)
-                            }
-                            className={`rounded-xl px-3 py-2.5 text-sm font-semibold ${
-                              dark
-                                ? "bg-white/5 hover:bg-white/10"
-                                : "bg-slate-100 hover:bg-slate-200"
-                            }`}
-                          >
-                            ✏️ Bearbeiten
-                          </button>
-
-                          <button
-                            onClick={() =>
-                              deleteProduct(product.id)
-                            }
-                            className="rounded-xl bg-red-500/10 px-3 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-500/20"
-                          >
-                            🗑️ Löschen
-                          </button>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
 
-                {filteredProducts.length === 0 && (
-                  <div className={`${card} p-12 text-center`}>
+                {filteredProducts.length ===
+                  0 && (
+                  <div
+                    className={`${card} p-12 text-center`}
+                  >
                     <div className="text-4xl">
                       🔎
                     </div>
@@ -1930,10 +2421,13 @@ export default function AdminPage() {
                         <button
                           key={period.id}
                           onClick={() =>
-                            setStatisticsPeriod(period.id)
+                            setStatisticsPeriod(
+                              period.id
+                            )
                           }
                           className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
-                            statisticsPeriod === period.id
+                            statisticsPeriod ===
+                            period.id
                               ? "bg-blue-600 text-white"
                               : dark
                               ? "text-slate-300 hover:bg-white/5"
@@ -1947,19 +2441,22 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* SUMMARY */}
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                   <div
                     className={`${card} overflow-hidden p-6`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className={`text-sm ${muted}`}>
+                        <div
+                          className={`text-sm ${muted}`}
+                        >
                           Umsatz
                         </div>
 
                         <div className="mt-3 text-3xl font-bold text-emerald-500">
-                          {formatPrice(periodRevenue)}
+                          {formatPrice(
+                            periodRevenue
+                          )}
                         </div>
                       </div>
 
@@ -1968,7 +2465,9 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <div className={`mt-4 text-xs ${muted}`}>
+                    <div
+                      className={`mt-4 text-xs ${muted}`}
+                    >
                       {statisticsPeriodLabel}
                     </div>
                   </div>
@@ -1978,7 +2477,9 @@ export default function AdminPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className={`text-sm ${muted}`}>
+                        <div
+                          className={`text-sm ${muted}`}
+                        >
                           Bestellungen
                         </div>
 
@@ -1992,7 +2493,9 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <div className={`mt-4 text-xs ${muted}`}>
+                    <div
+                      className={`mt-4 text-xs ${muted}`}
+                    >
                       bezahlte Bestellungen
                     </div>
                   </div>
@@ -2002,12 +2505,16 @@ export default function AdminPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className={`text-sm ${muted}`}>
+                        <div
+                          className={`text-sm ${muted}`}
+                        >
                           Bar
                         </div>
 
                         <div className="mt-3 text-3xl font-bold">
-                          {formatPrice(cashRevenue)}
+                          {formatPrice(
+                            cashRevenue
+                          )}
                         </div>
                       </div>
 
@@ -2016,8 +2523,13 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <div className={`mt-4 text-xs ${muted}`}>
-                      {paymentMethodPercentage.cash.toFixed(0)} % des Umsatzes
+                    <div
+                      className={`mt-4 text-xs ${muted}`}
+                    >
+                      {paymentMethodPercentage.cash.toFixed(
+                        0
+                      )}{" "}
+                      % des Umsatzes
                     </div>
                   </div>
 
@@ -2026,12 +2538,16 @@ export default function AdminPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className={`text-sm ${muted}`}>
+                        <div
+                          className={`text-sm ${muted}`}
+                        >
                           Karte
                         </div>
 
                         <div className="mt-3 text-3xl font-bold">
-                          {formatPrice(cardRevenue)}
+                          {formatPrice(
+                            cardRevenue
+                          )}
                         </div>
                       </div>
 
@@ -2040,16 +2556,22 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <div className={`mt-4 text-xs ${muted}`}>
-                      {paymentMethodPercentage.card.toFixed(0)} % des Umsatzes
+                    <div
+                      className={`mt-4 text-xs ${muted}`}
+                    >
+                      {paymentMethodPercentage.card.toFixed(
+                        0
+                      )}{" "}
+                      % des Umsatzes
                     </div>
                   </div>
                 </div>
 
-                {/* SECONDARY KPIs */}
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   <div className={`${card} p-5`}>
-                    <div className={`text-sm ${muted}`}>
+                    <div
+                      className={`text-sm ${muted}`}
+                    >
                       Anzahl Zahlungen
                     </div>
 
@@ -2059,27 +2581,34 @@ export default function AdminPage() {
                   </div>
 
                   <div className={`${card} p-5`}>
-                    <div className={`text-sm ${muted}`}>
+                    <div
+                      className={`text-sm ${muted}`}
+                    >
                       Durchschnittliche Zahlung
                     </div>
 
                     <div className="mt-2 text-2xl font-bold">
-                      {formatPrice(averagePayment)}
+                      {formatPrice(
+                        averagePayment
+                      )}
                     </div>
                   </div>
 
                   <div className={`${card} p-5`}>
-                    <div className={`text-sm ${muted}`}>
+                    <div
+                      className={`text-sm ${muted}`}
+                    >
                       Durchschnitt pro Bestellung
                     </div>
 
                     <div className="mt-2 text-2xl font-bold">
-                      {formatPrice(averageOrderValue)}
+                      {formatPrice(
+                        averageOrderValue
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* PAYMENT SPLIT */}
                 <div className={`${card} p-6`}>
                   <div className="flex items-center justify-between">
                     <div>
@@ -2087,7 +2616,9 @@ export default function AdminPage() {
                         Zahlungsarten
                       </h3>
 
-                      <p className={`mt-1 text-sm ${muted}`}>
+                      <p
+                        className={`mt-1 text-sm ${muted}`}
+                      >
                         Verteilung des Umsatzes
                       </p>
                     </div>
@@ -2131,7 +2662,9 @@ export default function AdminPage() {
                         </div>
 
                         <span className="font-bold">
-                          {formatPrice(cashRevenue)}
+                          {formatPrice(
+                            cashRevenue
+                          )}
                         </span>
                       </div>
 
@@ -2145,14 +2678,15 @@ export default function AdminPage() {
                         </div>
 
                         <span className="font-bold">
-                          {formatPrice(cardRevenue)}
+                          {formatPrice(
+                            cardRevenue
+                          )}
                         </span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* WAITER CHART */}
                 <div className={`${card} p-6`}>
                   <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
                     <div>
@@ -2160,93 +2694,112 @@ export default function AdminPage() {
                         Umsatz pro Kellner
                       </h3>
 
-                      <p className={`mt-1 text-sm ${muted}`}>
+                      <p
+                        className={`mt-1 text-sm ${muted}`}
+                      >
                         Erfasst anhand der Zahlungen des jeweiligen Kellners.
                       </p>
                     </div>
 
-                    <span className={`text-sm ${muted}`}>
-                      {periodPayments.length} Zahlungen
+                    <span
+                      className={`text-sm ${muted}`}
+                    >
+                      {periodPayments.length}{" "}
+                      Zahlungen
                     </span>
                   </div>
 
                   <div className="mt-8 space-y-6">
-                    {waiterStatistics.length === 0 ? (
+                    {waiterStatistics.length ===
+                    0 ? (
                       <div
                         className={`py-10 text-center ${muted}`}
                       >
                         Für diesen Zeitraum gibt es noch keine Zahlungen.
                       </div>
                     ) : (
-                      waiterStatistics.map((waiter) => {
-                        const percentage =
-                          (waiter.amount /
-                            maxWaiterRevenue) *
-                          100;
+                      waiterStatistics.map(
+                        (waiter) => {
+                          const percentage =
+                            (waiter.amount /
+                              maxWaiterRevenue) *
+                            100;
 
-                        return (
-                          <div key={waiter.id}>
-                            <div className="mb-2 flex items-center justify-between gap-4">
-                              <div className="flex min-w-0 items-center gap-3">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-white">
-                                  {waiter.name
-                                    .charAt(0)
-                                    .toUpperCase()}
-                                </div>
-
-                                <div className="min-w-0">
-                                  <div className="truncate font-semibold">
-                                    {waiter.name}
-                                  </div>
-
-                                  <div
-                                    className={`text-xs ${muted}`}
-                                  >
-                                    {waiter.payments} Zahlungen
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="shrink-0 font-bold">
-                                {formatPrice(waiter.amount)}
-                              </div>
-                            </div>
-
+                          return (
                             <div
-                              className={`h-3 overflow-hidden rounded-full ${
-                                dark
-                                  ? "bg-white/5"
-                                  : "bg-slate-100"
-                              }`}
+                              key={waiter.id}
                             >
+                              <div className="mb-2 flex items-center justify-between gap-4">
+                                <div className="flex min-w-0 items-center gap-3">
+                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-white">
+                                    {waiter.name
+                                      .charAt(
+                                        0
+                                      )
+                                      .toUpperCase()}
+                                  </div>
+
+                                  <div className="min-w-0">
+                                    <div className="truncate font-semibold">
+                                      {waiter.name}
+                                    </div>
+
+                                    <div
+                                      className={`text-xs ${muted}`}
+                                    >
+                                      {
+                                        waiter.payments
+                                      }{" "}
+                                      Zahlungen
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="shrink-0 font-bold">
+                                  {formatPrice(
+                                    waiter.amount
+                                  )}
+                                </div>
+                              </div>
+
                               <div
-                                className="h-full rounded-full bg-blue-600 transition-all duration-500"
-                                style={{
-                                  width: `${percentage}%`,
-                                }}
-                              />
+                                className={`h-3 overflow-hidden rounded-full ${
+                                  dark
+                                    ? "bg-white/5"
+                                    : "bg-slate-100"
+                                }`}
+                              >
+                                <div
+                                  className="h-full rounded-full bg-blue-600 transition-all duration-500"
+                                  style={{
+                                    width: `${percentage}%`,
+                                  }}
+                                />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })
+                          );
+                        }
+                      )
                     )}
                   </div>
                 </div>
 
-                {/* PRODUCT CHART */}
                 <div className={`${card} p-6`}>
                   <div>
                     <h3 className="text-lg font-bold">
                       Umsatz nach Produkten
                     </h3>
 
-                    <p className={`mt-1 text-sm ${muted}`}>
+                    <p
+                      className={`mt-1 text-sm ${muted}`}
+                    >
                       Bezahlt verkaufte Artikel im gewählten Zeitraum.
                     </p>
                   </div>
 
                   <div className="mt-8 space-y-5">
-                    {productStatistics.length === 0 ? (
+                    {productStatistics.length ===
+                    0 ? (
                       <div
                         className={`py-10 text-center ${muted}`}
                       >
@@ -2262,7 +2815,9 @@ export default function AdminPage() {
                             100;
 
                           return (
-                            <div key={product.name}>
+                            <div
+                              key={product.name}
+                            >
                               <div className="mb-2 flex items-center justify-between gap-4">
                                 <div className="min-w-0">
                                   <div className="truncate font-semibold">
@@ -2272,12 +2827,17 @@ export default function AdminPage() {
                                   <div
                                     className={`text-xs ${muted}`}
                                   >
-                                    {product.quantity} verkauft
+                                    {
+                                      product.quantity
+                                    }{" "}
+                                    verkauft
                                   </div>
                                 </div>
 
                                 <div className="shrink-0 font-bold">
-                                  {formatPrice(product.revenue)}
+                                  {formatPrice(
+                                    product.revenue
+                                  )}
                                 </div>
                               </div>
 
@@ -2302,8 +2862,9 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* HISTORICAL ORDERS */}
-                <div className={`${card} overflow-hidden`}>
+                <div
+                  className={`${card} overflow-hidden`}
+                >
                   <div className="border-b border-inherit p-6">
                     <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
                       <div>
@@ -2311,13 +2872,17 @@ export default function AdminPage() {
                           Historische Bestellungen
                         </h3>
 
-                        <p className={`mt-1 text-sm ${muted}`}>
-                          Bezahlte Bestellungen für {statisticsPeriodLabel.toLowerCase()}.
+                        <p
+                          className={`mt-1 text-sm ${muted}`}
+                        >
+                          Bezahlte Bestellungen für{" "}
+                          {statisticsPeriodLabel.toLowerCase()}.
                         </p>
                       </div>
 
                       <span className="rounded-xl bg-green-500/10 px-3 py-2 text-sm font-semibold text-green-500">
-                        {historicalOrders.length} Bestellungen
+                        {historicalOrders.length}{" "}
+                        Bestellungen
                       </span>
                     </div>
                   </div>
@@ -2359,114 +2924,129 @@ export default function AdminPage() {
                       </thead>
 
                       <tbody>
-                        {historicalOrders.map((order) => {
-                          const orderPayments =
-                            payments.filter(
-                              (payment) =>
-                                payment.order_id ===
-                                order.id
-                            );
+                        {historicalOrders.map(
+                          (order) => {
+                            const orderPayments =
+                              payments.filter(
+                                (payment) =>
+                                  payment.order_id ===
+                                  order.id
+                              );
 
-                          const orderRevenue =
-                            orderPayments.reduce(
-                              (sum, payment) =>
-                                sum +
-                                Number(payment.amount),
-                              0
-                            );
+                            const orderRevenue =
+                              orderPayments.reduce(
+                                (
+                                  sum,
+                                  payment
+                                ) =>
+                                  sum +
+                                  Number(
+                                    payment.amount
+                                  ),
+                                0
+                              );
 
-                          const waiter =
-                            profiles.find(
-                              (profile) =>
-                                profile.id ===
-                                order.waiter_id
-                            );
+                            const waiter =
+                              profiles.find(
+                                (profile) =>
+                                  profile.id ===
+                                  order.waiter_id
+                              );
 
-                          const payingWaiters =
-                            Array.from(
-                              new Set(
-                                orderPayments.map(
-                                  (payment) =>
-                                    payment.waiter_id
+                            const payingWaiters =
+                              Array.from(
+                                new Set(
+                                  orderPayments.map(
+                                    (payment) =>
+                                      payment.waiter_id
+                                  )
                                 )
                               )
-                            )
-                              .map((id) =>
-                                profiles.find(
-                                  (profile) =>
-                                    profile.id === id
-                                )?.name
-                              )
-                              .filter(Boolean);
+                                .map((id) =>
+                                  profiles.find(
+                                    (profile) =>
+                                      profile.id ===
+                                      id
+                                  )?.name
+                                )
+                                .filter(Boolean);
 
-                          return (
-                            <tr
-                              key={order.id}
-                              className={`border-t ${
-                                dark
-                                  ? "border-white/5 hover:bg-white/[0.02]"
-                                  : "border-slate-100 hover:bg-slate-50"
-                              }`}
-                            >
-                              <td className="px-6 py-4">
-                                <div className="font-semibold">
-                                  #{order.id}
-                                </div>
-                              </td>
-
-                              <td className="px-6 py-4">
-                                <span className="rounded-lg bg-blue-500/10 px-2.5 py-1 font-semibold text-blue-500">
-                                  Tisch {order.table_number}
-                                </span>
-                              </td>
-
-                              <td
-                                className={`px-6 py-4 ${muted}`}
+                            return (
+                              <tr
+                                key={order.id}
+                                className={`border-t ${
+                                  dark
+                                    ? "border-white/5 hover:bg-white/[0.02]"
+                                    : "border-slate-100 hover:bg-slate-50"
+                                }`}
                               >
-                                {formatDate(
-                                  order.created_at
-                                )}
-                              </td>
-
-                              <td className="px-6 py-4">
-                                <div>
-                                  {waiter?.name ??
-                                    "Unbekannt"}
-                                </div>
-
-                                {payingWaiters.length >
-                                  0 && (
-                                  <div
-                                    className={`mt-1 text-xs ${muted}`}
-                                  >
-                                    Kassiert:{" "}
-                                    {payingWaiters.join(", ")}
+                                <td className="px-6 py-4">
+                                  <div className="font-semibold">
+                                    #{order.id}
                                   </div>
-                                )}
-                              </td>
+                                </td>
 
-                              <td className="px-6 py-4">
-                                <span className="rounded-full bg-green-500/10 px-3 py-1 text-xs font-bold text-green-500">
-                                  Bezahlt
-                                </span>
-                              </td>
+                                <td className="px-6 py-4">
+                                  <span className="rounded-lg bg-blue-500/10 px-2.5 py-1 font-semibold text-blue-500">
+                                    Tisch{" "}
+                                    {
+                                      order.table_number
+                                    }
+                                  </span>
+                                </td>
 
-                              <td className="px-6 py-4 text-right font-bold">
-                                {formatPrice(orderRevenue)}
-                              </td>
-                            </tr>
-                          );
-                        })}
+                                <td
+                                  className={`px-6 py-4 ${muted}`}
+                                >
+                                  {formatDate(
+                                    order.created_at
+                                  )}
+                                </td>
+
+                                <td className="px-6 py-4">
+                                  <div>
+                                    {waiter?.name ??
+                                      "Unbekannt"}
+                                  </div>
+
+                                  {payingWaiters.length >
+                                    0 && (
+                                    <div
+                                      className={`mt-1 text-xs ${muted}`}
+                                    >
+                                      Kassiert:{" "}
+                                      {payingWaiters.join(
+                                        ", "
+                                      )}
+                                    </div>
+                                  )}
+                                </td>
+
+                                <td className="px-6 py-4">
+                                  <span className="rounded-full bg-green-500/10 px-3 py-1 text-xs font-bold text-green-500">
+                                    Bezahlt
+                                  </span>
+                                </td>
+
+                                <td className="px-6 py-4 text-right font-bold">
+                                  {formatPrice(
+                                    orderRevenue
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          }
+                        )}
                       </tbody>
                     </table>
                   </div>
 
-                  {historicalOrders.length === 0 && (
+                  {historicalOrders.length ===
+                    0 && (
                     <div
                       className={`p-12 text-center ${muted}`}
                     >
-                      In diesem Zeitraum gibt es noch keine historischen
-                      Zahlungen.
+                      In diesem Zeitraum gibt es noch keine historischen Zahlungen.
                     </div>
                   )}
                 </div>
@@ -2496,14 +3076,18 @@ export default function AdminPage() {
                         Erscheinungsbild
                       </h3>
 
-                      <p className={`mt-1 text-sm ${muted}`}>
+                      <p
+                        className={`mt-1 text-sm ${muted}`}
+                      >
                         Zwischen hellem und dunklem Design wechseln.
                       </p>
                     </div>
 
                     <button
                       onClick={() =>
-                        setTheme(dark ? "light" : "dark")
+                        setTheme(
+                          dark ? "light" : "dark"
+                        )
                       }
                       className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white"
                     >
@@ -2519,9 +3103,10 @@ export default function AdminPage() {
                     Menü
                   </h3>
 
-                  <p className={`mt-1 text-sm ${muted}`}>
-                    Produkte aus dem hinterlegten Katalog automatisch
-                    anlegen.
+                  <p
+                    className={`mt-1 text-sm ${muted}`}
+                  >
+                    Produkte aus dem hinterlegten Katalog automatisch anlegen.
                   </p>
 
                   <button
@@ -2560,13 +3145,17 @@ export default function AdminPage() {
                     : "Neues Produkt"}
                 </h2>
 
-                <p className={`mt-1 text-sm ${muted}`}>
+                <p
+                  className={`mt-1 text-sm ${muted}`}
+                >
                   Produktname, Preis und Kategorie
                 </p>
               </div>
 
               <button
-                onClick={() => setProductModal(false)}
+                onClick={() =>
+                  setProductModal(false)
+                }
                 className={`rounded-xl p-2 ${
                   dark
                     ? "hover:bg-white/10"
@@ -2586,7 +3175,9 @@ export default function AdminPage() {
                 <input
                   value={productName}
                   onChange={(event) =>
-                    setProductName(event.target.value)
+                    setProductName(
+                      event.target.value
+                    )
                   }
                   className={inputClass}
                   placeholder="z. B. Döner"
@@ -2602,7 +3193,9 @@ export default function AdminPage() {
                   <input
                     value={productPrice}
                     onChange={(event) =>
-                      setProductPrice(event.target.value)
+                      setProductPrice(
+                        event.target.value
+                      )
                     }
                     className={`${inputClass} pr-12`}
                     placeholder="8,50"
@@ -2625,7 +3218,9 @@ export default function AdminPage() {
                 <input
                   value={productCategory}
                   onChange={(event) =>
-                    setProductCategory(event.target.value)
+                    setProductCategory(
+                      event.target.value
+                    )
                   }
                   list="product-categories"
                   className={inputClass}
@@ -2633,12 +3228,14 @@ export default function AdminPage() {
                 />
 
                 <datalist id="product-categories">
-                  {PRODUCT_CATALOG.map((item, index) => (
-                    <option
-                      key={`${item.category}-${index}`}
-                      value={item.category}
-                    />
-                  ))}
+                  {PRODUCT_CATALOG.map(
+                    (item, index) => (
+                      <option
+                        key={`${item.category}-${index}`}
+                        value={item.category}
+                      />
+                    )
+                  )}
                 </datalist>
               </div>
             </div>
@@ -2651,7 +3248,9 @@ export default function AdminPage() {
               }`}
             >
               <button
-                onClick={() => setProductModal(false)}
+                onClick={() =>
+                  setProductModal(false)
+                }
                 className={`flex-1 rounded-xl px-4 py-3 font-semibold ${
                   dark
                     ? "bg-white/5 hover:bg-white/10"
@@ -2692,16 +3291,23 @@ export default function AdminPage() {
             >
               <div>
                 <h2 className="text-xl font-bold">
-                  Mitarbeiter erstellen
+                  {editingEmployee
+                    ? "Mitarbeiter bearbeiten"
+                    : "Mitarbeiter erstellen"}
                 </h2>
 
-                <p className={`mt-1 text-sm ${muted}`}>
-                  Neuen Benutzer anlegen
+                <p
+                  className={`mt-1 text-sm ${muted}`}
+                >
+                  {editingEmployee
+                    ? "Name, Rolle und optionales Passwort ändern"
+                    : "Neuen Benutzer anlegen"}
                 </p>
               </div>
 
               <button
-                onClick={() => setEmployeeModal(false)}
+                onClick={closeEmployeeModal}
+                disabled={employeeSaving}
                 className={`rounded-xl p-2 ${
                   dark
                     ? "hover:bg-white/10"
@@ -2721,43 +3327,88 @@ export default function AdminPage() {
                 <input
                   value={employeeName}
                   onChange={(event) =>
-                    setEmployeeName(event.target.value)
+                    setEmployeeName(
+                      event.target.value
+                    )
                   }
                   className={inputClass}
                   placeholder="z. B. Max"
+                  disabled={employeeSaving}
                 />
               </div>
 
+              {!editingEmployee && (
+                <div>
+                  <label className="mb-2 block text-sm font-semibold">
+                    E-Mail
+                  </label>
+
+                  <input
+                    value={employeeEmail}
+                    onChange={(event) =>
+                      setEmployeeEmail(
+                        event.target.value
+                      )
+                    }
+                    className={inputClass}
+                    placeholder="mitarbeiter@example.de"
+                    type="email"
+                    disabled={employeeSaving}
+                  />
+                </div>
+              )}
+
+              {editingEmployee && (
+                <div
+                  className={`rounded-xl border p-4 text-sm ${
+                    dark
+                      ? "border-white/10 bg-white/[0.02]"
+                      : "border-slate-200 bg-slate-50"
+                  }`}
+                >
+                  <div
+                    className={`text-xs ${muted}`}
+                  >
+                    Mitarbeiter-ID
+                  </div>
+
+                  <div className="mt-1 break-all font-mono text-xs">
+                    {editingEmployee.id}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="mb-2 block text-sm font-semibold">
-                  E-Mail
-                </label>
-
-                <input
-                  value={employeeEmail}
-                  onChange={(event) =>
-                    setEmployeeEmail(event.target.value)
-                  }
-                  className={inputClass}
-                  placeholder="mitarbeiter@example.de"
-                  type="email"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-semibold">
-                  Passwort
+                  {editingEmployee
+                    ? "Neues Passwort"
+                    : "Passwort"}
                 </label>
 
                 <input
                   value={employeePassword}
                   onChange={(event) =>
-                    setEmployeePassword(event.target.value)
+                    setEmployeePassword(
+                      event.target.value
+                    )
                   }
                   className={inputClass}
-                  placeholder="Passwort"
+                  placeholder={
+                    editingEmployee
+                      ? "Leer lassen = Passwort behalten"
+                      : "Passwort"
+                  }
                   type="password"
+                  disabled={employeeSaving}
                 />
+
+                {editingEmployee && (
+                  <p
+                    className={`mt-2 text-xs ${muted}`}
+                  >
+                    Wenn du das Feld leer lässt, bleibt das bisherige Passwort unverändert.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -2776,6 +3427,7 @@ export default function AdminPage() {
                     )
                   }
                   className={inputClass}
+                  disabled={employeeSaving}
                 >
                   <option value="waiter">
                     Kellner
@@ -2800,23 +3452,35 @@ export default function AdminPage() {
               }`}
             >
               <button
-                onClick={() =>
-                  setEmployeeModal(false)
-                }
+                onClick={closeEmployeeModal}
+                disabled={employeeSaving}
                 className={`flex-1 rounded-xl px-4 py-3 font-semibold ${
                   dark
                     ? "bg-white/5 hover:bg-white/10"
                     : "bg-slate-100 hover:bg-slate-200"
+                } ${
+                  employeeSaving
+                    ? "cursor-not-allowed opacity-50"
+                    : ""
                 }`}
               >
                 Abbrechen
               </button>
 
               <button
-                onClick={createEmployee}
-                className="flex-1 rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-700"
+                onClick={
+                  editingEmployee
+                    ? updateEmployee
+                    : createEmployee
+                }
+                disabled={employeeSaving}
+                className="flex-1 rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Mitarbeiter erstellen
+                {employeeSaving
+                  ? "Speichern..."
+                  : editingEmployee
+                  ? "Änderungen speichern"
+                  : "Mitarbeiter erstellen"}
               </button>
             </div>
           </div>
