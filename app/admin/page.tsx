@@ -37,10 +37,13 @@ type Product = {
   created_at: string;
 };
 
-type DailyStatistic = {
-  date: string;
-  orders: number;
-  finished: number;
+type Payment = {
+  id: number;
+  order_id: number;
+  waiter_id: string;
+  amount: number;
+  payment_method: "bar" | "karte";
+  created_at: string;
 };
 
 type CatalogProduct = {
@@ -49,18 +52,23 @@ type CatalogProduct = {
   category: string;
 };
 
+type StatisticsPeriod =
+  | "today"
+  | "yesterday"
+  | "week"
+  | "month"
+  | "sixMonths";
+
 /* =========================================================
    PRODUKTKATALOG
    ========================================================= */
 
 const PRODUCT_CATALOG: CatalogProduct[] = [
-  /* LAHMACUN */
   { name: "Lahmacun", price: 6.5, category: "Lahmacun-Spezialitäten" },
   { name: "Lahmacun mit Salat", price: 7.5, category: "Lahmacun-Spezialitäten" },
   { name: "Lahmacun mit Dönerfleisch", price: 9.5, category: "Lahmacun-Spezialitäten" },
   { name: "Lahmacun mit Dönerfleisch und Käse", price: 10.5, category: "Lahmacun-Spezialitäten" },
 
-  /* GRILL */
   { name: "Adana Kebab", price: 14.5, category: "Grillspezialitäten" },
   { name: "Urfa Kebab", price: 14.5, category: "Grillspezialitäten" },
   { name: "Hähnchenspieß", price: 14.5, category: "Grillspezialitäten" },
@@ -69,20 +77,17 @@ const PRODUCT_CATALOG: CatalogProduct[] = [
   { name: "Grillteller", price: 20.5, category: "Grillspezialitäten" },
   { name: "Hähnchenflügel", price: 13.5, category: "Grillspezialitäten" },
 
-  /* BURGER */
   { name: "Hamburger", price: 7.5, category: "Burger" },
   { name: "Cheeseburger", price: 8.0, category: "Burger" },
   { name: "Chickenburger", price: 8.0, category: "Burger" },
   { name: "Doppel Cheeseburger", price: 10.5, category: "Burger" },
 
-  /* SALATE */
   { name: "Gemischter Salat", price: 7.0, category: "Salate" },
   { name: "Bauernsalat", price: 8.0, category: "Salate" },
   { name: "Hirtensalat", price: 8.0, category: "Salate" },
   { name: "Thunfischsalat", price: 9.0, category: "Salate" },
   { name: "Döner Salat", price: 10.0, category: "Salate" },
 
-  /* PIZZA */
   { name: "Pizza Margherita", price: 8.0, category: "Pizza (Ø 30 cm)" },
   { name: "Pizza Salami", price: 9.0, category: "Pizza (Ø 30 cm)" },
   { name: "Pizza Schinken", price: 9.0, category: "Pizza (Ø 30 cm)" },
@@ -94,13 +99,11 @@ const PRODUCT_CATALOG: CatalogProduct[] = [
   { name: "Pizza Diavolo", price: 10.5, category: "Pizza (Ø 30 cm)" },
   { name: "Pizza Spezial", price: 12.0, category: "Pizza (Ø 30 cm)" },
 
-  /* FLAMMKUCHEN */
   { name: "Flammkuchen Klassisch", price: 9.0, category: "Flammkuchen" },
   { name: "Flammkuchen Speck", price: 10.0, category: "Flammkuchen" },
   { name: "Flammkuchen Vegetarisch", price: 10.0, category: "Flammkuchen" },
   { name: "Flammkuchen Döner", price: 11.0, category: "Flammkuchen" },
 
-  /* DÖNER */
   { name: "Döner im Fladenbrot", price: 8.0, category: "Döner-Spezialitäten" },
   { name: "Döner mit Käse", price: 9.0, category: "Döner-Spezialitäten" },
   { name: "Döner Teller", price: 12.5, category: "Döner-Spezialitäten" },
@@ -110,13 +113,11 @@ const PRODUCT_CATALOG: CatalogProduct[] = [
   { name: "Dürüm Döner", price: 8.5, category: "Döner-Spezialitäten" },
   { name: "Dürüm Döner mit Käse", price: 9.5, category: "Döner-Spezialitäten" },
 
-  /* FALAFEL */
   { name: "Falafel im Brot", price: 7.0, category: "Falafel-Spezialitäten" },
   { name: "Falafel Dürüm", price: 7.5, category: "Falafel-Spezialitäten" },
   { name: "Falafel Teller", price: 10.5, category: "Falafel-Spezialitäten" },
   { name: "Falafel Box", price: 7.5, category: "Falafel-Spezialitäten" },
 
-  /* EXTRAS */
   { name: "Pommes klein", price: 3.5, category: "Extras" },
   { name: "Pommes groß", price: 5.0, category: "Extras" },
   { name: "Käse", price: 1.0, category: "Extras" },
@@ -125,7 +126,6 @@ const PRODUCT_CATALOG: CatalogProduct[] = [
   { name: "Oliven", price: 1.0, category: "Extras" },
   { name: "Peperoni", price: 1.0, category: "Extras" },
 
-  /* PIDE */
   { name: "Pide mit Käse", price: 9.0, category: "Pide und Seele" },
   { name: "Pide mit Hackfleisch", price: 10.0, category: "Pide und Seele" },
   { name: "Pide mit Spinat", price: 10.0, category: "Pide und Seele" },
@@ -133,7 +133,6 @@ const PRODUCT_CATALOG: CatalogProduct[] = [
   { name: "Seele mit Käse", price: 9.0, category: "Pide und Seele" },
   { name: "Seele mit Salami", price: 10.0, category: "Pide und Seele" },
 
-  /* WARME GETRÄNKE */
   { name: "Türkischer Tee", price: 2.0, category: "Warme Getränke" },
   { name: "Schwarzer Tee", price: 2.5, category: "Warme Getränke" },
   { name: "Kaffee", price: 2.5, category: "Warme Getränke" },
@@ -141,7 +140,6 @@ const PRODUCT_CATALOG: CatalogProduct[] = [
   { name: "Cappuccino", price: 3.5, category: "Warme Getränke" },
   { name: "Latte Macchiato", price: 3.8, category: "Warme Getränke" },
 
-  /* SOFTDRINKS */
   { name: "Coca Cola", price: 3.0, category: "Kalte Getränke – Softdrinks" },
   { name: "Coca Cola Zero", price: 3.0, category: "Kalte Getränke – Softdrinks" },
   { name: "Fanta", price: 3.0, category: "Kalte Getränke – Softdrinks" },
@@ -151,30 +149,25 @@ const PRODUCT_CATALOG: CatalogProduct[] = [
   { name: "Mineralwasser", price: 2.5, category: "Kalte Getränke – Softdrinks" },
   { name: "Stilles Wasser", price: 2.5, category: "Kalte Getränke – Softdrinks" },
 
-  /* SÄFTE */
   { name: "Orangensaft", price: 3.5, category: "Kalte Getränke – Säfte" },
   { name: "Apfelsaft", price: 3.5, category: "Kalte Getränke – Säfte" },
   { name: "Kirschsaft", price: 3.5, category: "Kalte Getränke – Säfte" },
   { name: "Multivitaminsaft", price: 3.5, category: "Kalte Getränke – Säfte" },
 
-  /* SCHWEPPES */
   { name: "Schweppes Tonic", price: 3.5, category: "Schweppes" },
   { name: "Schweppes Bitter Lemon", price: 3.5, category: "Schweppes" },
   { name: "Schweppes Ginger Ale", price: 3.5, category: "Schweppes" },
 
-  /* COCKTAILS */
   { name: "Mojito", price: 8.5, category: "Cocktails" },
   { name: "Caipirinha", price: 8.5, category: "Cocktails" },
   { name: "Pina Colada", price: 8.5, category: "Cocktails" },
   { name: "Sex on the Beach", price: 8.5, category: "Cocktails" },
 
-  /* LONGDRINKS */
   { name: "Gin Tonic", price: 8.0, category: "Longdrinks" },
   { name: "Vodka Lemon", price: 8.0, category: "Longdrinks" },
   { name: "Vodka Orange", price: 8.0, category: "Longdrinks" },
   { name: "Whiskey Cola", price: 8.0, category: "Longdrinks" },
 
-  /* SPIRITUOSEN */
   { name: "Vodka", price: 3.0, category: "Spirituosen" },
   { name: "Whiskey", price: 3.5, category: "Spirituosen" },
   { name: "Jägermeister", price: 3.0, category: "Spirituosen" },
@@ -198,6 +191,75 @@ function formatDate(date: string) {
   });
 }
 
+function startOfDay(date: Date) {
+  const result = new Date(date);
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
+
+function endOfDay(date: Date) {
+  const result = new Date(date);
+  result.setHours(23, 59, 59, 999);
+  return result;
+}
+
+function getPeriodRange(period: StatisticsPeriod) {
+  const now = new Date();
+
+  if (period === "today") {
+    return {
+      start: startOfDay(now),
+      end: endOfDay(now),
+    };
+  }
+
+  if (period === "yesterday") {
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    return {
+      start: startOfDay(yesterday),
+      end: endOfDay(yesterday),
+    };
+  }
+
+  if (period === "week") {
+    const start = startOfDay(now);
+    const day = start.getDay();
+    const difference = day === 0 ? 6 : day - 1;
+
+    start.setDate(start.getDate() - difference);
+
+    return {
+      start,
+      end: endOfDay(now),
+    };
+  }
+
+  if (period === "month") {
+    return {
+      start: new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        1,
+        0,
+        0,
+        0,
+        0
+      ),
+      end: endOfDay(now),
+    };
+  }
+
+  const start = new Date(now);
+  start.setMonth(start.getMonth() - 6);
+
+  return {
+    start: startOfDay(start),
+    end: endOfDay(now),
+  };
+}
+
 /* =========================================================
    ADMIN PAGE
    ========================================================= */
@@ -213,10 +275,14 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
 
   const [activeSection, setActiveSection] = useState<
     "dashboard" | "orders" | "employees" | "products" | "statistics" | "settings"
   >("dashboard");
+
+  const [statisticsPeriod, setStatisticsPeriod] =
+    useState<StatisticsPeriod>("today");
 
   const [message, setMessage] = useState("");
 
@@ -230,9 +296,8 @@ export default function AdminPage() {
   const [employeeName, setEmployeeName] = useState("");
   const [employeeEmail, setEmployeeEmail] = useState("");
   const [employeePassword, setEmployeePassword] = useState("");
-  const [employeeRole, setEmployeeRole] = useState<
-    "waiter" | "kitchen" | "admin"
-  >("waiter");
+  const [employeeRole, setEmployeeRole] =
+    useState<"waiter" | "kitchen" | "admin">("waiter");
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("Alle");
@@ -286,6 +351,7 @@ export default function AdminPage() {
       ordersResult,
       itemsResult,
       productsResult,
+      paymentsResult,
     ] = await Promise.all([
       supabase
         .from("profiles")
@@ -307,6 +373,11 @@ export default function AdminPage() {
         .select("*")
         .order("category", { ascending: true })
         .order("name", { ascending: true }),
+
+      supabase
+        .from("payments")
+        .select("*")
+        .order("created_at", { ascending: false }),
     ]);
 
     if (profilesResult.data) {
@@ -323,6 +394,14 @@ export default function AdminPage() {
 
     if (productsResult.data) {
       setProducts(productsResult.data);
+    }
+
+    if (paymentsResult.data) {
+      setPayments(paymentsResult.data);
+    }
+
+    if (paymentsResult.error) {
+      console.error("Payments konnten nicht geladen werden:", paymentsResult.error);
     }
   }
 
@@ -536,7 +615,9 @@ export default function AdminPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || "Mitarbeiter konnte nicht erstellt werden.");
+        setMessage(
+          data.error || "Mitarbeiter konnte nicht erstellt werden."
+        );
         return;
       }
 
@@ -580,7 +661,9 @@ export default function AdminPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.error || "Mitarbeiter konnte nicht gelöscht werden.");
+        setMessage(
+          data.error || "Mitarbeiter konnte nicht gelöscht werden."
+        );
         return;
       }
 
@@ -593,7 +676,7 @@ export default function AdminPage() {
   }
 
   /* =========================================================
-     BERECHNUNGEN
+     GRUNDLEGENDE BERECHNUNGEN
      ========================================================= */
 
   const openOrders = orders.filter(
@@ -646,21 +729,229 @@ export default function AdminPage() {
 
     return (
       total +
-      items.reduce(
-        (sum, item) => {
-          const product = products.find(
-            (p) => p.name === item.product_name
-          );
+      items.reduce((sum, item) => {
+        const product = products.find(
+          (p) => p.name === item.product_name
+        );
 
-          return (
-            sum +
-            (product?.price ?? 0) * item.quantity
-          );
-        },
-        0
-      )
+        return (
+          sum +
+          (product?.price ?? 0) * item.quantity
+        );
+      }, 0)
     );
   }, 0);
+
+  /* =========================================================
+     STATISTIKEN
+     ========================================================= */
+
+  const statisticsRange = useMemo(
+    () => getPeriodRange(statisticsPeriod),
+    [statisticsPeriod]
+  );
+
+  const periodPayments = useMemo(() => {
+    return payments.filter((payment) => {
+      const date = new Date(payment.created_at);
+
+      return (
+        date >= statisticsRange.start &&
+        date <= statisticsRange.end
+      );
+    });
+  }, [payments, statisticsRange]);
+
+  const periodOrders = useMemo(() => {
+    const orderIds = new Set(
+      periodPayments.map((payment) => payment.order_id)
+    );
+
+    return orders.filter((order) => orderIds.has(order.id));
+  }, [orders, periodPayments]);
+
+  const periodRevenue = useMemo(() => {
+    return periodPayments.reduce(
+      (sum, payment) => sum + Number(payment.amount),
+      0
+    );
+  }, [periodPayments]);
+
+  const cashRevenue = useMemo(() => {
+    return periodPayments
+      .filter((payment) => payment.payment_method === "bar")
+      .reduce((sum, payment) => sum + Number(payment.amount), 0);
+  }, [periodPayments]);
+
+  const cardRevenue = useMemo(() => {
+    return periodPayments
+      .filter((payment) => payment.payment_method === "karte")
+      .reduce((sum, payment) => sum + Number(payment.amount), 0);
+  }, [periodPayments]);
+
+  const averagePayment = useMemo(() => {
+    if (periodPayments.length === 0) return 0;
+
+    return periodRevenue / periodPayments.length;
+  }, [periodPayments, periodRevenue]);
+
+  const averageOrderValue = useMemo(() => {
+    if (periodOrders.length === 0) return 0;
+
+    return periodRevenue / periodOrders.length;
+  }, [periodOrders, periodRevenue]);
+
+  const waiterStatistics = useMemo(() => {
+    const waiterMap = new Map<
+      string,
+      {
+        id: string;
+        name: string;
+        amount: number;
+        payments: number;
+      }
+    >();
+
+    periodPayments.forEach((payment) => {
+      const profile = profiles.find(
+        (item) => item.id === payment.waiter_id
+      );
+
+      const current = waiterMap.get(payment.waiter_id);
+
+      if (current) {
+        current.amount += Number(payment.amount);
+        current.payments += 1;
+      } else {
+        waiterMap.set(payment.waiter_id, {
+          id: payment.waiter_id,
+          name: profile?.name ?? "Unbekannt",
+          amount: Number(payment.amount),
+          payments: 1,
+        });
+      }
+    });
+
+    return Array.from(waiterMap.values()).sort(
+      (a, b) => b.amount - a.amount
+    );
+  }, [periodPayments, profiles]);
+
+  const maxWaiterRevenue = Math.max(
+    ...waiterStatistics.map((item) => item.amount),
+    1
+  );
+
+  const productStatistics = useMemo(() => {
+    const productMap = new Map<
+      string,
+      {
+        name: string;
+        quantity: number;
+        revenue: number;
+      }
+    >();
+
+    periodOrders.forEach((order) => {
+      const items = orderItems.filter(
+        (item) => item.order_id === order.id
+      );
+
+      items.forEach((item) => {
+        const paidQuantity = Math.min(
+          item.paid_quantity ?? 0,
+          item.quantity
+        );
+
+        if (paidQuantity <= 0) return;
+
+        const product = products.find(
+          (productItem) =>
+            productItem.name === item.product_name
+        );
+
+        const price = product?.price ?? 0;
+
+        const current = productMap.get(item.product_name);
+
+        if (current) {
+          current.quantity += paidQuantity;
+          current.revenue += paidQuantity * price;
+        } else {
+          productMap.set(item.product_name, {
+            name: item.product_name,
+            quantity: paidQuantity,
+            revenue: paidQuantity * price,
+          });
+        }
+      });
+    });
+
+    return Array.from(productMap.values()).sort(
+      (a, b) => b.revenue - a.revenue
+    );
+  }, [periodOrders, orderItems, products]);
+
+  const maxProductRevenue = Math.max(
+    ...productStatistics.map((item) => item.revenue),
+    1
+  );
+
+  const historicalOrders = useMemo(() => {
+    return orders
+      .filter((order) => order.finished_at)
+      .filter((order) => {
+        const paymentsForOrder = payments.filter(
+          (payment) => payment.order_id === order.id
+        );
+
+        if (paymentsForOrder.length === 0) {
+          return false;
+        }
+
+        return paymentsForOrder.some((payment) => {
+          const date = new Date(payment.created_at);
+
+          return (
+            date >= statisticsRange.start &&
+            date <= statisticsRange.end
+          );
+        });
+      })
+      .sort((a, b) => {
+        const aDate = new Date(
+          a.finished_at ?? a.created_at
+        ).getTime();
+
+        const bDate = new Date(
+          b.finished_at ?? b.created_at
+        ).getTime();
+
+        return bDate - aDate;
+      });
+  }, [orders, payments, statisticsRange]);
+
+  const paymentMethodPercentage = useMemo(() => {
+    if (periodRevenue <= 0) {
+      return {
+        cash: 0,
+        card: 0,
+      };
+    }
+
+    return {
+      cash: (cashRevenue / periodRevenue) * 100,
+      card: (cardRevenue / periodRevenue) * 100,
+    };
+  }, [cashRevenue, cardRevenue, periodRevenue]);
+
+  const statisticsPeriodLabel = {
+    today: "Heute",
+    yesterday: "Gestern",
+    week: "Diese Woche",
+    month: "Dieser Monat",
+    sixMonths: "Letzte 6 Monate",
+  }[statisticsPeriod];
 
   /* =========================================================
      DESIGN
@@ -692,7 +983,9 @@ export default function AdminPage() {
         <div className="flex min-h-screen items-center justify-center">
           <div className="text-center">
             <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-300 border-t-blue-600" />
-            <p className={muted}>Adminbereich wird geladen...</p>
+            <p className={muted}>
+              Adminbereich wird geladen...
+            </p>
           </div>
         </div>
       </main>
@@ -851,9 +1144,11 @@ export default function AdminPage() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h1 className="text-xl font-bold md:text-2xl">
-                  {navigation.find(
-                    (item) => item.id === activeSection
-                  )?.label}
+                  {
+                    navigation.find(
+                      (item) => item.id === activeSection
+                    )?.label
+                  }
                 </h1>
 
                 <p className={`text-sm ${muted}`}>
@@ -980,20 +1275,26 @@ export default function AdminPage() {
                   <div className={`${card} p-5`}>
                     <div className="flex items-center justify-between">
                       <span className={muted}>
-                        Produkte
+                        Umsatz gesamt
                       </span>
 
-                      <span className="rounded-xl bg-purple-500/10 p-3">
-                        🍽️
+                      <span className="rounded-xl bg-emerald-500/10 p-3">
+                        💰
                       </span>
                     </div>
 
-                    <div className="mt-5 text-3xl font-bold">
-                      {products.length}
+                    <div className="mt-5 text-3xl font-bold text-emerald-500">
+                      {formatPrice(
+                        payments.reduce(
+                          (sum, payment) =>
+                            sum + Number(payment.amount),
+                          0
+                        )
+                      )}
                     </div>
 
                     <div className={`mt-1 text-sm ${muted}`}>
-                      im Menü
+                      bezahlte Umsätze
                     </div>
                   </div>
                 </div>
@@ -1131,6 +1432,48 @@ export default function AdminPage() {
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                <div className={`${card} p-6`}>
+                  <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                    <div>
+                      <h3 className="text-lg font-bold">
+                        Umsatz heute
+                      </h3>
+
+                      <p className={`mt-1 text-sm ${muted}`}>
+                        Aus den tatsächlich gespeicherten Zahlungen.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() =>
+                        setActiveSection("statistics")
+                      }
+                      className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
+                    >
+                      Statistiken öffnen →
+                    </button>
+                  </div>
+
+                  <div className="mt-6 text-4xl font-bold text-emerald-500">
+                    {formatPrice(
+                      payments
+                        .filter((payment) => {
+                          const today = startOfDay(new Date());
+                          const paymentDate = new Date(
+                            payment.created_at
+                          );
+
+                          return paymentDate >= today;
+                        })
+                        .reduce(
+                          (sum, payment) =>
+                            sum + Number(payment.amount),
+                          0
+                        )
+                    )}
                   </div>
                 </div>
               </div>
@@ -1549,124 +1892,583 @@ export default function AdminPage() {
 
             {activeSection === "statistics" && (
               <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold">
-                    Statistiken
-                  </h2>
+                <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
+                  <div>
+                    <h2 className="text-2xl font-bold">
+                      Statistiken 📊
+                    </h2>
 
-                  <p className={`mt-1 ${muted}`}>
-                    Übersicht über Bestellungen und Umsatz
-                  </p>
+                    <p className={`mt-1 ${muted}`}>
+                      Umsatz, Zahlungen und Kellner-Auswertung
+                    </p>
+                  </div>
+
+                  <div className={`${card} p-2`}>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        {
+                          id: "today" as const,
+                          label: "Heute",
+                        },
+                        {
+                          id: "yesterday" as const,
+                          label: "Gestern",
+                        },
+                        {
+                          id: "week" as const,
+                          label: "Woche",
+                        },
+                        {
+                          id: "month" as const,
+                          label: "Monat",
+                        },
+                        {
+                          id: "sixMonths" as const,
+                          label: "6 Monate",
+                        },
+                      ].map((period) => (
+                        <button
+                          key={period.id}
+                          onClick={() =>
+                            setStatisticsPeriod(period.id)
+                          }
+                          className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
+                            statisticsPeriod === period.id
+                              ? "bg-blue-600 text-white"
+                              : dark
+                              ? "text-slate-300 hover:bg-white/5"
+                              : "text-slate-600 hover:bg-slate-100"
+                          }`}
+                        >
+                          {period.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
+                {/* SUMMARY */}
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                  <div className={`${card} p-6`}>
-                    <div className={muted}>
-                      Bestellungen
+                  <div
+                    className={`${card} overflow-hidden p-6`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className={`text-sm ${muted}`}>
+                          Umsatz
+                        </div>
+
+                        <div className="mt-3 text-3xl font-bold text-emerald-500">
+                          {formatPrice(periodRevenue)}
+                        </div>
+                      </div>
+
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-2xl">
+                        💰
+                      </div>
                     </div>
 
-                    <div className="mt-3 text-3xl font-bold">
-                      {orders.length}
+                    <div className={`mt-4 text-xs ${muted}`}>
+                      {statisticsPeriodLabel}
                     </div>
                   </div>
 
-                  <div className={`${card} p-6`}>
-                    <div className={muted}>
-                      Fertige Bestellungen
-                    </div>
+                  <div
+                    className={`${card} overflow-hidden p-6`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className={`text-sm ${muted}`}>
+                          Bestellungen
+                        </div>
 
-                    <div className="mt-3 text-3xl font-bold text-green-500">
-                      {finishedOrders.length}
-                    </div>
-                  </div>
-
-                  <div className={`${card} p-6`}>
-                    <div className={muted}>
-                      Offene Bestellungen
-                    </div>
-
-                    <div className="mt-3 text-3xl font-bold text-orange-500">
-                      {openOrders.length}
-                    </div>
-                  </div>
-
-                  <div className={`${card} p-6`}>
-                    <div className={muted}>
-                      Bestellwert
-                    </div>
-
-                    <div className="mt-3 text-3xl font-bold">
-                      {formatPrice(totalOrderValue)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className={`${card} p-6`}>
-                  <h3 className="font-bold">
-                    Systemübersicht
-                  </h3>
-
-                  <div className="mt-6 grid gap-4 md:grid-cols-3">
-                    <div
-                      className={`rounded-xl p-5 ${
-                        dark
-                          ? "bg-white/5"
-                          : "bg-slate-50"
-                      }`}
-                    >
-                      <div className="text-2xl">
-                        🍽️
+                        <div className="mt-3 text-3xl font-bold">
+                          {periodOrders.length}
+                        </div>
                       </div>
 
-                      <div className="mt-3 text-2xl font-bold">
-                        {products.length}
-                      </div>
-
-                      <div className={`text-sm ${muted}`}>
-                        Produkte
-                      </div>
-                    </div>
-
-                    <div
-                      className={`rounded-xl p-5 ${
-                        dark
-                          ? "bg-white/5"
-                          : "bg-slate-50"
-                      }`}
-                    >
-                      <div className="text-2xl">
-                        👥
-                      </div>
-
-                      <div className="mt-3 text-2xl font-bold">
-                        {profiles.length}
-                      </div>
-
-                      <div className={`text-sm ${muted}`}>
-                        Mitarbeiter
-                      </div>
-                    </div>
-
-                    <div
-                      className={`rounded-xl p-5 ${
-                        dark
-                          ? "bg-white/5"
-                          : "bg-slate-50"
-                      }`}
-                    >
-                      <div className="text-2xl">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-2xl">
                         🧾
                       </div>
+                    </div>
 
-                      <div className="mt-3 text-2xl font-bold">
-                        {orderItems.length}
+                    <div className={`mt-4 text-xs ${muted}`}>
+                      bezahlte Bestellungen
+                    </div>
+                  </div>
+
+                  <div
+                    className={`${card} overflow-hidden p-6`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className={`text-sm ${muted}`}>
+                          Bar
+                        </div>
+
+                        <div className="mt-3 text-3xl font-bold">
+                          {formatPrice(cashRevenue)}
+                        </div>
                       </div>
 
-                      <div className={`text-sm ${muted}`}>
-                        Bestellpositionen
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-500/10 text-2xl">
+                        💵
+                      </div>
+                    </div>
+
+                    <div className={`mt-4 text-xs ${muted}`}>
+                      {paymentMethodPercentage.cash.toFixed(0)} % des Umsatzes
+                    </div>
+                  </div>
+
+                  <div
+                    className={`${card} overflow-hidden p-6`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className={`text-sm ${muted}`}>
+                          Karte
+                        </div>
+
+                        <div className="mt-3 text-3xl font-bold">
+                          {formatPrice(cardRevenue)}
+                        </div>
+                      </div>
+
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/10 text-2xl">
+                        💳
+                      </div>
+                    </div>
+
+                    <div className={`mt-4 text-xs ${muted}`}>
+                      {paymentMethodPercentage.card.toFixed(0)} % des Umsatzes
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECONDARY KPIs */}
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <div className={`${card} p-5`}>
+                    <div className={`text-sm ${muted}`}>
+                      Anzahl Zahlungen
+                    </div>
+
+                    <div className="mt-2 text-2xl font-bold">
+                      {periodPayments.length}
+                    </div>
+                  </div>
+
+                  <div className={`${card} p-5`}>
+                    <div className={`text-sm ${muted}`}>
+                      Durchschnittliche Zahlung
+                    </div>
+
+                    <div className="mt-2 text-2xl font-bold">
+                      {formatPrice(averagePayment)}
+                    </div>
+                  </div>
+
+                  <div className={`${card} p-5`}>
+                    <div className={`text-sm ${muted}`}>
+                      Durchschnitt pro Bestellung
+                    </div>
+
+                    <div className="mt-2 text-2xl font-bold">
+                      {formatPrice(averageOrderValue)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* PAYMENT SPLIT */}
+                <div className={`${card} p-6`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold">
+                        Zahlungsarten
+                      </h3>
+
+                      <p className={`mt-1 text-sm ${muted}`}>
+                        Verteilung des Umsatzes
+                      </p>
+                    </div>
+
+                    <span className="rounded-xl bg-blue-500/10 px-3 py-2 text-sm font-semibold text-blue-500">
+                      {statisticsPeriodLabel}
+                    </span>
+                  </div>
+
+                  <div className="mt-6">
+                    <div
+                      className={`flex h-5 overflow-hidden rounded-full ${
+                        dark
+                          ? "bg-white/5"
+                          : "bg-slate-100"
+                      }`}
+                    >
+                      <div
+                        className="bg-emerald-500 transition-all"
+                        style={{
+                          width: `${paymentMethodPercentage.cash}%`,
+                        }}
+                      />
+
+                      <div
+                        className="bg-purple-500 transition-all"
+                        style={{
+                          width: `${paymentMethodPercentage.card}%`,
+                        }}
+                      />
+                    </div>
+
+                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="h-3 w-3 rounded-full bg-emerald-500" />
+
+                          <span className={muted}>
+                            Bar
+                          </span>
+                        </div>
+
+                        <span className="font-bold">
+                          {formatPrice(cashRevenue)}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="h-3 w-3 rounded-full bg-purple-500" />
+
+                          <span className={muted}>
+                            Karte
+                          </span>
+                        </div>
+
+                        <span className="font-bold">
+                          {formatPrice(cardRevenue)}
+                        </span>
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* WAITER CHART */}
+                <div className={`${card} p-6`}>
+                  <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                    <div>
+                      <h3 className="text-lg font-bold">
+                        Umsatz pro Kellner
+                      </h3>
+
+                      <p className={`mt-1 text-sm ${muted}`}>
+                        Erfasst anhand der Zahlungen des jeweiligen Kellners.
+                      </p>
+                    </div>
+
+                    <span className={`text-sm ${muted}`}>
+                      {periodPayments.length} Zahlungen
+                    </span>
+                  </div>
+
+                  <div className="mt-8 space-y-6">
+                    {waiterStatistics.length === 0 ? (
+                      <div
+                        className={`py-10 text-center ${muted}`}
+                      >
+                        Für diesen Zeitraum gibt es noch keine Zahlungen.
+                      </div>
+                    ) : (
+                      waiterStatistics.map((waiter) => {
+                        const percentage =
+                          (waiter.amount /
+                            maxWaiterRevenue) *
+                          100;
+
+                        return (
+                          <div key={waiter.id}>
+                            <div className="mb-2 flex items-center justify-between gap-4">
+                              <div className="flex min-w-0 items-center gap-3">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-white">
+                                  {waiter.name
+                                    .charAt(0)
+                                    .toUpperCase()}
+                                </div>
+
+                                <div className="min-w-0">
+                                  <div className="truncate font-semibold">
+                                    {waiter.name}
+                                  </div>
+
+                                  <div
+                                    className={`text-xs ${muted}`}
+                                  >
+                                    {waiter.payments} Zahlungen
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="shrink-0 font-bold">
+                                {formatPrice(waiter.amount)}
+                              </div>
+                            </div>
+
+                            <div
+                              className={`h-3 overflow-hidden rounded-full ${
+                                dark
+                                  ? "bg-white/5"
+                                  : "bg-slate-100"
+                              }`}
+                            >
+                              <div
+                                className="h-full rounded-full bg-blue-600 transition-all duration-500"
+                                style={{
+                                  width: `${percentage}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                {/* PRODUCT CHART */}
+                <div className={`${card} p-6`}>
+                  <div>
+                    <h3 className="text-lg font-bold">
+                      Umsatz nach Produkten
+                    </h3>
+
+                    <p className={`mt-1 text-sm ${muted}`}>
+                      Bezahlt verkaufte Artikel im gewählten Zeitraum.
+                    </p>
+                  </div>
+
+                  <div className="mt-8 space-y-5">
+                    {productStatistics.length === 0 ? (
+                      <div
+                        className={`py-10 text-center ${muted}`}
+                      >
+                        Noch keine bezahlten Produkte im Zeitraum.
+                      </div>
+                    ) : (
+                      productStatistics
+                        .slice(0, 10)
+                        .map((product) => {
+                          const percentage =
+                            (product.revenue /
+                              maxProductRevenue) *
+                            100;
+
+                          return (
+                            <div key={product.name}>
+                              <div className="mb-2 flex items-center justify-between gap-4">
+                                <div className="min-w-0">
+                                  <div className="truncate font-semibold">
+                                    {product.name}
+                                  </div>
+
+                                  <div
+                                    className={`text-xs ${muted}`}
+                                  >
+                                    {product.quantity} verkauft
+                                  </div>
+                                </div>
+
+                                <div className="shrink-0 font-bold">
+                                  {formatPrice(product.revenue)}
+                                </div>
+                              </div>
+
+                              <div
+                                className={`h-2.5 overflow-hidden rounded-full ${
+                                  dark
+                                    ? "bg-white/5"
+                                    : "bg-slate-100"
+                                }`}
+                              >
+                                <div
+                                  className="h-full rounded-full bg-purple-500 transition-all duration-500"
+                                  style={{
+                                    width: `${percentage}%`,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })
+                    )}
+                  </div>
+                </div>
+
+                {/* HISTORICAL ORDERS */}
+                <div className={`${card} overflow-hidden`}>
+                  <div className="border-b border-inherit p-6">
+                    <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                      <div>
+                        <h3 className="text-lg font-bold">
+                          Historische Bestellungen
+                        </h3>
+
+                        <p className={`mt-1 text-sm ${muted}`}>
+                          Bezahlte Bestellungen für {statisticsPeriodLabel.toLowerCase()}.
+                        </p>
+                      </div>
+
+                      <span className="rounded-xl bg-green-500/10 px-3 py-2 text-sm font-semibold text-green-500">
+                        {historicalOrders.length} Bestellungen
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[750px] text-left text-sm">
+                      <thead
+                        className={
+                          dark
+                            ? "bg-white/[0.03]"
+                            : "bg-slate-50"
+                        }
+                      >
+                        <tr>
+                          <th className="px-6 py-4 font-semibold">
+                            Bestellung
+                          </th>
+
+                          <th className="px-6 py-4 font-semibold">
+                            Tisch
+                          </th>
+
+                          <th className="px-6 py-4 font-semibold">
+                            Erstellt
+                          </th>
+
+                          <th className="px-6 py-4 font-semibold">
+                            Kellner
+                          </th>
+
+                          <th className="px-6 py-4 font-semibold">
+                            Bezahlt
+                          </th>
+
+                          <th className="px-6 py-4 text-right font-semibold">
+                            Umsatz
+                          </th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {historicalOrders.map((order) => {
+                          const orderPayments =
+                            payments.filter(
+                              (payment) =>
+                                payment.order_id ===
+                                order.id
+                            );
+
+                          const orderRevenue =
+                            orderPayments.reduce(
+                              (sum, payment) =>
+                                sum +
+                                Number(payment.amount),
+                              0
+                            );
+
+                          const waiter =
+                            profiles.find(
+                              (profile) =>
+                                profile.id ===
+                                order.waiter_id
+                            );
+
+                          const payingWaiters =
+                            Array.from(
+                              new Set(
+                                orderPayments.map(
+                                  (payment) =>
+                                    payment.waiter_id
+                                )
+                              )
+                            )
+                              .map((id) =>
+                                profiles.find(
+                                  (profile) =>
+                                    profile.id === id
+                                )?.name
+                              )
+                              .filter(Boolean);
+
+                          return (
+                            <tr
+                              key={order.id}
+                              className={`border-t ${
+                                dark
+                                  ? "border-white/5 hover:bg-white/[0.02]"
+                                  : "border-slate-100 hover:bg-slate-50"
+                              }`}
+                            >
+                              <td className="px-6 py-4">
+                                <div className="font-semibold">
+                                  #{order.id}
+                                </div>
+                              </td>
+
+                              <td className="px-6 py-4">
+                                <span className="rounded-lg bg-blue-500/10 px-2.5 py-1 font-semibold text-blue-500">
+                                  Tisch {order.table_number}
+                                </span>
+                              </td>
+
+                              <td
+                                className={`px-6 py-4 ${muted}`}
+                              >
+                                {formatDate(
+                                  order.created_at
+                                )}
+                              </td>
+
+                              <td className="px-6 py-4">
+                                <div>
+                                  {waiter?.name ??
+                                    "Unbekannt"}
+                                </div>
+
+                                {payingWaiters.length >
+                                  0 && (
+                                  <div
+                                    className={`mt-1 text-xs ${muted}`}
+                                  >
+                                    Kassiert:{" "}
+                                    {payingWaiters.join(", ")}
+                                  </div>
+                                )}
+                              </td>
+
+                              <td className="px-6 py-4">
+                                <span className="rounded-full bg-green-500/10 px-3 py-1 text-xs font-bold text-green-500">
+                                  Bezahlt
+                                </span>
+                              </td>
+
+                              <td className="px-6 py-4 text-right font-bold">
+                                {formatPrice(orderRevenue)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {historicalOrders.length === 0 && (
+                    <div
+                      className={`p-12 text-center ${muted}`}
+                    >
+                      In diesem Zeitraum gibt es noch keine historischen
+                      Zahlungen.
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1831,9 +2633,9 @@ export default function AdminPage() {
                 />
 
                 <datalist id="product-categories">
-                  {PRODUCT_CATALOG.map((item) => (
+                  {PRODUCT_CATALOG.map((item, index) => (
                     <option
-                      key={item.category}
+                      key={`${item.category}-${index}`}
                       value={item.category}
                     />
                   ))}
