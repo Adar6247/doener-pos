@@ -55,7 +55,7 @@ const categoryNames: Record<string, string> = {
   sonstiges: "Sonstiges",
 };
 
-function formatPrice(price: number): string {
+function formatPrice(price: number) {
   return `${price.toFixed(2).replace(".", ",")} €`;
 }
 
@@ -106,9 +106,8 @@ export default function DashboardPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
 
-  const [selectedTable, setSelectedTable] = useState<number | null>(
-    null
-  );
+  const [selectedTable, setSelectedTable] =
+    useState<number | null>(null);
 
   const [cart, setCart] = useState<CartItem[]>([]);
 
@@ -118,20 +117,23 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [showAddOrder, setShowAddOrder] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
+  const [showAddOrder, setShowAddOrder] =
+    useState(false);
 
-  const [paymentMethod, setPaymentMethod] = useState<
-    "bar" | "karte"
-  >("bar");
+  const [showPayment, setShowPayment] =
+    useState(false);
 
-  const [cashReceived, setCashReceived] = useState("");
+  const [paymentMethod, setPaymentMethod] =
+    useState<"bar" | "karte">("bar");
 
-  const [paymentSelection, setPaymentSelection] = useState<
-    PaymentSelection[]
-  >([]);
+  const [cashReceived, setCashReceived] =
+    useState("");
 
-  const [currentUserName, setCurrentUserName] = useState("");
+  const [paymentSelection, setPaymentSelection] =
+    useState<PaymentSelection[]>([]);
+
+  const [currentUserName, setCurrentUserName] =
+    useState("");
 
   async function loadData() {
     const [
@@ -287,22 +289,20 @@ export default function DashboardPage() {
     return result;
   }, [orders, orderItems]);
 
-  const freeTables = Object.values(tableStatuses).filter(
-    (status) => status === "frei"
-  ).length;
+  const freeTables = Object.values(
+    tableStatuses
+  ).filter((status) => status === "frei").length;
 
-  const openTables = Object.values(tableStatuses).filter(
-    (status) => status === "offen"
-  ).length;
+  const openTables = Object.values(
+    tableStatuses
+  ).filter((status) => status === "offen").length;
 
-  const readyTables = Object.values(tableStatuses).filter(
-    (status) => status === "fertig"
-  ).length;
+  const readyTables = Object.values(
+    tableStatuses
+  ).filter((status) => status === "fertig").length;
 
   const selectedTableOrders = useMemo(() => {
-    if (selectedTable === null) {
-      return [];
-    }
+    if (selectedTable === null) return [];
 
     return orders.filter(
       (order) =>
@@ -310,38 +310,47 @@ export default function DashboardPage() {
     );
   }, [orders, selectedTable]);
 
-  const selectedTableOrderIds = useMemo(() => {
-    return selectedTableOrders.map(
-      (order) => order.id
-    );
-  }, [selectedTableOrders]);
+  const selectedTableOrderIds = useMemo(
+    () =>
+      selectedTableOrders.map(
+        (order) => order.id
+      ),
+    [selectedTableOrders]
+  );
 
-  const selectedTableItems = useMemo(() => {
-    return orderItems.filter((item) =>
-      selectedTableOrderIds.includes(
-        item.order_id
-      )
-    );
-  }, [orderItems, selectedTableOrderIds]);
+  const selectedTableItems = useMemo(
+    () =>
+      orderItems.filter((item) =>
+        selectedTableOrderIds.includes(
+          item.order_id
+        )
+      ),
+    [orderItems, selectedTableOrderIds]
+  );
 
-  const openOrder = useMemo(() => {
-    return selectedTableOrders.find(
-      (order) => order.status === "offen"
-    );
-  }, [selectedTableOrders]);
+  const openOrder = useMemo(
+    () =>
+      selectedTableOrders.find(
+        (order) => order.status === "offen"
+      ),
+    [selectedTableOrders]
+  );
 
-  const paymentItems = useMemo(() => {
-    return selectedTableItems
-      .filter(
-        (item) =>
-          item.paid_quantity < item.quantity
-      )
-      .map((item) => ({
-        ...item,
-        remainingQuantity:
-          item.quantity - item.paid_quantity,
-      }));
-  }, [selectedTableItems]);
+  const paymentItems = useMemo(
+    () =>
+      selectedTableItems
+        .filter(
+          (item) =>
+            item.paid_quantity < item.quantity
+        )
+        .map((item) => ({
+          ...item,
+          remainingQuantity:
+            item.quantity -
+            item.paid_quantity,
+        })),
+    [selectedTableItems]
+  );
 
   const filteredProducts = useMemo(() => {
     const searchText = search
@@ -365,14 +374,16 @@ export default function DashboardPage() {
     });
   }, [products, search, category]);
 
-  const cartTotal = useMemo(() => {
-    return cart.reduce(
-      (total, item) =>
-        total +
-        item.product.price * item.quantity,
-      0
-    );
-  }, [cart]);
+  const cartTotal = useMemo(
+    () =>
+      cart.reduce(
+        (total, item) =>
+          total +
+          item.product.price * item.quantity,
+        0
+      ),
+    [cart]
+  );
 
   const paymentTotal = useMemo(() => {
     let total = 0;
@@ -394,8 +405,7 @@ export default function DashboardPage() {
       if (!product) continue;
 
       total +=
-        product.price *
-        selection.quantity;
+        product.price * selection.quantity;
     }
 
     return total;
@@ -506,9 +516,7 @@ export default function DashboardPage() {
             .select("*")
             .single();
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
         if (!newOrder) {
           throw new Error(
@@ -520,20 +528,20 @@ export default function DashboardPage() {
       }
 
       for (const cartItem of cart) {
-        const { data: existingItem, error } =
-          await supabase
-            .from("order_items")
-            .select("*")
-            .eq("order_id", orderId)
-            .eq(
-              "product_name",
-              cartItem.product.name
-            )
-            .maybeSingle();
+        const {
+          data: existingItem,
+          error,
+        } = await supabase
+          .from("order_items")
+          .select("*")
+          .eq("order_id", orderId)
+          .eq(
+            "product_name",
+            cartItem.product.name
+          )
+          .maybeSingle();
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
         if (existingItem) {
           const { error: updateError } =
@@ -553,17 +561,18 @@ export default function DashboardPage() {
             throw updateError;
           }
         } else {
-          const { error: insertError } =
-            await supabase
-              .from("order_items")
-              .insert({
-                order_id: orderId,
-                product_name:
-                  cartItem.product.name,
-                quantity:
-                  cartItem.quantity,
-                paid_quantity: 0,
-              });
+          const {
+            error: insertError,
+          } = await supabase
+            .from("order_items")
+            .insert({
+              order_id: orderId,
+              product_name:
+                cartItem.product.name,
+              quantity:
+                cartItem.quantity,
+              paid_quantity: 0,
+            });
 
           if (insertError) {
             throw insertError;
@@ -610,9 +619,7 @@ export default function DashboardPage() {
           })
           .eq("id", openOrder.id);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       await loadData();
     } catch (error) {
@@ -630,9 +637,7 @@ export default function DashboardPage() {
   }
 
   function openPayment() {
-    if (paymentItems.length === 0) {
-      return;
-    }
+    if (paymentItems.length === 0) return;
 
     setShowAddOrder(false);
     setShowPayment(true);
@@ -667,9 +672,7 @@ export default function DashboardPage() {
         paymentItem.id === itemId
     );
 
-    if (!item) {
-      return;
-    }
+    if (!item) return;
 
     setPaymentSelection(
       (currentSelection) => {
@@ -754,9 +757,7 @@ export default function DashboardPage() {
               item.id === selection.itemId
           );
 
-        if (!currentItem) {
-          continue;
-        }
+        if (!currentItem) continue;
 
         const remaining =
           currentItem.quantity -
@@ -767,9 +768,7 @@ export default function DashboardPage() {
           remaining
         );
 
-        if (quantityToPay <= 0) {
-          continue;
-        }
+        if (quantityToPay <= 0) continue;
 
         const newPaidQuantity =
           currentItem.paid_quantity +
@@ -820,7 +819,6 @@ export default function DashboardPage() {
       }
 
       setOrderItems(updatedItems);
-
       setPaymentSelection([]);
       setCashReceived("");
 
@@ -912,10 +910,23 @@ export default function DashboardPage() {
     setCategory("alle");
   }
 
+  const panel = dark
+    ? "rounded-3xl border border-slate-800 bg-slate-900"
+    : "rounded-3xl border border-slate-200 bg-white";
+
+  const muted = dark
+    ? "text-slate-400"
+    : "text-slate-500";
+
+  const input = dark
+    ? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
+    : "border-slate-300 bg-white text-slate-900 placeholder:text-slate-400";
+
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 px-8 py-6 shadow-xl">
+      <main className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-700 border-t-blue-500" />
           <div className="text-lg font-semibold">
             Kassensystem wird geladen...
           </div>
@@ -924,19 +935,11 @@ export default function DashboardPage() {
     );
   }
 
-  const panelClass = dark
-    ? "rounded-2xl border border-slate-800 bg-slate-900 shadow-xl"
-    : "rounded-2xl border border-slate-200 bg-white shadow-sm";
-
-  const secondaryButton = dark
-    ? "border-slate-700 hover:bg-slate-800"
-    : "border-slate-300 hover:bg-slate-100";
-
   return (
     <main
       className={
         dark
-          ? "min-h-screen bg-slate-950 text-white"
+          ? "min-h-screen bg-[#070b14] text-white"
           : "min-h-screen bg-slate-100 text-slate-900"
       }
     >
@@ -945,21 +948,29 @@ export default function DashboardPage() {
       <header
         className={
           dark
-            ? "border-b border-slate-800 bg-slate-900"
-            : "border-b border-slate-200 bg-white"
+            ? "sticky top-0 z-40 border-b border-slate-800 bg-[#0b101c]/95 backdrop-blur"
+            : "sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur"
         }
       >
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-5">
-          <div>
-            <h1 className="text-2xl font-bold">
-              Döner POS
-            </h1>
+        <div className="mx-auto flex max-w-[1700px] items-center justify-between px-4 py-4 md:px-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-xl shadow-lg shadow-blue-600/20">
+              🍽️
+            </div>
 
-            <p className="mt-1 text-sm text-slate-400">
-              Willkommen,{" "}
-              {currentUserName ||
-                "Mitarbeiter"}
-            </p>
+            <div>
+              <h1 className="text-xl font-black tracking-tight">
+                Döner POS
+              </h1>
+
+              <p
+                className={`text-sm ${muted}`}
+              >
+                Kellner ·{" "}
+                {currentUserName ||
+                  "Mitarbeiter"}
+              </p>
+            </div>
           </div>
 
           <button
@@ -968,7 +979,11 @@ export default function DashboardPage() {
                 dark ? "light" : "dark"
               )
             }
-            className={`rounded-xl border px-4 py-2 text-sm transition ${secondaryButton}`}
+            className={
+              dark
+                ? "rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-semibold transition hover:bg-slate-700"
+                : "rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold transition hover:bg-slate-100"
+            }
           >
             {dark
               ? "☀️ Hell"
@@ -977,56 +992,94 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-[1600px] px-6 py-6">
-        {/* STATUS */}
+      <div className="mx-auto max-w-[1700px] px-4 py-6 md:px-6">
+        {/* STATUSKARTEN */}
 
-        <div className="mb-7 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className={`${panelClass} p-5`}>
-            <div className="text-sm text-slate-400">
-              Freie Tische
-            </div>
+        <div className="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div
+            className={`${panel} p-5 transition hover:-translate-y-0.5`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p
+                  className={`text-sm font-medium ${muted}`}
+                >
+                  Freie Tische
+                </p>
 
-            <div className="mt-2 text-3xl font-bold text-green-500">
-              {freeTables}
+                <p className="mt-2 text-3xl font-black">
+                  {freeTables}
+                </p>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-500/10 text-xl">
+                🟢
+              </div>
             </div>
           </div>
 
-          <div className={`${panelClass} p-5`}>
-            <div className="text-sm text-slate-400">
-              Offene Bestellungen
-            </div>
+          <div
+            className={`${panel} p-5 transition hover:-translate-y-0.5`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p
+                  className={`text-sm font-medium ${muted}`}
+                >
+                  Offene Bestellungen
+                </p>
 
-            <div className="mt-2 text-3xl font-bold text-orange-500">
-              {openTables}
+                <p className="mt-2 text-3xl font-black">
+                  {openTables}
+                </p>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/10 text-xl">
+                🟠
+              </div>
             </div>
           </div>
 
-          <div className={`${panelClass} p-5`}>
-            <div className="text-sm text-slate-400">
-              Bezahlbereit
-            </div>
+          <div
+            className={`${panel} p-5 transition hover:-translate-y-0.5`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p
+                  className={`text-sm font-medium ${muted}`}
+                >
+                  Bezahlbereit
+                </p>
 
-            <div className="mt-2 text-3xl font-bold text-blue-500">
-              {readyTables}
+                <p className="mt-2 text-3xl font-black">
+                  {readyTables}
+                </p>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-xl">
+                🔵
+              </div>
             </div>
           </div>
         </div>
 
-        {/* TISCHE */}
+        {/* TISCHÜBERSICHT */}
 
         {selectedTable === null && (
           <section>
             <div className="mb-5">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-2xl font-black">
                 Tische
               </h2>
 
-              <p className="mt-1 text-sm text-slate-400">
-                Wähle einen Tisch aus
+              <p className={`mt-1 ${muted}`}>
+                Wähle einen Tisch, um eine
+                Bestellung aufzunehmen oder
+                eine Zahlung durchzuführen.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8">
               {Array.from(
                 { length: TABLE_COUNT },
                 (_, index) => {
@@ -1038,19 +1091,33 @@ export default function DashboardPage() {
                       tableNumber
                     ];
 
-                  const classes =
+                  const statusData =
                     status === "frei"
-                      ? "border-green-500/40 bg-green-500/10 hover:bg-green-500/20"
+                      ? {
+                          label: "Frei",
+                          icon: "✓",
+                          color:
+                            "border-green-500/30 bg-green-500/[0.07] hover:border-green-500 hover:bg-green-500/[0.12]",
+                          badge:
+                            "bg-green-500/10 text-green-500",
+                        }
                       : status === "offen"
-                      ? "border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20"
-                      : "border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20";
-
-                  const text =
-                    status === "frei"
-                      ? "Frei"
-                      : status === "offen"
-                      ? "Bestellung offen"
-                      : "Bezahlbereit";
+                      ? {
+                          label: "Bestellung offen",
+                          icon: "●",
+                          color:
+                            "border-orange-500/30 bg-orange-500/[0.07] hover:border-orange-500 hover:bg-orange-500/[0.12]",
+                          badge:
+                            "bg-orange-500/10 text-orange-500",
+                        }
+                      : {
+                          label: "Bezahlbereit",
+                          icon: "€",
+                          color:
+                            "border-blue-500/30 bg-blue-500/[0.07] hover:border-blue-500 hover:bg-blue-500/[0.12]",
+                          badge:
+                            "bg-blue-500/10 text-blue-500",
+                        };
 
                   return (
                     <button
@@ -1060,15 +1127,27 @@ export default function DashboardPage() {
                           tableNumber
                         )
                       }
-                      className={`rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 ${classes}`}
+                      className={`group min-h-[135px] rounded-3xl border p-4 text-left transition hover:-translate-y-1 hover:shadow-xl ${statusData.color}`}
                     >
-                      <div className="text-lg font-bold">
-                        Tisch{" "}
-                        {tableNumber}
+                      <div className="flex items-start justify-between">
+                        <div className="text-lg font-black">
+                          Tisch{" "}
+                          {tableNumber}
+                        </div>
+
+                        <div
+                          className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-black ${statusData.badge}`}
+                        >
+                          {
+                            statusData.icon
+                          }
+                        </div>
                       </div>
 
-                      <div className="mt-2 text-sm text-slate-400">
-                        {text}
+                      <div
+                        className={`mt-8 inline-flex rounded-lg px-2.5 py-1 text-xs font-bold ${statusData.badge}`}
+                      >
+                        {statusData.label}
                       </div>
                     </button>
                   );
@@ -1078,69 +1157,100 @@ export default function DashboardPage() {
           </section>
         )}
 
-        {/* AUSGEWÄHLTER TISCH */}
+        {/* TISCH */}
 
         {selectedTable !== null && (
           <section>
-            <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <button
                   onClick={closeTable}
-                  className="mb-2 text-sm text-slate-400 transition hover:text-slate-900 dark:hover:text-white"
+                  className={`mb-3 text-sm font-semibold transition hover:text-blue-500 ${muted}`}
                 >
-                  ← Zurück zu den Tischen
+                  ← Tischübersicht
                 </button>
 
-                <h2 className="text-2xl font-bold">
-                  Tisch {selectedTable}
-                </h2>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-3xl font-black">
+                    Tisch {selectedTable}
+                  </h2>
+
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-bold ${
+                      tableStatuses[
+                        selectedTable
+                      ] === "frei"
+                        ? "bg-green-500/10 text-green-500"
+                        : tableStatuses[
+                            selectedTable
+                          ] === "offen"
+                        ? "bg-orange-500/10 text-orange-500"
+                        : "bg-blue-500/10 text-blue-500"
+                    }`}
+                  >
+                    {
+                      tableStatuses[
+                        selectedTable
+                      ] === "frei"
+                        ? "Frei"
+                        : tableStatuses[
+                            selectedTable
+                          ] === "offen"
+                        ? "Offen"
+                        : "Bezahlbereit"
+                    }
+                  </span>
+                </div>
               </div>
 
-              <div className="flex flex-wrap gap-3">
-                {!showPayment &&
-                  !showAddOrder && (
-                    <>
+              {!showPayment &&
+                !showAddOrder && (
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={
+                        startAddingOrder
+                      }
+                      className="rounded-2xl bg-orange-500 px-5 py-3 font-bold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:bg-orange-600"
+                    >
+                      + Artikel hinzufügen
+                    </button>
+
+                    {paymentItems.length >
+                      0 && (
                       <button
                         onClick={
-                          startAddingOrder
+                          openPayment
                         }
-                        className="rounded-xl bg-orange-500 px-5 py-3 font-semibold text-white shadow-lg shadow-orange-500/10 transition hover:bg-orange-600"
+                        className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700"
                       >
-                        + Weitere Artikel
+                        💳 Bezahlen
                       </button>
-
-                      {paymentItems.length >
-                        0 && (
-                        <button
-                          onClick={
-                            openPayment
-                          }
-                          className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
-                        >
-                          💳 Zur Bezahlung
-                        </button>
-                      )}
-                    </>
-                  )}
-              </div>
+                    )}
+                  </div>
+                )}
             </div>
 
             {/* ZAHLUNG */}
 
             {showPayment && (
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_400px]">
-                <div
-                  className={`${panelClass} p-6`}
-                >
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_430px]">
+                <div className={`${panel} p-6`}>
                   <div className="mb-6 flex items-center justify-between">
                     <div>
-                      <h3 className="text-xl font-bold">
+                      <p className="text-sm font-bold uppercase tracking-wider text-blue-500">
+                        Tisch {selectedTable}
+                      </p>
+
+                      <h3 className="mt-1 text-2xl font-black">
                         Zahlung
                       </h3>
 
-                      <p className="mt-1 text-sm text-slate-400">
-                        Wähle die Artikel aus,
-                        die jetzt bezahlt werden.
+                      <p
+                        className={`mt-1 text-sm ${muted}`}
+                      >
+                        Wähle die Artikel,
+                        die jetzt bezahlt
+                        werden.
                       </p>
                     </div>
 
@@ -1148,7 +1258,11 @@ export default function DashboardPage() {
                       onClick={
                         closePayment
                       }
-                      className="rounded-lg px-3 py-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl transition ${
+                        dark
+                          ? "bg-slate-800 hover:bg-slate-700"
+                          : "bg-slate-100 hover:bg-slate-200"
+                      }`}
                     >
                       ✕
                     </button>
@@ -1164,8 +1278,8 @@ export default function DashboardPage() {
 
                         const product =
                           products.find(
-                            (productItem) =>
-                              productItem.name ===
+                            (p) =>
+                              p.name ===
                               item.product_name
                           );
 
@@ -1177,31 +1291,33 @@ export default function DashboardPage() {
                             key={item.id}
                             className={
                               dark
-                                ? "rounded-xl border border-slate-700 bg-slate-800 p-4"
-                                : "rounded-xl border border-slate-200 bg-slate-50 p-4"
+                                ? "rounded-2xl border border-slate-800 bg-slate-800/50 p-4"
+                                : "rounded-2xl border border-slate-200 bg-slate-50 p-4"
                             }
                           >
                             <div className="flex items-center justify-between gap-4">
-                              <div>
-                                <div className="font-semibold">
+                              <div className="min-w-0">
+                                <div className="truncate font-bold">
                                   {
                                     item.product_name
                                   }
                                 </div>
 
-                                <div className="mt-1 text-sm text-slate-400">
+                                <div
+                                  className={`mt-1 text-sm ${muted}`}
+                                >
                                   Noch{" "}
                                   {
                                     item.remainingQuantity
                                   }{" "}
-                                  Stück ·{" "}
+                                  ·{" "}
                                   {formatPrice(
                                     price
                                   )}
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2">
+                              <div className="flex shrink-0 items-center gap-2">
                                 <button
                                   onClick={() =>
                                     changePaymentQuantity(
@@ -1209,12 +1325,12 @@ export default function DashboardPage() {
                                       -1
                                     )
                                   }
-                                  className="h-11 w-11 rounded-xl bg-slate-700 text-xl transition hover:bg-slate-600"
+                                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-700 text-xl font-bold transition hover:bg-slate-600"
                                 >
                                   −
                                 </button>
 
-                                <div className="w-12 text-center text-lg font-bold">
+                                <div className="w-8 text-center font-black">
                                   {selected}
                                 </div>
 
@@ -1225,7 +1341,7 @@ export default function DashboardPage() {
                                       1
                                     )
                                   }
-                                  className="h-11 w-11 rounded-xl bg-slate-700 text-xl transition hover:bg-slate-600"
+                                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-xl font-bold text-white transition hover:bg-blue-700"
                                 >
                                   +
                                 </button>
@@ -1234,12 +1350,12 @@ export default function DashboardPage() {
 
                             {selected >
                               0 && (
-                              <div className="mt-3 rounded-lg bg-blue-500/10 px-3 py-2 text-sm font-medium text-blue-500">
-                                Ausgewählt:{" "}
+                              <div className="mt-3 rounded-xl bg-blue-500/10 px-3 py-2 text-sm font-bold text-blue-500">
                                 {selected} ×{" "}
                                 {formatPrice(
                                   price
-                                )}
+                                )}{" "}
+                                ausgewählt
                               </div>
                             )}
                           </div>
@@ -1247,29 +1363,22 @@ export default function DashboardPage() {
                       }
                     )}
                   </div>
-
-                  {paymentItems.length ===
-                    0 && (
-                    <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-6 text-center">
-                      <div className="text-3xl">
-                        ✓
-                      </div>
-
-                      <div className="mt-2 font-semibold">
-                        Alles bezahlt
-                      </div>
-                    </div>
-                  )}
                 </div>
 
-                {/* ZAHLUNGSSEITE */}
-
                 <div
-                  className={`${panelClass} h-fit p-6`}
+                  className={`${panel} h-fit p-6 xl:sticky xl:top-24`}
                 >
-                  <h3 className="mb-4 text-lg font-bold">
-                    Zahlungsart
-                  </h3>
+                  <div className="mb-5">
+                    <p
+                      className={`text-sm ${muted}`}
+                    >
+                      Zahlungsart
+                    </p>
+
+                    <h3 className="mt-1 text-xl font-black">
+                      Zahlung abschließen
+                    </h3>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <button
@@ -1278,11 +1387,13 @@ export default function DashboardPage() {
                           "bar"
                         )
                       }
-                      className={`rounded-xl border p-4 font-semibold transition ${
+                      className={`rounded-2xl border p-4 font-bold transition ${
                         paymentMethod ===
                         "bar"
                           ? "border-green-500 bg-green-500/10 text-green-500"
-                          : secondaryButton
+                          : dark
+                          ? "border-slate-700 bg-slate-800 hover:bg-slate-700"
+                          : "border-slate-300 bg-white hover:bg-slate-100"
                       }`}
                     >
                       💶 Bar
@@ -1294,11 +1405,13 @@ export default function DashboardPage() {
                           "karte"
                         )
                       }
-                      className={`rounded-xl border p-4 font-semibold transition ${
+                      className={`rounded-2xl border p-4 font-bold transition ${
                         paymentMethod ===
                         "karte"
                           ? "border-blue-500 bg-blue-500/10 text-blue-500"
-                          : secondaryButton
+                          : dark
+                          ? "border-slate-700 bg-slate-800 hover:bg-slate-700"
+                          : "border-slate-300 bg-white hover:bg-slate-100"
                       }`}
                     >
                       💳 Karte
@@ -1306,75 +1419,72 @@ export default function DashboardPage() {
                   </div>
 
                   <div
-                    className={`mt-6 border-t pt-5 ${
+                    className={`my-6 border-t ${
                       dark
                         ? "border-slate-800"
                         : "border-slate-200"
                     }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400">
-                        Zu bezahlen
-                      </span>
+                  />
 
-                      <span className="text-2xl font-bold">
-                        {formatPrice(
-                          paymentTotal
-                        )}
-                      </span>
-                    </div>
+                  <div className="flex items-end justify-between">
+                    <span className={muted}>
+                      Zu bezahlen
+                    </span>
 
-                    {paymentMethod ===
-                      "bar" && (
-                      <>
-                        <label className="mb-2 mt-6 block text-sm font-medium text-slate-400">
-                          Gegeben
-                        </label>
-
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          value={
-                            cashReceived
-                          }
-                          onChange={(event) =>
-                            setCashReceived(
-                              event.target
-                                .value
-                            )
-                          }
-                          placeholder="0,00 €"
-                          className={
-                            dark
-                              ? "w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-4 text-lg outline-none transition focus:border-blue-500"
-                              : "w-full rounded-xl border border-slate-300 bg-white px-4 py-4 text-lg outline-none transition focus:border-blue-500"
-                          }
-                        />
-
-                        <div className="mt-5 flex items-center justify-between">
-                          <span className="text-slate-400">
-                            Rückgeld
-                          </span>
-
-                          <span className="text-2xl font-bold text-green-500">
-                            {formatPrice(
-                              changeAmount
-                            )}
-                          </span>
-                        </div>
-                      </>
-                    )}
-
-                    {paymentMethod ===
-                      "karte" && (
-                      <div className="mt-5 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-500">
-                        Die Kartenzahlung wird
-                        außerhalb des
-                        Kassensystems
-                        durchgeführt.
-                      </div>
-                    )}
+                    <span className="text-3xl font-black">
+                      {formatPrice(
+                        paymentTotal
+                      )}
+                    </span>
                   </div>
+
+                  {paymentMethod ===
+                    "bar" && (
+                    <>
+                      <label
+                        className={`mt-6 mb-2 block text-sm font-bold ${muted}`}
+                      >
+                        Gegeben
+                      </label>
+
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={
+                          cashReceived
+                        }
+                        onChange={(e) =>
+                          setCashReceived(
+                            e.target.value
+                          )
+                        }
+                        placeholder="0,00 €"
+                        className={`w-full rounded-2xl border px-4 py-4 text-xl font-bold outline-none transition focus:border-blue-500 ${input}`}
+                      />
+
+                      <div className="mt-5 flex items-center justify-between rounded-2xl bg-green-500/10 p-4">
+                        <span className="font-semibold text-green-500">
+                          Rückgeld
+                        </span>
+
+                        <span className="text-2xl font-black text-green-500">
+                          {formatPrice(
+                            changeAmount
+                          )}
+                        </span>
+                      </div>
+                    </>
+                  )}
+
+                  {paymentMethod ===
+                    "karte" && (
+                    <div className="mt-5 rounded-2xl border border-blue-500/20 bg-blue-500/10 p-4 text-sm text-blue-500">
+                      💳 Kartenzahlung wird
+                      außerhalb des
+                      Kassensystems
+                      durchgeführt.
+                    </div>
+                  )}
 
                   <button
                     onClick={
@@ -1390,7 +1500,7 @@ export default function DashboardPage() {
                         numericCashReceived <
                           paymentTotal)
                     }
-                    className="mt-6 w-full rounded-xl bg-green-600 px-5 py-4 text-lg font-bold text-white shadow-lg shadow-green-600/20 transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="mt-6 w-full rounded-2xl bg-green-600 px-5 py-4 text-lg font-black text-white shadow-lg shadow-green-600/20 transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {saving
                       ? "Speichere..."
@@ -1404,7 +1514,11 @@ export default function DashboardPage() {
                       closePayment
                     }
                     disabled={saving}
-                    className={`mt-3 w-full rounded-xl border px-5 py-3 font-semibold transition ${secondaryButton}`}
+                    className={`mt-3 w-full rounded-2xl border px-5 py-3 font-bold transition ${
+                      dark
+                        ? "border-slate-700 hover:bg-slate-800"
+                        : "border-slate-300 hover:bg-slate-100"
+                    }`}
                   >
                     Abbrechen
                   </button>
@@ -1412,30 +1526,31 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* BESTELLUNG HINZUFÜGEN */}
+            {/* ARTIKEL HINZUFÜGEN */}
 
             {showAddOrder && (
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_400px]">
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_430px]">
                 <div>
                   <div
-                    className={`${panelClass} mb-5 p-5`}
+                    className={`${panel} mb-5 p-5`}
                   >
-                    <div className="flex flex-col gap-3 md:flex-row">
-                      <input
-                        value={search}
-                        onChange={(event) =>
-                          setSearch(
-                            event.target
-                              .value
-                          )
-                        }
-                        placeholder="Produkt suchen..."
-                        className={
-                          dark
-                            ? "flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 outline-none focus:border-blue-500"
-                            : "flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-blue-500"
-                        }
-                      />
+                    <div className="flex gap-3">
+                      <div className="relative flex-1">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                          🔎
+                        </span>
+
+                        <input
+                          value={search}
+                          onChange={(e) =>
+                            setSearch(
+                              e.target.value
+                            )
+                          }
+                          placeholder="Produkt suchen..."
+                          className={`w-full rounded-2xl border py-3 pl-11 pr-4 outline-none focus:border-blue-500 ${input}`}
+                        />
+                      </div>
 
                       <button
                         onClick={() => {
@@ -1444,9 +1559,13 @@ export default function DashboardPage() {
                             "alle"
                           );
                         }}
-                        className={`rounded-xl border px-4 py-3 transition ${secondaryButton}`}
+                        className={`rounded-2xl border px-4 font-semibold transition ${
+                          dark
+                            ? "border-slate-700 hover:bg-slate-800"
+                            : "border-slate-300 hover:bg-slate-100"
+                        }`}
                       >
-                        Zurücksetzen
+                        Reset
                       </button>
                     </div>
 
@@ -1462,10 +1581,10 @@ export default function DashboardPage() {
                                 key
                               )
                             }
-                            className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition ${
+                            className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-bold transition ${
                               category ===
                               key
-                                ? "bg-blue-600 text-white"
+                                ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
                                 : dark
                                 ? "bg-slate-800 text-slate-300 hover:bg-slate-700"
                                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -1478,72 +1597,137 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-                    {filteredProducts.map(
-                      (product) => (
-                        <button
-                          key={product.id}
-                          onClick={() =>
-                            addToCart(
-                              product
-                            )
-                          }
-                          className={`${panelClass} p-5 text-left transition hover:-translate-y-0.5 hover:border-blue-500`}
-                        >
-                          <div className="font-semibold">
-                            {
-                              product.name
+                  {filteredProducts.length ===
+                  0 ? (
+                    <div
+                      className={`${panel} p-10 text-center`}
+                    >
+                      <div className="text-4xl">
+                        🔎
+                      </div>
+
+                      <h3 className="mt-3 font-bold">
+                        Kein Produkt gefunden
+                      </h3>
+
+                      <p
+                        className={`mt-1 text-sm ${muted}`}
+                      >
+                        Ändere deine Suche
+                        oder Kategorie.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                      {filteredProducts.map(
+                        (product) => (
+                          <button
+                            key={
+                              product.id
                             }
-                          </div>
-
-                          <div className="mt-2 font-bold text-blue-500">
-                            {formatPrice(
-                              product.price
-                            )}
-                          </div>
-
-                          <div className="mt-2 text-xs text-slate-500">
-                            {
-                              categoryNames[
+                            onClick={() =>
+                              addToCart(
                                 product
-                                  .category
-                              ] ??
-                              product.category
+                              )
                             }
-                          </div>
-                        </button>
-                      )
-                    )}
-                  </div>
+                            className={`group rounded-3xl border p-4 text-left transition hover:-translate-y-1 hover:border-blue-500 hover:shadow-xl ${
+                              dark
+                                ? "border-slate-800 bg-slate-900 hover:bg-slate-800"
+                                : "border-slate-200 bg-white hover:bg-slate-50"
+                            }`}
+                          >
+                            <div className="flex min-h-[105px] flex-col justify-between">
+                              <div>
+                                <div className="font-bold leading-snug">
+                                  {
+                                    product.name
+                                  }
+                                </div>
+
+                                <div
+                                  className={`mt-2 text-xs ${muted}`}
+                                >
+                                  {
+                                    categoryNames[
+                                      product
+                                        .category
+                                    ] ??
+                                    product.category
+                                  }
+                                </div>
+                              </div>
+
+                              <div className="mt-4 flex items-center justify-between">
+                                <span className="font-black text-blue-500">
+                                  {formatPrice(
+                                    product.price
+                                  )}
+                                </span>
+
+                                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500 transition group-hover:bg-blue-600 group-hover:text-white">
+                                  +
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+                        )
+                      )}
+                    </div>
+                  )}
                 </div>
 
+                {/* WARENKORB */}
+
                 <div
-                  className={`${panelClass} h-fit p-6`}
+                  className={`${panel} h-fit p-6 xl:sticky xl:top-24`}
                 >
-                  <div className="mb-5 flex items-center justify-between">
-                    <h3 className="text-lg font-bold">
-                      Neue Artikel
-                    </h3>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p
+                        className={`text-sm ${muted}`}
+                      >
+                        Tisch{" "}
+                        {selectedTable}
+                      </p>
+
+                      <h3 className="text-xl font-black">
+                        Neue Artikel
+                      </h3>
+                    </div>
 
                     <button
                       onClick={
                         cancelAddingOrder
                       }
-                      className="rounded-lg px-3 py-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                        dark
+                          ? "bg-slate-800 hover:bg-slate-700"
+                          : "bg-slate-100 hover:bg-slate-200"
+                      }`}
                     >
                       ✕
                     </button>
                   </div>
 
-                  {cart.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-slate-700 p-6 text-center text-sm text-slate-400">
-                      Klicke links auf
-                      Produkte, um sie
-                      hinzuzufügen.
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {cart.map(
+                  <div className="mt-5 max-h-[480px] space-y-3 overflow-y-auto pr-1">
+                    {cart.length === 0 ? (
+                      <div
+                        className={`rounded-2xl border border-dashed p-8 text-center ${dark ? "border-slate-700" : "border-slate-300"}`}
+                      >
+                        <div className="text-3xl">
+                          🛒
+                        </div>
+
+                        <p
+                          className={`mt-3 text-sm ${muted}`}
+                        >
+                          Wähle Produkte aus,
+                          um sie hier
+                          hinzuzufügen.
+                        </p>
+                      </div>
+                    ) : (
+                      cart.map(
                         (cartItem) => (
                           <div
                             key={
@@ -1553,69 +1737,84 @@ export default function DashboardPage() {
                             }
                             className={
                               dark
-                                ? "rounded-xl border border-slate-800 bg-slate-800/50 p-3"
-                                : "rounded-xl border border-slate-200 bg-slate-50 p-3"
+                                ? "rounded-2xl border border-slate-800 bg-slate-800/50 p-4"
+                                : "rounded-2xl border border-slate-200 bg-slate-50 p-4"
                             }
                           >
                             <div className="flex justify-between gap-3">
-                              <span className="font-medium">
-                                {
-                                  cartItem
-                                    .product
-                                    .name
-                                }
-                              </span>
+                              <div className="min-w-0">
+                                <div className="font-bold">
+                                  {
+                                    cartItem
+                                      .product
+                                      .name
+                                  }
+                                </div>
 
-                              <span className="font-semibold">
+                                <div
+                                  className={`mt-1 text-sm ${muted}`}
+                                >
+                                  {formatPrice(
+                                    cartItem
+                                      .product
+                                      .price
+                                  )}{" "}
+                                  pro Stück
+                                </div>
+                              </div>
+
+                              <div className="font-black">
                                 {formatPrice(
                                   cartItem
                                     .product
                                     .price *
                                     cartItem.quantity
                                 )}
-                              </span>
+                              </div>
                             </div>
 
-                            <div className="mt-3 flex items-center gap-2">
-                              <button
-                                onClick={() =>
-                                  changeCartQuantity(
-                                    cartItem
-                                      .product
-                                      .id,
-                                    -1
-                                  )
-                                }
-                                className="h-9 w-9 rounded-lg bg-slate-700 transition hover:bg-slate-600"
-                              >
-                                −
-                              </button>
+                            <div className="mt-4 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() =>
+                                    changeCartQuantity(
+                                      cartItem
+                                        .product
+                                        .id,
+                                      -1
+                                    )
+                                  }
+                                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-700 text-lg font-bold hover:bg-slate-600"
+                                >
+                                  −
+                                </button>
 
-                              <span className="w-8 text-center font-semibold">
-                                {
-                                  cartItem.quantity
-                                }
-                              </span>
+                                <span className="w-8 text-center font-black">
+                                  {
+                                    cartItem.quantity
+                                  }
+                                </span>
 
-                              <button
-                                onClick={() =>
-                                  changeCartQuantity(
-                                    cartItem
-                                      .product
-                                      .id,
-                                    1
-                                  )
-                                }
-                                className="h-9 w-9 rounded-lg bg-slate-700 transition hover:bg-slate-600"
-                              >
-                                +
-                              </button>
+                                <button
+                                  onClick={() =>
+                                    changeCartQuantity(
+                                      cartItem
+                                        .product
+                                        .id,
+                                      1
+                                    )
+                                  }
+                                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-lg font-bold text-white hover:bg-blue-700"
+                                >
+                                  +
+                                </button>
+                              </div>
                             </div>
                           </div>
                         )
-                      )}
-                    </div>
-                  )}
+                      )
+                    )}
+                  </div>
 
                   <div
                     className={`mt-5 border-t pt-5 ${
@@ -1624,10 +1823,12 @@ export default function DashboardPage() {
                         : "border-slate-200"
                     }`}
                   >
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Gesamt</span>
+                    <div className="flex items-end justify-between">
+                      <span className={muted}>
+                        Gesamt
+                      </span>
 
-                      <span>
+                      <span className="text-2xl font-black">
                         {formatPrice(
                           cartTotal
                         )}
@@ -1642,11 +1843,11 @@ export default function DashboardPage() {
                       onClick={
                         createNewOrder
                       }
-                      className="mt-5 w-full rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="mt-5 w-full rounded-2xl bg-blue-600 px-5 py-4 font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {saving
                         ? "Speichere..."
-                        : "Bestellung speichern"}
+                        : "✓ Bestellung speichern"}
                     </button>
                   </div>
                 </div>
@@ -1657,20 +1858,61 @@ export default function DashboardPage() {
 
             {!showPayment &&
               !showAddOrder && (
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_400px]">
-                  <div
-                    className={`${panelClass} p-6`}
-                  >
-                    <h3 className="mb-5 text-lg font-bold">
-                      Bestellung
-                    </h3>
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_430px]">
+                  <div className={`${panel} p-6`}>
+                    <div className="mb-5 flex items-center justify-between">
+                      <div>
+                        <p
+                          className={`text-sm ${muted}`}
+                        >
+                          Aktuelle Bestellung
+                        </p>
+
+                        <h3 className="text-xl font-black">
+                          Artikel
+                        </h3>
+                      </div>
+
+                      <span
+                        className={`rounded-xl px-3 py-2 text-sm font-bold ${
+                          selectedTableItems.length >
+                          0
+                            ? "bg-blue-500/10 text-blue-500"
+                            : dark
+                            ? "bg-slate-800 text-slate-400"
+                            : "bg-slate-100 text-slate-500"
+                        }`}
+                      >
+                        {
+                          selectedTableItems.length
+                        }{" "}
+                        Positionen
+                      </span>
+                    </div>
 
                     {selectedTableItems.length ===
                     0 ? (
-                      <div className="rounded-xl border border-dashed border-slate-700 p-8 text-center text-slate-400">
-                        Für diesen Tisch
-                        gibt es noch keine
-                        Bestellung.
+                      <div
+                        className={`rounded-2xl border border-dashed p-10 text-center ${
+                          dark
+                            ? "border-slate-700"
+                            : "border-slate-300"
+                        }`}
+                      >
+                        <div className="text-4xl">
+                          🍽️
+                        </div>
+
+                        <h3 className="mt-3 font-bold">
+                          Tisch ist frei
+                        </h3>
+
+                        <p
+                          className={`mt-1 text-sm ${muted}`}
+                        >
+                          Füge die erste
+                          Bestellung hinzu.
+                        </p>
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -1687,19 +1929,21 @@ export default function DashboardPage() {
                                 }
                                 className={
                                   dark
-                                    ? "rounded-xl border border-slate-800 bg-slate-800/40 p-4"
-                                    : "rounded-xl border border-slate-200 bg-slate-50 p-4"
+                                    ? "rounded-2xl border border-slate-800 bg-slate-800/40 p-4"
+                                    : "rounded-2xl border border-slate-200 bg-slate-50 p-4"
                                 }
                               >
                                 <div className="flex items-center justify-between gap-4">
                                   <div>
-                                    <div className="font-semibold">
+                                    <div className="font-bold">
                                       {
                                         item.product_name
                                       }
                                     </div>
 
-                                    <div className="mt-1 text-sm text-slate-400">
+                                    <div
+                                      className={`mt-1 text-sm ${muted}`}
+                                    >
                                       Gesamt:{" "}
                                       {
                                         item.quantity
@@ -1708,13 +1952,15 @@ export default function DashboardPage() {
                                   </div>
 
                                   <div className="text-right">
-                                    <div className="text-lg font-bold">
+                                    <div className="text-xl font-black">
                                       {
                                         remaining
                                       }
                                     </div>
 
-                                    <div className="text-xs text-slate-500">
+                                    <div
+                                      className={`text-xs ${muted}`}
+                                    >
                                       offen
                                     </div>
                                   </div>
@@ -1722,11 +1968,12 @@ export default function DashboardPage() {
 
                                 {item.paid_quantity >
                                   0 && (
-                                  <div className="mt-2 text-sm font-medium text-green-500">
-                                    Bezahlt:{" "}
+                                  <div className="mt-3 inline-flex rounded-lg bg-green-500/10 px-3 py-1.5 text-xs font-bold text-green-500">
+                                    ✓{" "}
                                     {
                                       item.paid_quantity
-                                    }
+                                    }{" "}
+                                    bezahlt
                                   </div>
                                 )}
                               </div>
@@ -1737,69 +1984,48 @@ export default function DashboardPage() {
                     )}
                   </div>
 
+                  {/* AKTIONEN */}
+
                   <div
-                    className={`${panelClass} h-fit p-6`}
+                    className={`${panel} h-fit p-6 xl:sticky xl:top-24`}
                   >
-                    <h3 className="mb-5 text-lg font-bold">
+                    <p
+                      className={`text-sm ${muted}`}
+                    >
+                      Tischverwaltung
+                    </p>
+
+                    <h3 className="mt-1 text-2xl font-black">
                       Tisch{" "}
                       {selectedTable}
                     </h3>
 
                     {selectedTableItems.length >
-                    0 ? (
-                      <div className="space-y-3">
-                        {selectedTableItems.map(
-                          (item) => {
-                            const remaining =
-                              item.quantity -
-                              item.paid_quantity;
+                      0 && (
+                      <div
+                        className={`mt-5 rounded-2xl p-4 ${
+                          dark
+                            ? "bg-slate-800/60"
+                            : "bg-slate-50"
+                        }`}
+                      >
+                        <div className="flex justify-between">
+                          <span className={muted}>
+                            Offene Artikel
+                          </span>
 
-                            return (
-                              <div
-                                key={
-                                  item.id
-                                }
-                                className={`flex items-center justify-between border-b pb-3 ${
-                                  dark
-                                    ? "border-slate-800"
-                                    : "border-slate-200"
-                                }`}
-                              >
-                                <div>
-                                  <div className="font-medium">
-                                    {
-                                      item.product_name
-                                    }
-                                  </div>
-
-                                  <div className="mt-1 text-xs text-slate-500">
-                                    Gesamt:{" "}
-                                    {
-                                      item.quantity
-                                    }
-                                  </div>
-                                </div>
-
-                                <div className="text-right">
-                                  <div className="font-bold">
-                                    {
-                                      remaining
-                                    }
-                                  </div>
-
-                                  <div className="text-xs text-slate-500">
-                                    offen
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-sm text-slate-400">
-                        Keine Artikel
-                        vorhanden.
+                          <span className="font-black">
+                            {paymentItems.reduce(
+                              (
+                                total,
+                                item
+                              ) =>
+                                total +
+                                item.remainingQuantity,
+                              0
+                            )}
+                          </span>
+                        </div>
                       </div>
                     )}
 
@@ -1809,7 +2035,7 @@ export default function DashboardPage() {
                           finishOrder
                         }
                         disabled={saving}
-                        className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="mt-5 w-full rounded-2xl bg-blue-600 px-5 py-4 font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:opacity-40"
                       >
                         {saving
                           ? "Speichere..."
@@ -1823,9 +2049,9 @@ export default function DashboardPage() {
                         onClick={
                           openPayment
                         }
-                        className="mt-3 w-full rounded-xl bg-green-600 px-5 py-3 font-bold text-white shadow-lg shadow-green-600/10 transition hover:bg-green-700"
+                        className="mt-3 w-full rounded-2xl bg-green-600 px-5 py-4 font-black text-white shadow-lg shadow-green-600/20 transition hover:bg-green-700"
                       >
-                        💳 Bezahlen
+                        💳 Zur Bezahlung
                       </button>
                     )}
 
@@ -1833,7 +2059,7 @@ export default function DashboardPage() {
                       onClick={
                         startAddingOrder
                       }
-                      className={`mt-3 w-full rounded-xl border px-5 py-3 font-semibold transition ${secondaryButton}`}
+                      className="mt-3 w-full rounded-2xl bg-orange-500 px-5 py-4 font-black text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-600"
                     >
                       + Weitere Artikel
                     </button>
