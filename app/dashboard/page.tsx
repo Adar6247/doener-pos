@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../lib/supabase";
 
 type Product = {
   id: number;
@@ -9,13 +9,6 @@ type Product = {
   price: number;
   category: string;
   created_at: string;
-};
-
-type CartItem = {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
 };
 
 type Order = {
@@ -32,165 +25,137 @@ type OrderItem = {
   order_id: number;
   product_name: string;
   quantity: number;
+  paid_quantity: number;
+  paid_at: string | null;
 };
 
-type FinishedNotification = {
-  id: number;
-  tableNumber: number;
+type CartItem = {
+  product: Product;
+  quantity: number;
 };
 
-type TableStatus = "frei" | "offen" | "fertig";
+type PaymentSelection = {
+  itemId: number;
+  quantity: number;
+};
 
 const TABLES = Array.from({ length: 25 }, (_, index) => index + 1);
 
-export default function Dashboard() {
-  const [email, setEmail] = useState("");
-  const [userId, setUserId] = useState("");
+const categoryNames = [
+  "Alle",
+  "Döner",
+  "Dürüm",
+  "Teller",
+  "Pizza",
+  "Burger",
+  "Beilagen",
+  "Getränke",
+  "Sonstiges",
+];
 
+export default function DashboardPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
-  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [selectedTable, setSelectedTable] = useState<number | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(
-    null
-  );
 
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [currentOrderItems, setCurrentOrderItems] = useState<OrderItem[]>([]);
-  const [currentOpenOrder, setCurrentOpenOrder] = useState<Order | null>(null);
 
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("Alle");
 
-  const [sending, setSending] = useState(false);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<
-    "success" | "error" | "info"
-  >("info");
+  const [showAddOrder, setShowAddOrder] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
 
-  const [notifications, setNotifications] = useState<
-    FinishedNotification[]
+  const [paymentSelection, setPaymentSelection] = useState<
+    PaymentSelection[]
   >([]);
 
-  /*
-   * ============================================================
-   * BENUTZER LADEN
-   * ============================================================
-   */
+  const [paymentMethod, setPaymentMethod] = useState<"bar" | "karte">("bar");
 
-  useEffect(() => {
-    async function loadUser() {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
+  const [cashGiven, setCashGiven] = useState("");
 
-      if (error) {
-        console.error("LOGIN USER FEHLER:", {
-          message: error.message,
-          code: error.code,
-        });
-      }
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserName, setCurrentUserName] = useState("Kellner");
 
-      if (!user) {
-        window.location.href = "/";
-        return;
-      }
+  const [message, setMessage] = useState("");
 
-      setEmail(user.email ?? "");
-      setUserId(user.id);
+  // --------------------------------------------------
+  // DATEN LADEN
+  // --------------------------------------------------
+
+  async function loadData() {
+    setLoading(true);
+
+    const [
+      productsResult,
+      ordersResult,
+      orderItemsResult,
+      userResult,
+    ] = await Promise.all([
+      supabase
+        .from("products")
+        .select("*")
+        .order("category")
+        .order("name"),
+
+      supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: true }),
+
+      supabase
+        .from("order_items")
+        .select("*")
+        .order("id", { ascending: true }),
+
+      supabase.auth.getUser(),
+    ]);
+
+    if (productsResult.error) {
+      console.error(productsResult.error);
     }
 
-    loadUser();
-  }, []);
-
-  /*
-   * ============================================================
-   * PRODUKTE LADEN
-   * ============================================================
-   */
-
-  async function loadProducts() {
-    setLoadingProducts(true);
-
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .order("category", { ascending: true })
-      .order("name", { ascending: true });
-
-    if (error) {
-      console.error("PRODUKTE FEHLER:", {
-        message: error.message,
-        code: error.code,
-      });
-
-      showMessage(
-        "Die Produkte konnten nicht geladen werden.",
-        "error"
-      );
-
-      setLoadingProducts(false);
-      return;
+    if (ordersResult.error) {
+      console.error(ordersResult.error);
     }
 
-    setProducts(data ?? []);
-    setLoadingProducts(false);
+    if (orderItemsResult.error) {
+      console.error(orderItemsResult.error);
+    }
+
+    setProducts(productsResult.data ?? []);
+    setOrders(ordersResult.data ?? []);
+    setOrderItems(orderItemsResult.data ?? []);
+
+    const user = userResult.data.user;
+
+    if (user) {
+      setCurrentUserId(user.id);
+
+      const profileResult = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileResult.data?.name) {
+        setCurrentUserName(profileResult.data.name);
+      }
+    }
+
+    setLoading(false);
   }
 
   useEffect(() => {
-    loadProducts();
-  }, []);
+    loadData();
 
-  /*
-   * ============================================================
-   * BESTELLUNGEN LADEN
-   * ============================================================
-   */
-
-  async function loadOrders() {
-    setLoadingOrders(true);
-
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("BESTELLUNGEN FEHLER:", {
-        message: error.message,
-        code: error.code,
-      });
-
-      showMessage(
-        "Die Bestellungen konnten nicht geladen werden.",
-        "error"
-      );
-
-      setLoadingOrders(false);
-      return;
-    }
-
-    setOrders((data ?? []) as Order[]);
-    setLoadingOrders(false);
-  }
-
-  useEffect(() => {
-    loadOrders();
-  }, []);
-
-  /*
-   * ============================================================
-   * REALTIME BESTELLUNGEN
-   * ============================================================
-   */
-
-  useEffect(() => {
-    if (!userId) return;
-
-    const channel = supabase
-      .channel(`waiter-orders-${userId}`)
+    const ordersChannel = supabase
+      .channel("waiter-orders")
       .on(
         "postgres_changes",
         {
@@ -198,281 +163,145 @@ export default function Dashboard() {
           schema: "public",
           table: "orders",
         },
-        async (payload) => {
-          const newOrder = payload.new as Partial<Order>;
-          const oldOrder = payload.old as Partial<Order>;
-
-          if (
-            payload.eventType === "UPDATE" &&
-            oldOrder.status === "offen" &&
-            newOrder.status === "fertig" &&
-            newOrder.id &&
-            newOrder.table_number
-          ) {
-            setNotifications((current) => {
-              if (
-                current.some(
-                  (notification) =>
-                    notification.id === newOrder.id
-                )
-              ) {
-                return current;
-              }
-
-              return [
-                ...current,
-                {
-                  id: newOrder.id!,
-                  tableNumber: newOrder.table_number!,
-                },
-              ];
-            });
-
-            showMessage(
-              `Tisch ${newOrder.table_number} ist fertig.`,
-              "success"
-            );
-          }
-
-          await loadOrders();
-
-          if (
-            selectedTable !== null &&
-            newOrder.table_number === selectedTable
-          ) {
-            await loadSelectedTable(selectedTable);
-          }
+        () => {
+          loadData();
         }
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId, selectedTable]);
-
-  /*
-   * ============================================================
-   * REALTIME ORDER ITEMS
-   * ============================================================
-   */
-
-  useEffect(() => {
-    const channel = supabase
+    const itemsChannel = supabase
       .channel("waiter-order-items")
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "order_items",
         },
-        async () => {
-          if (selectedTable !== null) {
-            await loadSelectedTable(selectedTable);
-          }
+        () => {
+          loadData();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(itemsChannel);
     };
-  }, [selectedTable]);
+  }, []);
 
-  /*
-   * ============================================================
-   * NACHRICHTEN
-   * ============================================================
-   */
+  // --------------------------------------------------
+  // PRODUKTE
+  // --------------------------------------------------
 
-  function showMessage(
-    text: string,
-    type: "success" | "error" | "info"
-  ) {
-    setMessage(text);
-    setMessageType(type);
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      const matchesSearch = product.name
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+      const matchesCategory =
+        category === "Alle" ||
+        product.category.toLowerCase() === category.toLowerCase();
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, search, category]);
+
+  // --------------------------------------------------
+  // TISCH STATUS
+  // --------------------------------------------------
+
+  function getTableOrders(tableNumber: number) {
+    return orders.filter(
+      (order) => order.table_number === tableNumber
+    );
   }
 
-  /*
-   * ============================================================
-   * BESTELLUNG EINES TISCHES LADEN
-   * ============================================================
-   */
+  function getTableItems(tableNumber: number) {
+    const tableOrderIds = getTableOrders(tableNumber).map(
+      (order) => order.id
+    );
 
-  async function loadSelectedTable(table: number) {
-    const tableOrders = orders
-      .filter((order) => order.table_number === table)
-      .sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() -
-          new Date(a.created_at).getTime()
-      );
-
-    const openOrder =
-      tableOrders.find((order) => order.status === "offen") ?? null;
-
-    setCurrentOpenOrder(openOrder);
-
-    if (!openOrder) {
-      setCurrentOrderItems([]);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("order_items")
-      .select("*")
-      .eq("order_id", openOrder.id)
-      .order("id", { ascending: true });
-
-    if (error) {
-      console.error("ORDER ITEMS FEHLER:", {
-        message: error.message,
-        code: error.code,
-      });
-
-      setCurrentOrderItems([]);
-      return;
-    }
-
-    setCurrentOrderItems((data ?? []) as OrderItem[]);
+    return orderItems.filter((item) =>
+      tableOrderIds.includes(item.order_id)
+    );
   }
 
-  /*
-   * ============================================================
-   * TISCH AUSWÄHLEN
-   * ============================================================
-   */
+  function getTableStatus(tableNumber: number) {
+    const tableOrders = getTableOrders(tableNumber);
+    const tableItems = getTableItems(tableNumber);
 
-  async function selectTable(table: number) {
-    setSelectedTable(table);
-    setSelectedCategory(null);
-    setSearch("");
-    setCart([]);
-    setMessage("");
-
-    await loadSelectedTable(table);
-  }
-
-  /*
-   * ============================================================
-   * TISCHSTATUS
-   * ============================================================
-   */
-
-  function getTableStatus(table: number): TableStatus {
-    const tableOrders = orders
-      .filter((order) => order.table_number === table)
-      .sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() -
-          new Date(a.created_at).getTime()
-      );
-
-    const openOrder = tableOrders.find(
+    const hasOpenOrder = tableOrders.some(
       (order) => order.status === "offen"
     );
 
-    if (openOrder) {
+    if (hasOpenOrder) {
       return "offen";
     }
 
-    const latestOrder = tableOrders[0];
+    const hasUnpaidItems = tableItems.some(
+      (item) => item.paid_quantity < item.quantity
+    );
 
-    if (latestOrder?.status === "fertig") {
+    if (hasUnpaidItems) {
       return "fertig";
     }
 
     return "frei";
   }
 
-  /*
-   * ============================================================
-   * TISCHSTATISTIK
-   * ============================================================
-   */
+  const freeTables = TABLES.filter(
+    (table) => getTableStatus(table) === "frei"
+  ).length;
 
-  const tableStats = useMemo(() => {
-    let free = 0;
-    let open = 0;
-    let ready = 0;
+  const openTables = TABLES.filter(
+    (table) => getTableStatus(table) === "offen"
+  ).length;
 
-    TABLES.forEach((table) => {
-      const status = getTableStatus(table);
+  const readyTables = TABLES.filter(
+    (table) => getTableStatus(table) === "fertig"
+  ).length;
 
-      if (status === "frei") free++;
-      if (status === "offen") open++;
-      if (status === "fertig") ready++;
-    });
+  // --------------------------------------------------
+  // TISCH ÖFFNEN
+  // --------------------------------------------------
 
-    return {
-      free,
-      open,
-      ready,
-    };
-  }, [orders]);
+  function openTable(tableNumber: number) {
+    setSelectedTable(tableNumber);
+    setCart([]);
+    setSearch("");
+    setCategory("Alle");
+    setShowAddOrder(false);
+    setShowPayment(false);
+    setPaymentSelection([]);
+    setCashGiven("");
+    setMessage("");
+  }
 
-  /*
-   * ============================================================
-   * KATEGORIEN
-   * ============================================================
-   */
+  function closeTable() {
+    setSelectedTable(null);
+    setCart([]);
+    setShowAddOrder(false);
+    setShowPayment(false);
+    setPaymentSelection([]);
+    setCashGiven("");
+    setMessage("");
+  }
 
-  const categories = useMemo(() => {
-    return Array.from(
-      new Set(
-        products
-          .map((product) => product.category)
-          .filter(
-            (category) =>
-              category && category.trim() !== ""
-          )
-      )
-    );
-  }, [products]);
-
-  /*
-   * ============================================================
-   * PRODUKTE FILTERN
-   * ============================================================
-   */
-
-  const visibleProducts = useMemo(() => {
-    let result = products;
-
-    if (selectedCategory) {
-      result = result.filter(
-        (product) =>
-          product.category === selectedCategory
-      );
-    }
-
-    if (search.trim()) {
-      const searchTerm = search.toLowerCase();
-
-      result = result.filter((product) =>
-        product.name.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    return result;
-  }, [products, selectedCategory, search]);
-
-  /*
-   * ============================================================
-   * PRODUKT IN WARENKORB
-   * ============================================================
-   */
+  // --------------------------------------------------
+  // PRODUKT IN WARENKORB
+  // --------------------------------------------------
 
   function addToCart(product: Product) {
-    setCart((currentCart) => {
-      const existing = currentCart.find(
-        (item) => item.id === product.id
+    setCart((current) => {
+      const existing = current.find(
+        (item) => item.product.id === product.id
       );
 
       if (existing) {
-        return currentCart.map((item) =>
-          item.id === product.id
+        return current.map((item) =>
+          item.product.id === product.id
             ? {
                 ...item,
                 quantity: item.quantity + 1,
@@ -482,27 +311,19 @@ export default function Dashboard() {
       }
 
       return [
-        ...currentCart,
+        ...current,
         {
-          id: product.id,
-          name: product.name,
-          price: Number(product.price),
+          product,
           quantity: 1,
         },
       ];
     });
   }
 
-  /*
-   * ============================================================
-   * MENGE ÄNDERN
-   * ============================================================
-   */
-
-  function increaseQuantity(productId: number) {
-    setCart((currentCart) =>
-      currentCart.map((item) =>
-        item.id === productId
+  function increaseCartItem(productId: number) {
+    setCart((current) =>
+      current.map((item) =>
+        item.product.id === productId
           ? {
               ...item,
               quantity: item.quantity + 1,
@@ -512,11 +333,11 @@ export default function Dashboard() {
     );
   }
 
-  function decreaseQuantity(productId: number) {
-    setCart((currentCart) =>
-      currentCart
+  function decreaseCartItem(productId: number) {
+    setCart((current) =>
+      current
         .map((item) =>
-          item.id === productId
+          item.product.id === productId
             ? {
                 ...item,
                 quantity: item.quantity - 1,
@@ -527,1093 +348,1268 @@ export default function Dashboard() {
     );
   }
 
-  /*
-   * ============================================================
-   * WARENKORB
-   * ============================================================
-   */
+  // --------------------------------------------------
+  // BESTELLUNG SPEICHERN
+  // --------------------------------------------------
 
-  const cartItemCount = cart.reduce(
-    (total, item) => total + item.quantity,
-    0
-  );
+  async function submitOrder() {
+    if (!selectedTable || cart.length === 0) {
+      return;
+    }
 
-  const cartTotal = cart.reduce(
-    (total, item) =>
-      total + item.price * item.quantity,
-    0
-  );
+    if (!currentUserId) {
+      setMessage("Kein Benutzer angemeldet.");
+      return;
+    }
 
-  /*
-   * ============================================================
-   * BESTEHENDE BESTELLUNG
-   * ============================================================
-   */
+    setSaving(true);
+    setMessage("");
 
-  const existingOrderTotal = currentOrderItems.reduce(
-    (total, item) => {
-      const product = products.find(
-        (product) => product.name === item.product_name
+    try {
+      const openOrder = orders.find(
+        (order) =>
+          order.table_number === selectedTable &&
+          order.status === "offen"
       );
 
-      if (!product) return total;
+      let orderId: number;
+
+      if (openOrder) {
+        orderId = openOrder.id;
+      } else {
+        const { data, error } = await supabase
+          .from("orders")
+          .insert({
+            table_number: selectedTable,
+            waiter_id: currentUserId,
+            status: "offen",
+          })
+          .select("id")
+          .single();
+
+        if (error || !data) {
+          console.error(error);
+          throw new Error("Bestellung konnte nicht erstellt werden.");
+        }
+
+        orderId = data.id;
+      }
+
+      const itemsToInsert = cart.map((item) => ({
+        order_id: orderId,
+        product_name: item.product.name,
+        quantity: item.quantity,
+        paid_quantity: 0,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from("order_items")
+        .insert(itemsToInsert);
+
+      if (itemsError) {
+        console.error(itemsError);
+        throw new Error("Produkte konnten nicht gespeichert werden.");
+      }
+
+      setCart([]);
+      setShowAddOrder(false);
+      setMessage("Bestellung wurde gespeichert.");
+
+      await loadData();
+    } catch (error) {
+      console.error(error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Es ist ein Fehler aufgetreten."
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // --------------------------------------------------
+  // BESTELLUNG FERTIG
+  // --------------------------------------------------
+
+  async function finishOrder() {
+    if (!selectedTable) {
+      return;
+    }
+
+    const openOrder = orders.find(
+      (order) =>
+        order.table_number === selectedTable &&
+        order.status === "offen"
+    );
+
+    if (!openOrder) {
+      return;
+    }
+
+    setSaving(true);
+    setMessage("");
+
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        status: "fertig",
+        finished_at: new Date().toISOString(),
+      })
+      .eq("id", openOrder.id);
+
+    if (error) {
+      console.error(error);
+      setMessage("Bestellung konnte nicht fertiggestellt werden.");
+    } else {
+      setMessage("Tisch ist jetzt bezahlbereit.");
+      await loadData();
+    }
+
+    setSaving(false);
+  }
+
+  // --------------------------------------------------
+  // ZAHLUNG
+  // --------------------------------------------------
+
+  function getPaymentItemsForTable(tableNumber: number) {
+    const tableOrderIds = getTableOrders(tableNumber).map(
+      (order) => order.id
+    );
+
+    return orderItems.filter(
+      (item) =>
+        tableOrderIds.includes(item.order_id) &&
+        item.paid_quantity < item.quantity
+    );
+  }
+
+  function getProductPrice(productName: string) {
+    const product = products.find(
+      (item) => item.name === productName
+    );
+
+    return product?.price ?? 0;
+  }
+
+  const paymentItems = selectedTable
+    ? getPaymentItemsForTable(selectedTable)
+    : [];
+
+  const selectedPaymentItems = paymentItems.filter((item) =>
+    paymentSelection.some(
+      (selection) =>
+        selection.itemId === item.id &&
+        selection.quantity > 0
+    )
+  );
+
+  const paymentTotal = selectedPaymentItems.reduce(
+    (total, item) => {
+      const selection = paymentSelection.find(
+        (entry) => entry.itemId === item.id
+      );
+
+      const quantity = selection?.quantity ?? 0;
 
       return (
         total +
-        Number(product.price) * item.quantity
+        quantity * getProductPrice(item.product_name)
       );
     },
     0
   );
 
-  /*
-   * ============================================================
-   * BESTELLUNG ABSENDEN
-   * ============================================================
-   */
+  const cashValue = Number.parseFloat(cashGiven.replace(",", ".")) || 0;
 
-  async function submitOrder() {
-    if (!selectedTable) {
-      showMessage(
-        "Bitte zuerst einen Tisch auswählen.",
-        "error"
-      );
-      return;
-    }
+  const change =
+    paymentMethod === "bar"
+      ? Math.max(0, cashValue - paymentTotal)
+      : 0;
 
-    if (cart.length === 0) {
-      showMessage(
-        "Bitte mindestens ein Produkt auswählen.",
-        "error"
-      );
-      return;
-    }
-
-    setSending(true);
-    setMessage("");
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      console.error("USER FEHLER:", userError);
-
-      setSending(false);
-
-      showMessage(
-        "Du bist nicht richtig angemeldet.",
-        "error"
-      );
-
-      return;
-    }
-
-    let orderId: number;
-
-    /*
-     * Wenn bereits eine offene Bestellung existiert,
-     * werden die neuen Artikel dort hinzugefügt.
-     */
-
-    if (currentOpenOrder) {
-      orderId = currentOpenOrder.id;
-    } else {
-      /*
-       * Neue Bestellung erstellen
-       */
-
-      const {
-        data: order,
-        error: orderError,
-      } = await supabase
-        .from("orders")
-        .insert({
-          table_number: selectedTable,
-          waiter_id: user.id,
-          status: "offen",
-        })
-        .select()
-        .single();
-
-      if (orderError || !order) {
-        console.error("BESTELLUNG FEHLER:", {
-          message: orderError?.message,
-          code: orderError?.code,
-        });
-
-        setSending(false);
-
-        showMessage(
-          orderError?.message ||
-            "Die Bestellung konnte nicht gespeichert werden.",
-          "error"
-        );
-
-        return;
-      }
-
-      orderId = order.id;
-    }
-
-    /*
-     * Artikel speichern
-     */
-
-    const orderItems = cart.map((item) => ({
-      order_id: orderId,
-      product_name: item.name,
-      quantity: item.quantity,
-    }));
-
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItems);
-
-    if (itemsError) {
-      console.error("ARTIKEL FEHLER:", {
-        message: itemsError.message,
-        code: itemsError.code,
-      });
-
-      setSending(false);
-
-      showMessage(
-        itemsError.message ||
-          "Die Produkte konnten nicht gespeichert werden.",
-        "error"
-      );
-
-      return;
-    }
-
-    /*
-     * Alles aktualisieren
-     */
-
-    setCart([]);
-    setSending(false);
-
-    await loadOrders();
-
-    const refreshedOrders = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (!refreshedOrders.error) {
-      setOrders(
-        (refreshedOrders.data ?? []) as Order[]
-      );
-    }
-
-    showMessage(
-      `Bestellung für Tisch ${selectedTable} wurde an die Küche gesendet.`,
-      "success"
-    );
-
-    /*
-     * Bestehende Bestellung neu laden
-     */
-
-    const { data: refreshedItems } = await supabase
-      .from("order_items")
-      .select("*")
-      .eq("order_id", orderId)
-      .order("id", { ascending: true });
-
-    setCurrentOrderItems(
-      (refreshedItems ?? []) as OrderItem[]
-    );
-
-    const refreshedOrder = (
-      refreshedOrders.data ?? []
-    ).find((order) => order.id === orderId);
-
-    setCurrentOpenOrder(
-      (refreshedOrder as Order) ?? currentOpenOrder
-    );
-  }
-
-  /*
-   * ============================================================
-   * NEUEN TISCH / BESTELLUNG
-   * ============================================================
-   */
-
-  function changeTable() {
-    setSelectedTable(null);
-    setSelectedCategory(null);
-    setSearch("");
-    setCart([]);
-    setCurrentOrderItems([]);
-    setCurrentOpenOrder(null);
+  function startPayment() {
+    setShowPayment(true);
+    setShowAddOrder(false);
+    setPaymentSelection([]);
+    setCashGiven("");
     setMessage("");
   }
 
-  /*
-   * ============================================================
-   * LOGOUT
-   * ============================================================
-   */
-
-  async function logout() {
-    await supabase.auth.signOut();
-    window.location.href = "/";
+  function cancelPayment() {
+    setShowPayment(false);
+    setPaymentSelection([]);
+    setCashGiven("");
   }
 
-  /*
-   * ============================================================
-   * BENACHRICHTIGUNG ENTFERNEN
-   * ============================================================
-   */
+  function togglePaymentItem(item: OrderItem) {
+    const remaining =
+      item.quantity - item.paid_quantity;
 
-  function removeNotification(id: number) {
-    setNotifications((current) =>
-      current.filter(
-        (notification) =>
-          notification.id !== id
+    const existing = paymentSelection.find(
+      (selection) => selection.itemId === item.id
+    );
+
+    if (existing) {
+      setPaymentSelection((current) =>
+        current.filter(
+          (selection) => selection.itemId !== item.id
+        )
+      );
+
+      return;
+    }
+
+    setPaymentSelection((current) => [
+      ...current,
+      {
+        itemId: item.id,
+        quantity: remaining,
+      },
+    ]);
+  }
+
+  function increasePaymentItem(item: OrderItem) {
+    const remaining =
+      item.quantity - item.paid_quantity;
+
+    setPaymentSelection((current) =>
+      current.map((selection) =>
+        selection.itemId === item.id
+          ? {
+              ...selection,
+              quantity: Math.min(
+                selection.quantity + 1,
+                remaining
+              ),
+            }
+          : selection
       )
     );
   }
 
-  /*
-   * ============================================================
-   * PREIS FORMATIEREN
-   * ============================================================
-   */
-
-  function formatPrice(price: number) {
-    return (
-      Number(price)
-        .toFixed(2)
-        .replace(".", ",") + " €"
+  function decreasePaymentItem(item: OrderItem) {
+    setPaymentSelection((current) =>
+      current
+        .map((selection) =>
+          selection.itemId === item.id
+            ? {
+                ...selection,
+                quantity: selection.quantity - 1,
+              }
+            : selection
+        )
+        .filter((selection) => selection.quantity > 0)
     );
   }
 
-  /*
-   * ============================================================
-   * TISCH NICHT AUSGEWÄHLT
-   * ============================================================
-   */
-
-  if (selectedTable === null) {
+  function getSelectedPaymentQuantity(itemId: number) {
     return (
-      <main className="min-h-screen bg-[#f4f5f7] text-slate-900">
-        {/* ==================================================
-            HEADER
-        ================================================== */}
+      paymentSelection.find(
+        (selection) => selection.itemId === itemId
+      )?.quantity ?? 0
+    );
+  }
 
-        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-6 lg:px-8 sticky top-0 z-30">
-          <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-lg">
-              D
-            </div>
+  async function completePayment() {
+    if (!selectedTable) {
+      return;
+    }
 
-            <div>
-              <h1 className="font-bold text-xl tracking-tight">
-                Döner POS
-              </h1>
+    if (paymentSelection.length === 0) {
+      setMessage("Bitte mindestens einen Artikel auswählen.");
+      return;
+    }
 
-              <p className="text-xs text-slate-500">
-                Kasse · Tischübersicht
-              </p>
-            </div>
+    if (
+      paymentMethod === "bar" &&
+      cashValue < paymentTotal
+    ) {
+      setMessage("Der gegebene Betrag ist zu niedrig.");
+      return;
+    }
+
+    setSaving(true);
+    setMessage("");
+
+    try {
+      for (const selection of paymentSelection) {
+        const item = orderItems.find(
+          (orderItem) =>
+            orderItem.id === selection.itemId
+        );
+
+        if (!item) {
+          continue;
+        }
+
+        const newPaidQuantity =
+          item.paid_quantity + selection.quantity;
+
+        const { error } = await supabase
+          .from("order_items")
+          .update({
+            paid_quantity: newPaidQuantity,
+            paid_at:
+              newPaidQuantity >= item.quantity
+                ? new Date().toISOString()
+                : item.paid_at,
+          })
+          .eq("id", item.id);
+
+        if (error) {
+          console.error(error);
+          throw new Error(
+            "Zahlung konnte nicht gespeichert werden."
+          );
+        }
+      }
+
+      setPaymentSelection([]);
+      setCashGiven("");
+      setShowPayment(false);
+
+      setMessage(
+        paymentMethod === "bar"
+          ? `Zahlung gespeichert. Rückgeld: ${change.toFixed(2).replace(".", ",")} €`
+          : "Kartenzahlung gespeichert."
+      );
+
+      await loadData();
+    } catch (error) {
+      console.error(error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Zahlung konnte nicht gespeichert werden."
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // --------------------------------------------------
+  // AUSGEWÄHLTER TISCH
+  // --------------------------------------------------
+
+  const selectedTableOrders = selectedTable
+    ? getTableOrders(selectedTable)
+    : [];
+
+  const selectedTableItems = selectedTable
+    ? getTableItems(selectedTable)
+    : [];
+
+  const selectedOpenOrder = selectedTableOrders.find(
+    (order) => order.status === "offen"
+  );
+
+  const selectedStatus = selectedTable
+    ? getTableStatus(selectedTable)
+    : "frei";
+
+  const cartTotal = cart.reduce(
+    (total, item) =>
+      total + item.product.price * item.quantity,
+    0
+  );
+
+  // --------------------------------------------------
+  // LOADING
+  // --------------------------------------------------
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <div className="bg-white rounded-3xl shadow-xl px-8 py-6 text-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="h-5 w-5 rounded-full border-2 border-slate-300 border-t-slate-800 animate-spin" />
+            <span className="font-semibold">
+              POS wird geladen...
+            </span>
           </div>
+        </div>
+      </main>
+    );
+  }
 
-          <div className="flex items-center gap-5">
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-semibold">
-                Kellner
-              </p>
+  // --------------------------------------------------
+  // TISCHANSICHT
+  // --------------------------------------------------
 
-              <p className="text-xs text-slate-500">
-                {email}
-              </p>
+  if (selectedTable !== null) {
+    return (
+      <main className="min-h-screen bg-slate-100 text-slate-900">
+        {/* HEADER */}
+
+        <header className="bg-slate-900 text-white shadow-lg">
+          <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={closeTable}
+                className="h-11 w-11 rounded-xl bg-white/10 hover:bg-white/20 transition flex items-center justify-center text-xl"
+              >
+                ←
+              </button>
+
+              <div>
+                <p className="text-xs text-slate-400 uppercase tracking-wider">
+                  Tisch
+                </p>
+
+                <h1 className="text-2xl font-bold">
+                  Tisch {selectedTable}
+                </h1>
+              </div>
+
+              <span
+                className={`ml-2 px-3 py-1.5 rounded-full text-xs font-bold ${
+                  selectedStatus === "offen"
+                    ? "bg-orange-500/20 text-orange-300"
+                    : selectedStatus === "fertig"
+                    ? "bg-blue-500/20 text-blue-300"
+                    : "bg-emerald-500/20 text-emerald-300"
+                }`}
+              >
+                {selectedStatus === "offen"
+                  ? "BESTELLUNG OFFEN"
+                  : selectedStatus === "fertig"
+                  ? "BEZAHLBEREIT"
+                  : "FREI"}
+              </span>
             </div>
 
-            <div className="w-px h-9 bg-slate-200 hidden sm:block" />
-
-            <button
-              onClick={logout}
-              className="px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
-            >
-              Abmelden
-            </button>
+            <div className="text-right">
+              <p className="text-xs text-slate-400">
+                Angemeldet als
+              </p>
+              <p className="font-semibold">
+                {currentUserName}
+              </p>
+            </div>
           </div>
         </header>
 
-        {/* ==================================================
-            CONTENT
-        ================================================== */}
+        {/* MESSAGE */}
 
-        <div className="max-w-[1500px] mx-auto p-5 lg:p-8">
-          <div className="mb-8">
-            <p className="text-sm font-semibold text-slate-500 mb-1">
-              TISCHVERWALTUNG
-            </p>
+        {message && (
+          <div className="max-w-[1600px] mx-auto px-6 pt-5">
+            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl px-5 py-4 flex items-center justify-between">
+              <span className="font-medium text-slate-700">
+                {message}
+              </span>
 
-            <h2 className="text-3xl font-bold tracking-tight">
-              Guten Tag
-            </h2>
-
-            <p className="text-slate-500 mt-1">
-              Wähle einen Tisch, um eine Bestellung aufzunehmen.
-            </p>
-          </div>
-
-          {/* ==================================================
-              STATUS LEISTE
-          ================================================== */}
-
-          <div className="grid grid-cols-3 gap-3 mb-7 max-w-2xl">
-            <div className="bg-white border border-slate-200 rounded-xl px-5 py-4">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-
-                <div>
-                  <p className="text-xs uppercase tracking-wide font-semibold text-slate-500">
-                    Frei
-                  </p>
-
-                  <p className="text-2xl font-bold mt-0.5">
-                    {tableStats.free}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200 rounded-xl px-5 py-4">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-amber-500" />
-
-                <div>
-                  <p className="text-xs uppercase tracking-wide font-semibold text-slate-500">
-                    Offen
-                  </p>
-
-                  <p className="text-2xl font-bold mt-0.5">
-                    {tableStats.open}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200 rounded-xl px-5 py-4">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-blue-500" />
-
-                <div>
-                  <p className="text-xs uppercase tracking-wide font-semibold text-slate-500">
-                    Fertig
-                  </p>
-
-                  <p className="text-2xl font-bold mt-0.5">
-                    {tableStats.ready}
-                  </p>
-                </div>
-              </div>
+              <button
+                onClick={() => setMessage("")}
+                className="text-slate-400 hover:text-slate-700"
+              >
+                ✕
+              </button>
             </div>
           </div>
+        )}
 
-          {/* ==================================================
-              TISCHPLAN
-          ================================================== */}
+        {/* ZAHLUNG */}
 
-          <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-            <div className="px-6 py-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h3 className="font-bold text-lg">
-                  Tischplan
-                </h3>
+        {showPayment ? (
+          <div className="max-w-[1200px] mx-auto px-6 py-8">
+            <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+              <div className="px-7 py-6 border-b border-slate-200 flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-500">
+                    Tisch {selectedTable}
+                  </p>
 
-                <p className="text-sm text-slate-500 mt-1">
-                  25 Tische · Klicke einen Tisch an
-                </p>
-              </div>
+                  <h2 className="text-2xl font-bold mt-1">
+                    Zahlung
+                  </h2>
 
-              <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  Frei
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                  Bestellung offen
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                  Fertig
-                </div>
-              </div>
-            </div>
-
-            <div className="p-5 lg:p-7">
-              {loadingOrders ? (
-                <div className="py-16 text-center">
-                  <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin mx-auto mb-4" />
-
-                  <p className="text-sm font-semibold text-slate-600">
-                    Tische werden geladen...
+                  <p className="text-sm text-slate-500 mt-1">
+                    Wähle die Produkte aus, die jetzt bezahlt werden.
                   </p>
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {TABLES.map((table) => {
-                    const status = getTableStatus(table);
 
-                    const styles = {
-                      frei: {
-                        border:
-                          "border-emerald-200 hover:border-emerald-400",
-                        bg: "bg-emerald-50/40 hover:bg-emerald-50",
-                        dot: "bg-emerald-500",
-                        text: "text-emerald-700",
-                        label: "Frei",
-                      },
+                <button
+                  onClick={cancelPayment}
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 font-semibold transition"
+                >
+                  Zurück
+                </button>
+              </div>
 
-                      offen: {
-                        border:
-                          "border-amber-200 hover:border-amber-400",
-                        bg: "bg-amber-50/50 hover:bg-amber-50",
-                        dot: "bg-amber-500",
-                        text: "text-amber-700",
-                        label: "Bestellung offen",
-                      },
+              <div className="p-7">
+                {paymentItems.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="text-5xl mb-4">✓</div>
 
-                      fertig: {
-                        border:
-                          "border-blue-200 hover:border-blue-400",
-                        bg: "bg-blue-50/50 hover:bg-blue-50",
-                        dot: "bg-blue-500",
-                        text: "text-blue-700",
-                        label: "Fertig",
-                      },
-                    }[status];
+                    <h3 className="text-xl font-bold">
+                      Alles bezahlt
+                    </h3>
 
-                    return (
-                      <button
-                        key={table}
-                        onClick={() => selectTable(table)}
-                        className={`relative min-h-[145px] rounded-xl border-2 ${styles.border} ${styles.bg} p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                            Tisch
+                    <p className="text-slate-500 mt-2">
+                      Für diesen Tisch sind keine offenen Artikel mehr vorhanden.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid lg:grid-cols-[1fr_360px] gap-7">
+                    {/* ARTIKEL */}
+
+                    <div className="space-y-3">
+                      {paymentItems.map((item) => {
+                        const selectedQuantity =
+                          getSelectedPaymentQuantity(item.id);
+
+                        const remaining =
+                          item.quantity -
+                          item.paid_quantity;
+
+                        const isSelected =
+                          selectedQuantity > 0;
+
+                        const price =
+                          getProductPrice(
+                            item.product_name
+                          );
+
+                        return (
+                          <div
+                            key={item.id}
+                            className={`rounded-2xl border-2 p-4 transition ${
+                              isSelected
+                                ? "border-slate-900 bg-slate-50"
+                                : "border-slate-200 bg-white hover:border-slate-300"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <button
+                                onClick={() =>
+                                  togglePaymentItem(item)
+                                }
+                                className="flex-1 text-left"
+                              >
+                                <div className="font-bold text-lg">
+                                  {item.product_name}
+                                </div>
+
+                                <div className="text-sm text-slate-500 mt-1">
+                                  {remaining} Stück offen ·{" "}
+                                  {price
+                                    .toFixed(2)
+                                    .replace(".", ",")}{" "}
+                                  € / Stück
+                                </div>
+                              </button>
+
+                              {isSelected && (
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() =>
+                                      decreasePaymentItem(item)
+                                    }
+                                    className="h-9 w-9 rounded-lg bg-slate-200 hover:bg-slate-300 font-bold"
+                                  >
+                                    −
+                                  </button>
+
+                                  <div className="w-8 text-center font-bold">
+                                    {selectedQuantity}
+                                  </div>
+
+                                  <button
+                                    onClick={() =>
+                                      increasePaymentItem(item)
+                                    }
+                                    className="h-9 w-9 rounded-lg bg-slate-900 text-white hover:bg-slate-800 font-bold"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+
+                            {isSelected && (
+                              <div className="mt-3 pt-3 border-t border-slate-200 flex justify-between text-sm">
+                                <span className="text-slate-500">
+                                  Ausgewählt
+                                </span>
+
+                                <span className="font-bold">
+                                  {(
+                                    selectedQuantity *
+                                    price
+                                  )
+                                    .toFixed(2)
+                                    .replace(".", ",")}{" "}
+                                  €
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* ZAHLUNGSBOX */}
+
+                    <div className="bg-slate-900 text-white rounded-3xl p-6 h-fit">
+                      <h3 className="text-lg font-bold mb-5">
+                        Zahlung abschließen
+                      </h3>
+
+                      <div className="grid grid-cols-2 gap-3 mb-6">
+                        <button
+                          onClick={() =>
+                            setPaymentMethod("bar")
+                          }
+                          className={`rounded-xl p-4 font-bold transition ${
+                            paymentMethod === "bar"
+                              ? "bg-white text-slate-900"
+                              : "bg-white/10 hover:bg-white/20"
+                          }`}
+                        >
+                          💶 Bar
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            setPaymentMethod("karte")
+                          }
+                          className={`rounded-xl p-4 font-bold transition ${
+                            paymentMethod === "karte"
+                              ? "bg-white text-slate-900"
+                              : "bg-white/10 hover:bg-white/20"
+                          }`}
+                        >
+                          💳 Karte
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="flex justify-between text-slate-300">
+                          <span>Ausgewählt</span>
+                          <span>
+                            {selectedPaymentItems.length} Artikel
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-end border-t border-white/10 pt-4">
+                          <span className="text-slate-300">
+                            Gesamt
                           </span>
 
-                          <span
-                            className={`w-3 h-3 rounded-full ${styles.dot}`}
-                          />
+                          <span className="text-3xl font-black">
+                            {paymentTotal
+                              .toFixed(2)
+                              .replace(".", ",")}{" "}
+                            €
+                          </span>
+                        </div>
+
+                        {paymentMethod === "bar" && (
+                          <>
+                            <div>
+                              <label className="block text-sm text-slate-300 mb-2">
+                                Gegeben
+                              </label>
+
+                              <input
+                                type="text"
+                                inputMode="decimal"
+                                value={cashGiven}
+                                onChange={(event) =>
+                                  setCashGiven(
+                                    event.target.value
+                                  )
+                                }
+                                placeholder="0,00 €"
+                                className="w-full bg-white text-slate-900 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:ring-2 focus:ring-slate-400"
+                              />
+                            </div>
+
+                            <div className="rounded-xl bg-white/10 p-4 flex justify-between">
+                              <span className="text-slate-300">
+                                Rückgeld
+                              </span>
+
+                              <span className="font-bold text-xl">
+                                {change
+                                  .toFixed(2)
+                                  .replace(".", ",")}{" "}
+                                €
+                              </span>
+                            </div>
+                          </>
+                        )}
+
+                        <button
+                          onClick={completePayment}
+                          disabled={
+                            saving ||
+                            paymentSelection.length === 0 ||
+                            (paymentMethod === "bar" &&
+                              cashValue < paymentTotal)
+                          }
+                          className="w-full mt-2 py-4 rounded-xl bg-white text-slate-900 font-black text-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                        >
+                          {saving
+                            ? "Wird gespeichert..."
+                            : paymentMethod === "bar"
+                            ? "Barzahlung bestätigen"
+                            : "Kartenzahlung bestätigen"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* BESTEHENDE BESTELLUNG */}
+
+            <div className="max-w-[1600px] mx-auto px-6 py-6">
+              <div className="grid xl:grid-cols-[1fr_400px] gap-6">
+                <div>
+                  {/* AKTIONEN */}
+
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-6 flex flex-wrap gap-3">
+                    <button
+                      onClick={() => {
+                        setShowAddOrder(true);
+                        setShowPayment(false);
+                      }}
+                      className="px-5 py-3 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition"
+                    >
+                      ＋ Weitere Bestellung
+                    </button>
+
+                    {selectedStatus === "fertig" &&
+                      paymentItems.length > 0 && (
+                        <button
+                          onClick={startPayment}
+                          className="px-5 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition"
+                        >
+                          💳 Zur Bezahlung
+                        </button>
+                      )}
+
+                    {selectedStatus === "offen" && (
+                      <button
+                        onClick={finishOrder}
+                        disabled={saving}
+                        className="px-5 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 disabled:opacity-50 transition"
+                      >
+                        ✓ Bestellung fertig
+                      </button>
+                    )}
+                  </div>
+
+                  {/* BESTELLÜBERSICHT */}
+
+                  <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="px-6 py-5 border-b border-slate-200">
+                      <h2 className="text-xl font-bold">
+                        Aktuelle Artikel
+                      </h2>
+
+                      <p className="text-sm text-slate-500 mt-1">
+                        Alle Bestellungen dieses Tisches
+                      </p>
+                    </div>
+
+                    <div className="p-6">
+                      {selectedTableItems.length === 0 ? (
+                        <div className="text-center py-12 text-slate-400">
+                          Noch keine Artikel bestellt.
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {selectedTableItems.map((item) => {
+                            const price =
+                              getProductPrice(
+                                item.product_name
+                              );
+
+                            const unpaid =
+                              item.quantity -
+                              item.paid_quantity;
+
+                            return (
+                              <div
+                                key={item.id}
+                                className="flex items-center justify-between rounded-2xl bg-slate-50 border border-slate-200 px-5 py-4"
+                              >
+                                <div>
+                                  <div className="font-bold">
+                                    {item.product_name}
+                                  </div>
+
+                                  <div className="text-sm text-slate-500 mt-1">
+                                    {item.quantity} ×{" "}
+                                    {price
+                                      .toFixed(2)
+                                      .replace(".", ",")}{" "}
+                                    €
+                                  </div>
+                                </div>
+
+                                <div className="text-right">
+                                  {item.paid_quantity > 0 && (
+                                    <div className="text-xs font-bold text-emerald-600 mb-1">
+                                      {item.paid_quantity} bezahlt
+                                    </div>
+                                  )}
+
+                                  {unpaid > 0 ? (
+                                    <div className="font-bold">
+                                      {unpaid} offen
+                                    </div>
+                                  ) : (
+                                    <div className="font-bold text-emerald-600">
+                                      Bezahlt ✓
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* PRODUKTAUSWAHL */}
+
+                  {showAddOrder && (
+                    <div className="mt-6 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                      <div className="px-6 py-5 border-b border-slate-200">
+                        <div className="flex items-center justify-between gap-4">
+                          <div>
+                            <h2 className="text-xl font-bold">
+                              Weitere Artikel
+                            </h2>
+
+                            <p className="text-sm text-slate-500 mt-1">
+                              Produkte zur Bestellung hinzufügen
+                            </p>
+                          </div>
+
+                          <button
+                            onClick={() =>
+                              setShowAddOrder(false)
+                            }
+                            className="h-10 w-10 rounded-xl bg-slate-100 hover:bg-slate-200"
+                          >
+                            ✕
+                          </button>
                         </div>
 
                         <div className="mt-5">
-                          <span className="text-3xl font-bold">
-                            {table}
-                          </span>
+                          <input
+                            value={search}
+                            onChange={(event) =>
+                              setSearch(event.target.value)
+                            }
+                            placeholder="Produkt suchen..."
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-900"
+                          />
                         </div>
 
-                        <div
-                          className={`mt-2 text-xs font-semibold ${styles.text}`}
-                        >
-                          {styles.label}
+                        <div className="flex gap-2 overflow-x-auto mt-4 pb-1">
+                          {categoryNames.map(
+                            (categoryName) => (
+                              <button
+                                key={categoryName}
+                                onClick={() =>
+                                  setCategory(categoryName)
+                                }
+                                className={`whitespace-nowrap px-4 py-2 rounded-xl text-sm font-bold transition ${
+                                  category === categoryName
+                                    ? "bg-slate-900 text-white"
+                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                }`}
+                              >
+                                {categoryName}
+                              </button>
+                            )
+                          )}
                         </div>
-                      </button>
-                    );
-                  })}
+                      </div>
+
+                      <div className="p-6">
+                        {filteredProducts.length === 0 ? (
+                          <div className="text-center py-12 text-slate-400">
+                            Keine Produkte gefunden.
+                          </div>
+                        ) : (
+                          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {filteredProducts.map(
+                              (product) => (
+                                <button
+                                  key={product.id}
+                                  onClick={() =>
+                                    addToCart(product)
+                                  }
+                                  className="text-left rounded-2xl border border-slate-200 bg-white p-5 hover:border-slate-900 hover:shadow-md transition"
+                                >
+                                  <div className="font-bold text-lg">
+                                    {product.name}
+                                  </div>
+
+                                  <div className="text-sm text-slate-400 mt-1">
+                                    {product.category}
+                                  </div>
+
+                                  <div className="mt-4 font-black text-lg">
+                                    {product.price
+                                      .toFixed(2)
+                                      .replace(".", ",")}{" "}
+                                    €
+                                  </div>
+                                </button>
+                              )
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </section>
-        </div>
 
-        {/* ==================================================
-            NOTIFICATIONS
-        ================================================== */}
+                {/* RECHTE SEITE */}
 
-        {notifications.length > 0 && (
-          <div className="fixed bottom-5 right-5 z-50 w-full max-w-sm space-y-3 px-4 sm:px-0">
-            {notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className="bg-slate-900 text-white rounded-xl shadow-2xl p-5 border border-slate-700"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-300 flex items-center justify-center font-bold">
-                    ✓
+                <aside className="xl:sticky xl:top-6 h-fit">
+                  <div className="bg-slate-900 text-white rounded-3xl shadow-xl overflow-hidden">
+                    <div className="p-6 border-b border-white/10">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-xs text-slate-400 uppercase tracking-wider">
+                            Tisch
+                          </p>
+
+                          <h2 className="text-2xl font-black">
+                            {selectedTable}
+                          </h2>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-xs text-slate-400">
+                            Neue Bestellung
+                          </p>
+
+                          <p className="font-bold">
+                            {cart.length} Positionen
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6">
+                      {cart.length === 0 ? (
+                        <div className="text-center py-10 text-slate-500">
+                          <div className="text-4xl mb-3">
+                            🛒
+                          </div>
+
+                          <p>
+                            Noch keine neuen Artikel
+                          </p>
+
+                          <p className="text-sm mt-1">
+                            Wähle links Produkte aus.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {cart.map((item) => (
+                            <div
+                              key={item.product.id}
+                              className="rounded-2xl bg-white/5 p-4"
+                            >
+                              <div className="flex justify-between gap-3">
+                                <div className="font-bold">
+                                  {item.product.name}
+                                </div>
+
+                                <div className="font-bold">
+                                  {(
+                                    item.product.price *
+                                    item.quantity
+                                  )
+                                    .toFixed(2)
+                                    .replace(".", ",")}{" "}
+                                  €
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between mt-3">
+                                <div className="text-sm text-slate-400">
+                                  {item.product.price
+                                    .toFixed(2)
+                                    .replace(".", ",")}{" "}
+                                  € / Stück
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() =>
+                                      decreaseCartItem(
+                                        item.product.id
+                                      )
+                                    }
+                                    className="h-8 w-8 rounded-lg bg-white/10 hover:bg-white/20 font-bold"
+                                  >
+                                    −
+                                  </button>
+
+                                  <span className="w-6 text-center font-bold">
+                                    {item.quantity}
+                                  </span>
+
+                                  <button
+                                    onClick={() =>
+                                      increaseCartItem(
+                                        item.product.id
+                                      )
+                                    }
+                                    className="h-8 w-8 rounded-lg bg-white/10 hover:bg-white/20 font-bold"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {cart.length > 0 && (
+                        <>
+                          <div className="border-t border-white/10 mt-6 pt-5 flex justify-between items-end">
+                            <span className="text-slate-400">
+                              Neue Bestellung
+                            </span>
+
+                            <span className="text-3xl font-black">
+                              {cartTotal
+                                .toFixed(2)
+                                .replace(".", ",")}{" "}
+                              €
+                            </span>
+                          </div>
+
+                          <button
+                            onClick={submitOrder}
+                            disabled={saving}
+                            className="w-full mt-5 py-4 rounded-xl bg-white text-slate-900 font-black text-lg hover:bg-slate-100 disabled:opacity-50 transition"
+                          >
+                            {saving
+                              ? "Wird gespeichert..."
+                              : "Bestellung speichern"}
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex-1">
-                    <p className="font-bold">
-                      Bestellung fertig
-                    </p>
+                  {selectedOpenOrder && (
+                    <div className="mt-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                      <div className="text-xs text-slate-400 uppercase font-bold">
+                        Aktive Bestellung
+                      </div>
 
-                    <p className="text-sm text-slate-300 mt-1">
-                      Tisch {notification.tableNumber} kann abgeholt werden.
-                    </p>
+                      <div className="mt-1 font-bold">
+                        Bestellung #{selectedOpenOrder.id}
+                      </div>
 
-                    <button
-                      onClick={() =>
-                        selectTable(notification.tableNumber)
-                      }
-                      className="mt-3 text-sm font-semibold text-blue-300 hover:text-blue-200"
-                    >
-                      Tisch öffnen →
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={() =>
-                      removeNotification(notification.id)
-                    }
-                    className="text-slate-400 hover:text-white"
-                  >
-                    ×
-                  </button>
-                </div>
+                      <div className="text-sm text-slate-500 mt-1">
+                        Noch nicht fertiggestellt
+                      </div>
+                    </div>
+                  )}
+                </aside>
               </div>
-            ))}
-          </div>
+            </div>
+          </>
         )}
       </main>
     );
   }
 
-  /*
-   * ============================================================
-   * BESTELLUNGSSEITE
-   * ============================================================
-   */
+  // --------------------------------------------------
+  // HAUPT-TISCHPLAN
+  // --------------------------------------------------
 
   return (
-    <main className="min-h-screen bg-[#f4f5f7] text-slate-900">
-      {/* ======================================================
-          TOP HEADER
-      ====================================================== */}
+    <main className="min-h-screen bg-slate-100 text-slate-900">
+      {/* HEADER */}
 
-      <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={changeTable}
-            className="h-10 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 font-semibold text-sm"
-          >
-            ← Tischplan
-          </button>
+      <header className="bg-slate-900 text-white shadow-xl">
+        <div className="max-w-[1600px] mx-auto px-6 py-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div>
+              <p className="text-sm text-slate-400">
+                Döner POS
+              </p>
 
-          <div className="h-7 w-px bg-slate-200 hidden sm:block" />
+              <h1 className="text-3xl font-black mt-1">
+                Tischübersicht
+              </h1>
 
-          <div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">
-              Aktueller Tisch
-            </p>
-
-            <p className="font-bold">
-              Tisch {selectedTable}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-emerald-600">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            Online
-          </div>
-
-          <div className="hidden sm:block h-7 w-px bg-slate-200" />
-
-          <span className="hidden sm:block text-sm text-slate-500">
-            {email}
-          </span>
-
-          <button
-            onClick={logout}
-            className="h-9 px-3 rounded-lg border border-slate-200 text-sm font-semibold hover:bg-slate-50"
-          >
-            Abmelden
-          </button>
-        </div>
-      </header>
-
-      {/* ======================================================
-          HAUPT LAYOUT
-      ====================================================== */}
-
-      <div className="h-[calc(100vh-4rem)] flex flex-col lg:flex-row overflow-hidden">
-        {/* ====================================================
-            LINKE SEITE
-        ==================================================== */}
-
-        <section className="flex-1 min-w-0 flex flex-col overflow-hidden">
-          {/* TABLE BAR */}
-
-          <div className="bg-white border-b border-slate-200 px-4 lg:px-6 py-4">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-wider font-bold text-slate-400">
-                  Bestellung
-                </p>
-
-                <div className="flex items-center gap-3 mt-1">
-                  <h2 className="text-2xl font-bold">
-                    Tisch {selectedTable}
-                  </h2>
-
-                  {currentOpenOrder ? (
-                    <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">
-                      Offen
-                    </span>
-                  ) : (
-                    <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
-                      Neue Bestellung
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <button
-                onClick={changeTable}
-                className="hidden sm:block px-4 py-2 rounded-lg border border-slate-200 text-sm font-semibold hover:bg-slate-50"
-              >
-                Tisch wechseln
-              </button>
-            </div>
-          </div>
-
-          {/* SEARCH */}
-
-          <div className="bg-white border-b border-slate-200 px-4 lg:px-6 py-3">
-            <div className="relative">
-              <input
-                type="text"
-                value={search}
-                onChange={(event) =>
-                  setSearch(event.target.value)
-                }
-                placeholder="Produkt suchen..."
-                className="w-full h-11 rounded-lg border border-slate-200 bg-slate-50 px-4 pr-10 text-sm outline-none focus:border-slate-400 focus:bg-white transition"
-              />
-
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                ⌕
-              </span>
-            </div>
-          </div>
-
-          {/* CATEGORY BAR */}
-
-          <div className="bg-white border-b border-slate-200 px-4 lg:px-6 py-3 overflow-x-auto">
-            <div className="flex gap-2 min-w-max">
-              <button
-                onClick={() => setSelectedCategory(null)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                  selectedCategory === null
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                Alle
-              </button>
-
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() =>
-                    setSelectedCategory(category)
-                  }
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition ${
-                    selectedCategory === category
-                      ? "bg-slate-900 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* PRODUCTS */}
-
-          <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-            {loadingProducts ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin mx-auto mb-4" />
-
-                  <p className="text-sm font-semibold text-slate-500">
-                    Produkte werden geladen...
-                  </p>
-                </div>
-              </div>
-            ) : visibleProducts.length === 0 ? (
-              <div className="bg-white border border-slate-200 rounded-xl p-12 text-center">
-                <p className="font-semibold text-slate-700">
-                  Keine Produkte gefunden
-                </p>
-
-                <p className="text-sm text-slate-500 mt-1">
-                  Versuche eine andere Kategorie oder Suche.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
-                {visibleProducts.map((product) => (
-                  <button
-                    key={product.id}
-                    onClick={() => addToCart(product)}
-                    className="group bg-white border border-slate-200 rounded-xl p-4 text-left hover:border-slate-400 hover:shadow-md transition-all active:scale-[0.99]"
-                  >
-                    <div className="min-h-[58px]">
-                      <h3 className="font-semibold text-sm leading-5 text-slate-800">
-                        {product.name}
-                      </h3>
-                    </div>
-
-                    <div className="flex items-end justify-between gap-2 mt-5">
-                      <span className="font-bold text-base">
-                        {formatPrice(
-                          Number(product.price)
-                        )}
-                      </span>
-
-                      <span className="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-slate-900 group-hover:text-white flex items-center justify-center text-lg transition">
-                        +
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* ====================================================
-            RECHTE BESTELLUNG
-        ==================================================== */}
-
-        <aside className="w-full lg:w-[390px] xl:w-[430px] bg-white border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col shrink-0">
-          {/* ORDER HEADER */}
-
-          <div className="px-5 py-5 border-b border-slate-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-wider font-bold text-slate-400">
-                  Aktuelle Bestellung
-                </p>
-
-                <h3 className="text-xl font-bold mt-1">
-                  Tisch {selectedTable}
-                </h3>
-              </div>
-
-              <div className="text-right">
-                <p className="text-xs text-slate-400">
-                  Artikel
-                </p>
-
-                <p className="font-bold text-lg">
-                  {currentOrderItems.reduce(
-                    (total, item) =>
-                      total + item.quantity,
-                    0
-                  ) + cartItemCount}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* ORDER CONTENT */}
-
-          <div className="flex-1 overflow-y-auto">
-            {/* EXISTING ORDER */}
-
-            {currentOpenOrder &&
-              currentOrderItems.length > 0 && (
-                <div className="p-5 border-b border-slate-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-xs uppercase tracking-wider font-bold text-slate-400">
-                      Bereits bestellt
-                    </p>
-
-                    <span className="text-xs font-semibold text-amber-600">
-                      Küche
-                    </span>
-                  </div>
-
-                  <div className="space-y-2">
-                    {currentOrderItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between gap-3 py-2"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className="w-7 h-7 shrink-0 rounded-md bg-slate-100 flex items-center justify-center text-xs font-bold">
-                            {item.quantity}×
-                          </span>
-
-                          <span className="text-sm font-medium truncate">
-                            {item.product_name}
-                          </span>
-                        </div>
-
-                        <span className="text-sm font-semibold text-slate-500">
-                          {(() => {
-                            const product =
-                              products.find(
-                                (product) =>
-                                  product.name ===
-                                  item.product_name
-                              );
-
-                            return product
-                              ? formatPrice(
-                                  Number(
-                                    product.price
-                                  ) *
-                                    item.quantity
-                                )
-                              : "—";
-                          })()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="border-t border-slate-100 mt-3 pt-3 flex justify-between text-sm">
-                    <span className="text-slate-500">
-                      Aktueller Gesamtwert
-                    </span>
-
-                    <span className="font-bold">
-                      {formatPrice(
-                        existingOrderTotal
-                      )}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-            {/* NEW ITEMS */}
-
-            <div className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs uppercase tracking-wider font-bold text-slate-400">
-                  Neue Artikel
-                </p>
-
-                {cart.length > 0 && (
-                  <button
-                    onClick={() => setCart([])}
-                    className="text-xs font-semibold text-red-500 hover:text-red-700"
-                  >
-                    Leeren
-                  </button>
-                )}
-              </div>
-
-              {cart.length === 0 ? (
-                <div className="border border-dashed border-slate-300 rounded-xl p-8 text-center">
-                  <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400 text-xl">
-                    +
-                  </div>
-
-                  <p className="text-sm font-semibold text-slate-600">
-                    Noch keine neuen Artikel
-                  </p>
-
-                  <p className="text-xs text-slate-400 mt-1">
-                    Wähle links Produkte aus.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {cart.map((item) => (
-                    <div
-                      key={item.id}
-                      className="border border-slate-200 rounded-xl p-3"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="font-semibold text-sm leading-5">
-                            {item.name}
-                          </p>
-
-                          <p className="text-xs text-slate-500 mt-1">
-                            {formatPrice(item.price)} pro Stück
-                          </p>
-                        </div>
-
-                        <p className="font-bold text-sm whitespace-nowrap">
-                          {formatPrice(
-                            item.price *
-                              item.quantity
-                          )}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-between mt-3">
-                        <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
-                          <button
-                            onClick={() =>
-                              decreaseQuantity(
-                                item.id
-                              )
-                            }
-                            className="w-9 h-8 bg-slate-50 hover:bg-slate-100 font-bold"
-                          >
-                            −
-                          </button>
-
-                          <span className="w-9 text-center text-sm font-bold">
-                            {item.quantity}
-                          </span>
-
-                          <button
-                            onClick={() =>
-                              increaseQuantity(
-                                item.id
-                              )
-                            }
-                            className="w-9 h-8 bg-slate-50 hover:bg-slate-100 font-bold"
-                          >
-                            +
-                          </button>
-                        </div>
-
-                        <button
-                          onClick={() =>
-                            setCart((currentCart) =>
-                              currentCart.filter(
-                                (cartItem) =>
-                                  cartItem.id !==
-                                  item.id
-                              )
-                            )
-                          }
-                          className="text-xs font-semibold text-red-500 hover:text-red-700"
-                        >
-                          Entfernen
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ORDER FOOTER */}
-
-          <div className="border-t border-slate-200 p-5 bg-slate-50">
-            {message && (
-              <div
-                className={`mb-4 rounded-lg px-4 py-3 text-sm font-semibold ${
-                  messageType === "success"
-                    ? "bg-emerald-100 text-emerald-800"
-                    : messageType === "error"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-blue-100 text-blue-800"
-                }`}
-              >
-                {message}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs uppercase tracking-wider font-bold text-slate-400">
-                  Neue Artikel
-                </p>
-
-                <p className="text-sm text-slate-500 mt-0.5">
-                  {cartItemCount} Artikel
-                </p>
-              </div>
-
-              <p className="text-2xl font-bold">
-                {formatPrice(cartTotal)}
+              <p className="text-slate-400 mt-1">
+                Willkommen, {currentUserName}
               </p>
             </div>
 
-            <button
-              onClick={submitOrder}
-              disabled={
-                cart.length === 0 || sending
-              }
-              className="w-full h-12 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed transition"
-            >
-              {sending
-                ? "Wird gesendet..."
-                : currentOpenOrder
-                ? "Weitere Artikel senden"
-                : "Bestellung senden"}
-            </button>
-
-            <button
-              onClick={changeTable}
-              className="w-full h-10 mt-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-white border border-transparent hover:border-slate-200 transition"
-            >
-              Tisch wechseln
-            </button>
-          </div>
-        </aside>
-      </div>
-
-      {/* ======================================================
-          NOTIFICATIONS
-      ====================================================== */}
-
-      {notifications.length > 0 && (
-        <div className="fixed bottom-5 right-5 z-[100] w-full max-w-sm space-y-3 px-4 sm:px-0">
-          {notifications.map((notification) => (
-            <div
-              key={notification.id}
-              className="bg-slate-900 text-white rounded-xl shadow-2xl p-5 border border-slate-700"
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 shrink-0 rounded-lg bg-blue-500/20 text-blue-300 flex items-center justify-center font-bold">
-                  ✓
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-2xl bg-white/10 px-5 py-4 min-w-[110px]">
+                <div className="text-2xl font-black">
+                  {freeTables}
                 </div>
 
-                <div className="flex-1">
-                  <p className="font-bold">
-                    Bestellung fertig
-                  </p>
+                <div className="text-xs text-emerald-300 font-bold mt-1">
+                  FREI
+                </div>
+              </div>
 
-                  <p className="text-sm text-slate-300 mt-1">
-                    Tisch {notification.tableNumber} kann abgeholt werden.
-                  </p>
-
-                  <button
-                    onClick={() =>
-                      selectTable(
-                        notification.tableNumber
-                      )
-                    }
-                    className="mt-3 text-sm font-semibold text-blue-300 hover:text-blue-200"
-                  >
-                    Tisch öffnen →
-                  </button>
+              <div className="rounded-2xl bg-white/10 px-5 py-4 min-w-[110px]">
+                <div className="text-2xl font-black">
+                  {openTables}
                 </div>
 
-                <button
-                  onClick={() =>
-                    removeNotification(
-                      notification.id
-                    )
-                  }
-                  className="text-slate-400 hover:text-white text-xl"
-                >
-                  ×
-                </button>
+                <div className="text-xs text-orange-300 font-bold mt-1">
+                  OFFEN
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-white/10 px-5 py-4 min-w-[110px]">
+                <div className="text-2xl font-black">
+                  {readyTables}
+                </div>
+
+                <div className="text-xs text-blue-300 font-bold mt-1">
+                  BEZAHLBEREIT
+                </div>
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      )}
+      </header>
+
+      {/* INHALT */}
+
+      <div className="max-w-[1600px] mx-auto px-6 py-8">
+        {/* LEGENDE */}
+
+        <div className="flex flex-wrap items-center gap-5 mb-6">
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+            <span className="h-3 w-3 rounded-full bg-emerald-500" />
+            Frei
+          </div>
+
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+            <span className="h-3 w-3 rounded-full bg-orange-500" />
+            Bestellung offen
+          </div>
+
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+            <span className="h-3 w-3 rounded-full bg-blue-500" />
+            Bezahlbereit
+          </div>
+        </div>
+
+        {/* TISCHE */}
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-5">
+          {TABLES.map((tableNumber) => {
+            const status =
+              getTableStatus(tableNumber);
+
+            const tableItems =
+              getTableItems(tableNumber);
+
+            const unpaidItems = tableItems.reduce(
+              (total, item) =>
+                total +
+                Math.max(
+                  0,
+                  item.quantity - item.paid_quantity
+                ),
+              0
+            );
+
+            return (
+              <button
+                key={tableNumber}
+                onClick={() => openTable(tableNumber)}
+                className={`relative text-left rounded-3xl border-2 p-6 min-h-[170px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all ${
+                  status === "frei"
+                    ? "bg-white border-emerald-200 hover:border-emerald-400"
+                    : status === "offen"
+                    ? "bg-orange-50 border-orange-300 hover:border-orange-500"
+                    : "bg-blue-50 border-blue-300 hover:border-blue-500"
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-xs uppercase tracking-wider font-bold text-slate-400">
+                      Tisch
+                    </div>
+
+                    <div className="text-4xl font-black mt-1">
+                      {tableNumber}
+                    </div>
+                  </div>
+
+                  <span
+                    className={`h-4 w-4 rounded-full ${
+                      status === "frei"
+                        ? "bg-emerald-500"
+                        : status === "offen"
+                        ? "bg-orange-500"
+                        : "bg-blue-500"
+                    }`}
+                  />
+                </div>
+
+                <div className="absolute bottom-6 left-6 right-6">
+                  <div
+                    className={`text-xs font-black tracking-wide ${
+                      status === "frei"
+                        ? "text-emerald-600"
+                        : status === "offen"
+                        ? "text-orange-600"
+                        : "text-blue-600"
+                    }`}
+                  >
+                    {status === "frei"
+                      ? "FREI"
+                      : status === "offen"
+                      ? "BESTELLUNG OFFEN"
+                      : "BEZAHLBEREIT"}
+                  </div>
+
+                  {status === "fertig" &&
+                    unpaidItems > 0 && (
+                      <div className="text-xs text-slate-500 mt-1">
+                        {unpaidItems} Artikel offen
+                      </div>
+                    )}
+
+                  {status === "offen" && (
+                    <div className="text-xs text-slate-500 mt-1">
+                      Bestellung läuft
+                    </div>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </main>
   );
 }
