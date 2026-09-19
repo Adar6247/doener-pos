@@ -61,7 +61,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [selectedTable, setSelectedTable] = useState<number | null>(null);
+  const [selectedTable, setSelectedTable] = useState<number | null>(
+    null
+  );
 
   const [cart, setCart] = useState<CartItem[]>([]);
 
@@ -75,18 +77,24 @@ export default function DashboardPage() {
     PaymentSelection[]
   >([]);
 
-  const [paymentMethod, setPaymentMethod] = useState<"bar" | "karte">("bar");
+  const [paymentMethod, setPaymentMethod] = useState<"bar" | "karte">(
+    "bar"
+  );
 
   const [cashGiven, setCashGiven] = useState("");
 
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [currentUserName, setCurrentUserName] = useState("Kellner");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(
+    null
+  );
+
+  const [currentUserName, setCurrentUserName] =
+    useState("Kellner");
 
   const [message, setMessage] = useState("");
 
-  // --------------------------------------------------
+  // ==================================================
   // DATEN LADEN
-  // --------------------------------------------------
+  // ==================================================
 
   async function loadData() {
     setLoading(true);
@@ -106,12 +114,16 @@ export default function DashboardPage() {
       supabase
         .from("orders")
         .select("*")
-        .order("created_at", { ascending: true }),
+        .order("created_at", {
+          ascending: true,
+        }),
 
       supabase
         .from("order_items")
         .select("*")
-        .order("id", { ascending: true }),
+        .order("id", {
+          ascending: true,
+        }),
 
       supabase.auth.getUser(),
     ]);
@@ -190,9 +202,9 @@ export default function DashboardPage() {
     };
   }, []);
 
-  // --------------------------------------------------
+  // ==================================================
   // PRODUKTE
-  // --------------------------------------------------
+  // ==================================================
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -202,15 +214,16 @@ export default function DashboardPage() {
 
       const matchesCategory =
         category === "Alle" ||
-        product.category.toLowerCase() === category.toLowerCase();
+        product.category.toLowerCase() ===
+          category.toLowerCase();
 
       return matchesSearch && matchesCategory;
     });
   }, [products, search, category]);
 
-  // --------------------------------------------------
-  // TISCH STATUS
-  // --------------------------------------------------
+  // ==================================================
+  // TISCHDATEN
+  // ==================================================
 
   function getTableOrders(tableNumber: number) {
     return orders.filter(
@@ -219,12 +232,12 @@ export default function DashboardPage() {
   }
 
   function getTableItems(tableNumber: number) {
-    const tableOrderIds = getTableOrders(tableNumber).map(
+    const orderIds = getTableOrders(tableNumber).map(
       (order) => order.id
     );
 
     return orderItems.filter((item) =>
-      tableOrderIds.includes(item.order_id)
+      orderIds.includes(item.order_id)
     );
   }
 
@@ -263,9 +276,9 @@ export default function DashboardPage() {
     (table) => getTableStatus(table) === "fertig"
   ).length;
 
-  // --------------------------------------------------
+  // ==================================================
   // TISCH ÖFFNEN
-  // --------------------------------------------------
+  // ==================================================
 
   function openTable(tableNumber: number) {
     setSelectedTable(tableNumber);
@@ -289,9 +302,9 @@ export default function DashboardPage() {
     setMessage("");
   }
 
-  // --------------------------------------------------
-  // PRODUKT IN WARENKORB
-  // --------------------------------------------------
+  // ==================================================
+  // WARENKORB
+  // ==================================================
 
   function addToCart(product: Product) {
     setCart((current) => {
@@ -348,9 +361,9 @@ export default function DashboardPage() {
     );
   }
 
-  // --------------------------------------------------
+  // ==================================================
   // BESTELLUNG SPEICHERN
-  // --------------------------------------------------
+  // ==================================================
 
   async function submitOrder() {
     if (!selectedTable || cart.length === 0) {
@@ -389,7 +402,9 @@ export default function DashboardPage() {
 
         if (error || !data) {
           console.error(error);
-          throw new Error("Bestellung konnte nicht erstellt werden.");
+          throw new Error(
+            "Bestellung konnte nicht erstellt werden."
+          );
         }
 
         orderId = data.id;
@@ -408,7 +423,9 @@ export default function DashboardPage() {
 
       if (itemsError) {
         console.error(itemsError);
-        throw new Error("Produkte konnten nicht gespeichert werden.");
+        throw new Error(
+          "Produkte konnten nicht gespeichert werden."
+        );
       }
 
       setCart([]);
@@ -429,9 +446,9 @@ export default function DashboardPage() {
     }
   }
 
-  // --------------------------------------------------
+  // ==================================================
   // BESTELLUNG FERTIG
-  // --------------------------------------------------
+  // ==================================================
 
   async function finishOrder() {
     if (!selectedTable) {
@@ -461,7 +478,9 @@ export default function DashboardPage() {
 
     if (error) {
       console.error(error);
-      setMessage("Bestellung konnte nicht fertiggestellt werden.");
+      setMessage(
+        "Bestellung konnte nicht fertiggestellt werden."
+      );
     } else {
       setMessage("Tisch ist jetzt bezahlbereit.");
       await loadData();
@@ -470,20 +489,36 @@ export default function DashboardPage() {
     setSaving(false);
   }
 
-  // --------------------------------------------------
+  // ==================================================
   // ZAHLUNG
-  // --------------------------------------------------
+  // ==================================================
 
   function getPaymentItemsForTable(tableNumber: number) {
     const tableOrderIds = getTableOrders(tableNumber).map(
       (order) => order.id
     );
 
-    return orderItems.filter(
-      (item) =>
-        tableOrderIds.includes(item.order_id) &&
-        item.paid_quantity < item.quantity
-    );
+    /*
+      WICHTIG:
+      Hier werden vollständig bezahlte Artikel NICHT mehr
+      angezeigt.
+
+      Wenn z.B. 2 Döner vorhanden sind und 1 bezahlt wurde,
+      wird weiterhin nur 1 Döner angezeigt.
+    */
+
+    return orderItems
+      .filter(
+        (item) =>
+          tableOrderIds.includes(item.order_id) &&
+          item.paid_quantity < item.quantity
+      )
+      .map((item) => ({
+        ...item,
+        quantity:
+          item.quantity - item.paid_quantity,
+        paid_quantity: 0,
+      }));
   }
 
   function getProductPrice(productName: string) {
@@ -494,16 +529,18 @@ export default function DashboardPage() {
     return product?.price ?? 0;
   }
 
-  const paymentItems = selectedTable
-    ? getPaymentItemsForTable(selectedTable)
-    : [];
+  const paymentItems =
+    selectedTable !== null
+      ? getPaymentItemsForTable(selectedTable)
+      : [];
 
-  const selectedPaymentItems = paymentItems.filter((item) =>
-    paymentSelection.some(
-      (selection) =>
-        selection.itemId === item.id &&
-        selection.quantity > 0
-    )
+  const selectedPaymentItems = paymentItems.filter(
+    (item) =>
+      paymentSelection.some(
+        (selection) =>
+          selection.itemId === item.id &&
+          selection.quantity > 0
+      )
   );
 
   const paymentTotal = selectedPaymentItems.reduce(
@@ -522,7 +559,10 @@ export default function DashboardPage() {
     0
   );
 
-  const cashValue = Number.parseFloat(cashGiven.replace(",", ".")) || 0;
+  const cashValue =
+    Number.parseFloat(
+      cashGiven.replace(",", ".")
+    ) || 0;
 
   const change =
     paymentMethod === "bar"
@@ -554,7 +594,8 @@ export default function DashboardPage() {
     if (existing) {
       setPaymentSelection((current) =>
         current.filter(
-          (selection) => selection.itemId !== item.id
+          (selection) =>
+            selection.itemId !== item.id
         )
       );
 
@@ -600,14 +641,17 @@ export default function DashboardPage() {
               }
             : selection
         )
-        .filter((selection) => selection.quantity > 0)
+        .filter(
+          (selection) => selection.quantity > 0
+        )
     );
   }
 
   function getSelectedPaymentQuantity(itemId: number) {
     return (
       paymentSelection.find(
-        (selection) => selection.itemId === itemId
+        (selection) =>
+          selection.itemId === itemId
       )?.quantity ?? 0
     );
   }
@@ -618,7 +662,9 @@ export default function DashboardPage() {
     }
 
     if (paymentSelection.length === 0) {
-      setMessage("Bitte mindestens einen Artikel auswählen.");
+      setMessage(
+        "Bitte mindestens einen Artikel auswählen."
+      );
       return;
     }
 
@@ -626,7 +672,9 @@ export default function DashboardPage() {
       paymentMethod === "bar" &&
       cashValue < paymentTotal
     ) {
-      setMessage("Der gegebene Betrag ist zu niedrig.");
+      setMessage(
+        "Der gegebene Betrag ist zu niedrig."
+      );
       return;
     }
 
@@ -645,7 +693,8 @@ export default function DashboardPage() {
         }
 
         const newPaidQuantity =
-          item.paid_quantity + selection.quantity;
+          item.paid_quantity +
+          selection.quantity;
 
         const { error } = await supabase
           .from("order_items")
@@ -660,23 +709,51 @@ export default function DashboardPage() {
 
         if (error) {
           console.error(error);
+
           throw new Error(
             "Zahlung konnte nicht gespeichert werden."
           );
         }
       }
 
+      /*
+        WICHTIG:
+        Zahlungsauswahl komplett zurücksetzen.
+        Danach werden die Daten neu geladen.
+
+        Dadurch verschwinden vollständig bezahlte
+        Produkte direkt aus der Zahlungsansicht.
+      */
+
       setPaymentSelection([]);
       setCashGiven("");
-      setShowPayment(false);
+
+      await loadData();
 
       setMessage(
         paymentMethod === "bar"
-          ? `Zahlung gespeichert. Rückgeld: ${change.toFixed(2).replace(".", ",")} €`
+          ? `Zahlung gespeichert. Rückgeld: ${change
+              .toFixed(2)
+              .replace(".", ",")} €`
           : "Kartenzahlung gespeichert."
       );
 
-      await loadData();
+      /*
+        Nur wenn noch unbezahlte Artikel vorhanden sind,
+        bleiben wir in der Zahlungsansicht.
+
+        Wenn alles bezahlt ist, gehen wir automatisch
+        zurück zur Tischansicht.
+      */
+
+      const remainingItems =
+        getPaymentItemsForTable(
+          selectedTable
+        );
+
+      if (remainingItems.length === 0) {
+        setShowPayment(false);
+      }
     } catch (error) {
       console.error(error);
 
@@ -690,35 +767,40 @@ export default function DashboardPage() {
     }
   }
 
-  // --------------------------------------------------
+  // ==================================================
   // AUSGEWÄHLTER TISCH
-  // --------------------------------------------------
+  // ==================================================
 
-  const selectedTableOrders = selectedTable
-    ? getTableOrders(selectedTable)
-    : [];
+  const selectedTableOrders =
+    selectedTable !== null
+      ? getTableOrders(selectedTable)
+      : [];
 
-  const selectedTableItems = selectedTable
-    ? getTableItems(selectedTable)
-    : [];
+  const selectedTableItems =
+    selectedTable !== null
+      ? getTableItems(selectedTable)
+      : [];
 
-  const selectedOpenOrder = selectedTableOrders.find(
-    (order) => order.status === "offen"
-  );
+  const selectedOpenOrder =
+    selectedTableOrders.find(
+      (order) => order.status === "offen"
+    );
 
-  const selectedStatus = selectedTable
-    ? getTableStatus(selectedTable)
-    : "frei";
+  const selectedStatus =
+    selectedTable !== null
+      ? getTableStatus(selectedTable)
+      : "frei";
 
   const cartTotal = cart.reduce(
     (total, item) =>
-      total + item.product.price * item.quantity,
+      total +
+      item.product.price * item.quantity,
     0
   );
 
-  // --------------------------------------------------
+  // ==================================================
   // LOADING
-  // --------------------------------------------------
+  // ==================================================
 
   if (loading) {
     return (
@@ -726,6 +808,7 @@ export default function DashboardPage() {
         <div className="bg-white rounded-3xl shadow-xl px-8 py-6 text-slate-700">
           <div className="flex items-center gap-3">
             <div className="h-5 w-5 rounded-full border-2 border-slate-300 border-t-slate-800 animate-spin" />
+
             <span className="font-semibold">
               POS wird geladen...
             </span>
@@ -735,9 +818,9 @@ export default function DashboardPage() {
     );
   }
 
-  // --------------------------------------------------
+  // ==================================================
   // TISCHANSICHT
-  // --------------------------------------------------
+  // ==================================================
 
   if (selectedTable !== null) {
     return (
@@ -785,6 +868,7 @@ export default function DashboardPage() {
               <p className="text-xs text-slate-400">
                 Angemeldet als
               </p>
+
               <p className="font-semibold">
                 {currentUserName}
               </p>
@@ -811,7 +895,9 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* ZAHLUNG */}
+        {/* ==================================================
+            ZAHLUNG
+        ================================================== */}
 
         {showPayment ? (
           <div className="max-w-[1200px] mx-auto px-6 py-8">
@@ -827,7 +913,8 @@ export default function DashboardPage() {
                   </h2>
 
                   <p className="text-sm text-slate-500 mt-1">
-                    Wähle die Produkte aus, die jetzt bezahlt werden.
+                    Wähle die Produkte aus, die jetzt
+                    bezahlt werden.
                   </p>
                 </div>
 
@@ -842,15 +929,25 @@ export default function DashboardPage() {
               <div className="p-7">
                 {paymentItems.length === 0 ? (
                   <div className="text-center py-16">
-                    <div className="text-5xl mb-4">✓</div>
+                    <div className="mx-auto h-16 w-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl">
+                      ✓
+                    </div>
 
-                    <h3 className="text-xl font-bold">
+                    <h3 className="text-xl font-bold mt-5">
                       Alles bezahlt
                     </h3>
 
                     <p className="text-slate-500 mt-2">
-                      Für diesen Tisch sind keine offenen Artikel mehr vorhanden.
+                      Für diesen Tisch sind keine
+                      offenen Artikel mehr vorhanden.
                     </p>
+
+                    <button
+                      onClick={cancelPayment}
+                      className="mt-6 px-6 py-3 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition"
+                    >
+                      Zur Tischübersicht
+                    </button>
                   </div>
                 ) : (
                   <div className="grid lg:grid-cols-[1fr_360px] gap-7">
@@ -859,11 +956,12 @@ export default function DashboardPage() {
                     <div className="space-y-3">
                       {paymentItems.map((item) => {
                         const selectedQuantity =
-                          getSelectedPaymentQuantity(item.id);
+                          getSelectedPaymentQuantity(
+                            item.id
+                          );
 
                         const remaining =
-                          item.quantity -
-                          item.paid_quantity;
+                          item.quantity;
 
                         const isSelected =
                           selectedQuantity > 0;
@@ -885,7 +983,9 @@ export default function DashboardPage() {
                             <div className="flex items-center justify-between gap-4">
                               <button
                                 onClick={() =>
-                                  togglePaymentItem(item)
+                                  togglePaymentItem(
+                                    item
+                                  )
                                 }
                                 className="flex-1 text-left"
                               >
@@ -906,7 +1006,9 @@ export default function DashboardPage() {
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() =>
-                                      decreasePaymentItem(item)
+                                      decreasePaymentItem(
+                                        item
+                                      )
                                     }
                                     className="h-9 w-9 rounded-lg bg-slate-200 hover:bg-slate-300 font-bold"
                                   >
@@ -919,7 +1021,9 @@ export default function DashboardPage() {
 
                                   <button
                                     onClick={() =>
-                                      increasePaymentItem(item)
+                                      increasePaymentItem(
+                                        item
+                                      )
                                     }
                                     className="h-9 w-9 rounded-lg bg-slate-900 text-white hover:bg-slate-800 font-bold"
                                   >
@@ -941,7 +1045,10 @@ export default function DashboardPage() {
                                     price
                                   )
                                     .toFixed(2)
-                                    .replace(".", ",")}{" "}
+                                    .replace(
+                                      ".",
+                                      ","
+                                    )}{" "}
                                   €
                                 </span>
                               </div>
@@ -989,8 +1096,10 @@ export default function DashboardPage() {
                       <div className="space-y-4">
                         <div className="flex justify-between text-slate-300">
                           <span>Ausgewählt</span>
+
                           <span>
-                            {selectedPaymentItems.length} Artikel
+                            {selectedPaymentItems.length}{" "}
+                            Positionen
                           </span>
                         </div>
 
@@ -1036,7 +1145,10 @@ export default function DashboardPage() {
                               <span className="font-bold text-xl">
                                 {change
                                   .toFixed(2)
-                                  .replace(".", ",")}{" "}
+                                  .replace(
+                                    ".",
+                                    ","
+                                  )}{" "}
                                 €
                               </span>
                             </div>
@@ -1047,9 +1159,12 @@ export default function DashboardPage() {
                           onClick={completePayment}
                           disabled={
                             saving ||
-                            paymentSelection.length === 0 ||
-                            (paymentMethod === "bar" &&
-                              cashValue < paymentTotal)
+                            paymentSelection.length ===
+                              0 ||
+                            (paymentMethod ===
+                              "bar" &&
+                              cashValue <
+                                paymentTotal)
                           }
                           className="w-full mt-2 py-4 rounded-xl bg-white text-slate-900 font-black text-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
                         >
@@ -1068,7 +1183,9 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            {/* BESTEHENDE BESTELLUNG */}
+            {/* ==================================================
+                TISCHINHALT
+            ================================================== */}
 
             <div className="max-w-[1600px] mx-auto px-6 py-6">
               <div className="grid xl:grid-cols-[1fr_400px] gap-6">
@@ -1121,67 +1238,79 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="p-6">
-                      {selectedTableItems.length === 0 ? (
+                      {selectedTableItems.length ===
+                      0 ? (
                         <div className="text-center py-12 text-slate-400">
                           Noch keine Artikel bestellt.
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          {selectedTableItems.map((item) => {
-                            const price =
-                              getProductPrice(
-                                item.product_name
-                              );
+                          {selectedTableItems.map(
+                            (item) => {
+                              const price =
+                                getProductPrice(
+                                  item.product_name
+                                );
 
-                            const unpaid =
-                              item.quantity -
-                              item.paid_quantity;
+                              const unpaid =
+                                item.quantity -
+                                item.paid_quantity;
 
-                            return (
-                              <div
-                                key={item.id}
-                                className="flex items-center justify-between rounded-2xl bg-slate-50 border border-slate-200 px-5 py-4"
-                              >
-                                <div>
-                                  <div className="font-bold">
-                                    {item.product_name}
-                                  </div>
-
-                                  <div className="text-sm text-slate-500 mt-1">
-                                    {item.quantity} ×{" "}
-                                    {price
-                                      .toFixed(2)
-                                      .replace(".", ",")}{" "}
-                                    €
-                                  </div>
-                                </div>
-
-                                <div className="text-right">
-                                  {item.paid_quantity > 0 && (
-                                    <div className="text-xs font-bold text-emerald-600 mb-1">
-                                      {item.paid_quantity} bezahlt
-                                    </div>
-                                  )}
-
-                                  {unpaid > 0 ? (
+                              return (
+                                <div
+                                  key={item.id}
+                                  className="flex items-center justify-between rounded-2xl bg-slate-50 border border-slate-200 px-5 py-4"
+                                >
+                                  <div>
                                     <div className="font-bold">
-                                      {unpaid} offen
+                                      {
+                                        item.product_name
+                                      }
                                     </div>
-                                  ) : (
-                                    <div className="font-bold text-emerald-600">
-                                      Bezahlt ✓
+
+                                    <div className="text-sm text-slate-500 mt-1">
+                                      {item.quantity} ×{" "}
+                                      {price
+                                        .toFixed(2)
+                                        .replace(
+                                          ".",
+                                          ","
+                                        )}{" "}
+                                      €
                                     </div>
-                                  )}
+                                  </div>
+
+                                  <div className="text-right">
+                                    {item.paid_quantity >
+                                      0 && (
+                                      <div className="text-xs font-bold text-emerald-600 mb-1">
+                                        {
+                                          item.paid_quantity
+                                        }{" "}
+                                        bezahlt
+                                      </div>
+                                    )}
+
+                                    {unpaid > 0 ? (
+                                      <div className="font-bold">
+                                        {unpaid} offen
+                                      </div>
+                                    ) : (
+                                      <div className="font-bold text-emerald-600">
+                                        Bezahlt ✓
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            }
+                          )}
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* PRODUKTAUSWAHL */}
+                  {/* PRODUKTE */}
 
                   {showAddOrder && (
                     <div className="mt-6 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
@@ -1193,7 +1322,8 @@ export default function DashboardPage() {
                             </h2>
 
                             <p className="text-sm text-slate-500 mt-1">
-                              Produkte zur Bestellung hinzufügen
+                              Produkte zur Bestellung
+                              hinzufügen
                             </p>
                           </div>
 
@@ -1211,7 +1341,9 @@ export default function DashboardPage() {
                           <input
                             value={search}
                             onChange={(event) =>
-                              setSearch(event.target.value)
+                              setSearch(
+                                event.target.value
+                              )
                             }
                             placeholder="Produkt suchen..."
                             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-900"
@@ -1224,10 +1356,13 @@ export default function DashboardPage() {
                               <button
                                 key={categoryName}
                                 onClick={() =>
-                                  setCategory(categoryName)
+                                  setCategory(
+                                    categoryName
+                                  )
                                 }
                                 className={`whitespace-nowrap px-4 py-2 rounded-xl text-sm font-bold transition ${
-                                  category === categoryName
+                                  category ===
+                                  categoryName
                                     ? "bg-slate-900 text-white"
                                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                                 }`}
@@ -1240,7 +1375,8 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="p-6">
-                        {filteredProducts.length === 0 ? (
+                        {filteredProducts.length ===
+                        0 ? (
                           <div className="text-center py-12 text-slate-400">
                             Keine Produkte gefunden.
                           </div>
@@ -1251,7 +1387,9 @@ export default function DashboardPage() {
                                 <button
                                   key={product.id}
                                   onClick={() =>
-                                    addToCart(product)
+                                    addToCart(
+                                      product
+                                    )
                                   }
                                   className="text-left rounded-2xl border border-slate-200 bg-white p-5 hover:border-slate-900 hover:shadow-md transition"
                                 >
@@ -1260,13 +1398,18 @@ export default function DashboardPage() {
                                   </div>
 
                                   <div className="text-sm text-slate-400 mt-1">
-                                    {product.category}
+                                    {
+                                      product.category
+                                    }
                                   </div>
 
                                   <div className="mt-4 font-black text-lg">
                                     {product.price
                                       .toFixed(2)
-                                      .replace(".", ",")}{" "}
+                                      .replace(
+                                        ".",
+                                        ","
+                                      )}{" "}
                                     €
                                   </div>
                                 </button>
@@ -1279,7 +1422,9 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                {/* RECHTE SEITE */}
+                {/* ==================================================
+                    RECHTE BESTELLBOX
+                ================================================== */}
 
                 <aside className="xl:sticky xl:top-6 h-fit">
                   <div className="bg-slate-900 text-white rounded-3xl shadow-xl overflow-hidden">
@@ -1331,16 +1476,22 @@ export default function DashboardPage() {
                             >
                               <div className="flex justify-between gap-3">
                                 <div className="font-bold">
-                                  {item.product.name}
+                                  {
+                                    item.product.name
+                                  }
                                 </div>
 
                                 <div className="font-bold">
                                   {(
-                                    item.product.price *
+                                    item.product
+                                      .price *
                                     item.quantity
                                   )
                                     .toFixed(2)
-                                    .replace(".", ",")}{" "}
+                                    .replace(
+                                      ".",
+                                      ","
+                                    )}{" "}
                                   €
                                 </div>
                               </div>
@@ -1349,7 +1500,10 @@ export default function DashboardPage() {
                                 <div className="text-sm text-slate-400">
                                   {item.product.price
                                     .toFixed(2)
-                                    .replace(".", ",")}{" "}
+                                    .replace(
+                                      ".",
+                                      ","
+                                    )}{" "}
                                   € / Stück
                                 </div>
 
@@ -1366,7 +1520,9 @@ export default function DashboardPage() {
                                   </button>
 
                                   <span className="w-6 text-center font-bold">
-                                    {item.quantity}
+                                    {
+                                      item.quantity
+                                    }
                                   </span>
 
                                   <button
@@ -1396,7 +1552,10 @@ export default function DashboardPage() {
                             <span className="text-3xl font-black">
                               {cartTotal
                                 .toFixed(2)
-                                .replace(".", ",")}{" "}
+                                .replace(
+                                  ".",
+                                  ","
+                                )}{" "}
                               €
                             </span>
                           </div>
@@ -1422,7 +1581,8 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="mt-1 font-bold">
-                        Bestellung #{selectedOpenOrder.id}
+                        Bestellung #
+                        {selectedOpenOrder.id}
                       </div>
 
                       <div className="text-sm text-slate-500 mt-1">
@@ -1439,14 +1599,12 @@ export default function DashboardPage() {
     );
   }
 
-  // --------------------------------------------------
-  // HAUPT-TISCHPLAN
-  // --------------------------------------------------
+  // ==================================================
+  // TISCHPLAN
+  // ==================================================
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-900">
-      {/* HEADER */}
-
       <header className="bg-slate-900 text-white shadow-xl">
         <div className="max-w-[1600px] mx-auto px-6 py-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
@@ -1499,11 +1657,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* INHALT */}
-
       <div className="max-w-[1600px] mx-auto px-6 py-8">
-        {/* LEGENDE */}
-
         <div className="flex flex-wrap items-center gap-5 mb-6">
           <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
             <span className="h-3 w-3 rounded-full bg-emerald-500" />
@@ -1521,8 +1675,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* TISCHE */}
-
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-5">
           {TABLES.map((tableNumber) => {
             const status =
@@ -1531,20 +1683,24 @@ export default function DashboardPage() {
             const tableItems =
               getTableItems(tableNumber);
 
-            const unpaidItems = tableItems.reduce(
-              (total, item) =>
-                total +
-                Math.max(
-                  0,
-                  item.quantity - item.paid_quantity
-                ),
-              0
-            );
+            const unpaidItems =
+              tableItems.reduce(
+                (total, item) =>
+                  total +
+                  Math.max(
+                    0,
+                    item.quantity -
+                      item.paid_quantity
+                  ),
+                0
+              );
 
             return (
               <button
                 key={tableNumber}
-                onClick={() => openTable(tableNumber)}
+                onClick={() =>
+                  openTable(tableNumber)
+                }
                 className={`relative text-left rounded-3xl border-2 p-6 min-h-[170px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all ${
                   status === "frei"
                     ? "bg-white border-emerald-200 hover:border-emerald-400"
