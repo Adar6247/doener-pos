@@ -80,13 +80,13 @@ function getTableStatus(
     return "offen";
   }
 
-  const tableOrderIds = tableOrders.map(
+  const orderIds = tableOrders.map(
     (order) => order.id
   );
 
   const hasUnpaidItems = orderItems.some(
     (item) =>
-      tableOrderIds.includes(item.order_id) &&
+      orderIds.includes(item.order_id) &&
       item.paid_quantity < item.quantity
   );
 
@@ -99,6 +99,8 @@ function getTableStatus(
 
 export default function DashboardPage() {
   const { theme, setTheme } = useTheme();
+
+  const dark = theme === "dark";
 
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -146,16 +148,12 @@ export default function DashboardPage() {
       supabase
         .from("orders")
         .select("*")
-        .order("created_at", {
-          ascending: true,
-        }),
+        .order("created_at", { ascending: true }),
 
       supabase
         .from("order_items")
         .select("*")
-        .order("id", {
-          ascending: true,
-        }),
+        .order("id", { ascending: true }),
     ]);
 
     if (productsResult.error) {
@@ -204,9 +202,7 @@ export default function DashboardPage() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       if (user) {
         const { data: profile, error } =
@@ -256,7 +252,7 @@ export default function DashboardPage() {
       )
       .subscribe();
 
-    const orderItemsChannel = supabase
+    const itemsChannel = supabase
       .channel("waiter-order-items-realtime")
       .on(
         "postgres_changes",
@@ -273,7 +269,7 @@ export default function DashboardPage() {
 
     return () => {
       supabase.removeChannel(ordersChannel);
-      supabase.removeChannel(orderItemsChannel);
+      supabase.removeChannel(itemsChannel);
     };
   }, []);
 
@@ -291,17 +287,17 @@ export default function DashboardPage() {
     return result;
   }, [orders, orderItems]);
 
-  const freeTables = Object.values(
-    tableStatuses
-  ).filter((status) => status === "frei").length;
+  const freeTables = Object.values(tableStatuses).filter(
+    (status) => status === "frei"
+  ).length;
 
-  const openTables = Object.values(
-    tableStatuses
-  ).filter((status) => status === "offen").length;
+  const openTables = Object.values(tableStatuses).filter(
+    (status) => status === "offen"
+  ).length;
 
-  const readyTables = Object.values(
-    tableStatuses
-  ).filter((status) => status === "fertig").length;
+  const readyTables = Object.values(tableStatuses).filter(
+    (status) => status === "fertig"
+  ).length;
 
   const selectedTableOrders = useMemo(() => {
     if (selectedTable === null) {
@@ -371,10 +367,9 @@ export default function DashboardPage() {
 
   const cartTotal = useMemo(() => {
     return cart.reduce(
-      (total, cartItem) =>
+      (total, item) =>
         total +
-        cartItem.product.price *
-          cartItem.quantity,
+        item.product.price * item.quantity,
       0
     );
   }, [cart]);
@@ -388,9 +383,7 @@ export default function DashboardPage() {
           paymentItem.id === selection.itemId
       );
 
-      if (!item) {
-        continue;
-      }
+      if (!item) continue;
 
       const product = products.find(
         (productItem) =>
@@ -398,12 +391,11 @@ export default function DashboardPage() {
           item.product_name
       );
 
-      if (!product) {
-        continue;
-      }
+      if (!product) continue;
 
       total +=
-        product.price * selection.quantity;
+        product.price *
+        selection.quantity;
     }
 
     return total;
@@ -414,7 +406,9 @@ export default function DashboardPage() {
   ]);
 
   const numericCashReceived =
-    Number(cashReceived.replace(",", ".")) || 0;
+    Number(
+      cashReceived.replace(",", ".")
+    ) || 0;
 
   const changeAmount =
     paymentMethod === "bar"
@@ -518,7 +512,7 @@ export default function DashboardPage() {
 
         if (!newOrder) {
           throw new Error(
-            "Die Bestellung wurde nicht erstellt."
+            "Bestellung konnte nicht erstellt werden."
           );
         }
 
@@ -526,7 +520,7 @@ export default function DashboardPage() {
       }
 
       for (const cartItem of cart) {
-        const { data: existingItem, error: findError } =
+        const { data: existingItem, error } =
           await supabase
             .from("order_items")
             .select("*")
@@ -537,8 +531,8 @@ export default function DashboardPage() {
             )
             .maybeSingle();
 
-        if (findError) {
-          throw findError;
+        if (error) {
+          throw error;
         }
 
         if (existingItem) {
@@ -585,7 +579,7 @@ export default function DashboardPage() {
       await loadData();
     } catch (error) {
       console.error(
-        "Fehler beim Speichern der Bestellung:",
+        "Fehler beim Speichern:",
         error
       );
 
@@ -608,12 +602,13 @@ export default function DashboardPage() {
     setSaving(true);
 
     try {
-      const { error } = await supabase
-        .from("orders")
-        .update({
-          status: "fertig",
-        })
-        .eq("id", openOrder.id);
+      const { error } =
+        await supabase
+          .from("orders")
+          .update({
+            status: "fertig",
+          })
+          .eq("id", openOrder.id);
 
       if (error) {
         throw error;
@@ -646,15 +641,21 @@ export default function DashboardPage() {
     setCashReceived("");
   }
 
+  function closePayment() {
+    setShowPayment(false);
+    setPaymentSelection([]);
+    setCashReceived("");
+  }
+
   function getSelectedQuantity(
     itemId: number
-  ): number {
-    const selection =
+  ) {
+    return (
       paymentSelection.find(
-        (item) => item.itemId === itemId
-      );
-
-    return selection?.quantity ?? 0;
+        (item) =>
+          item.itemId === itemId
+      )?.quantity ?? 0
+    );
   }
 
   function changePaymentQuantity(
@@ -742,17 +743,10 @@ export default function DashboardPage() {
     setSaving(true);
 
     try {
-      /*
-       * Wir arbeiten mit einer Kopie des aktuellen
-       * lokalen Zustands.
-       */
-      let updatedItems: OrderItem[] = [
+      const updatedItems = [
         ...orderItems,
       ];
 
-      /*
-       * Jede ausgewählte Position einzeln bezahlen.
-       */
       for (const selection of paymentSelection) {
         const currentItem =
           updatedItems.find(
@@ -764,13 +758,13 @@ export default function DashboardPage() {
           continue;
         }
 
-        const availableQuantity =
+        const remaining =
           currentItem.quantity -
           currentItem.paid_quantity;
 
         const quantityToPay = Math.min(
           selection.quantity,
-          availableQuantity
+          remaining
         );
 
         if (quantityToPay <= 0) {
@@ -785,70 +779,58 @@ export default function DashboardPage() {
           newPaidQuantity >=
           currentItem.quantity;
 
-        const newPaidAt = fullyPaid
-          ? new Date().toISOString()
-          : currentItem.paid_at;
-
-        /*
-         * WICHTIG:
-         * Wir bekommen den tatsächlich gespeicherten
-         * Datensatz direkt von Supabase zurück.
-         */
-        const {
-          data: updatedItem,
-          error,
-        } = await supabase
-          .from("order_items")
-          .update({
-            paid_quantity:
-              newPaidQuantity,
-            paid_at: newPaidAt,
-          })
-          .eq("id", currentItem.id)
-          .select("*")
-          .single();
+        const { data, error } =
+          await supabase
+            .from("order_items")
+            .update({
+              paid_quantity:
+                newPaidQuantity,
+              paid_at: fullyPaid
+                ? new Date().toISOString()
+                : currentItem.paid_at,
+            })
+            .eq("id", currentItem.id)
+            .select("*")
+            .single();
 
         if (error) {
+          console.error(
+            "Supabase Zahlungsfehler:",
+            error
+          );
           throw error;
         }
 
-        if (!updatedItem) {
+        if (!data) {
           throw new Error(
-            "Der bezahlte Artikel konnte nicht geladen werden."
+            "Der bezahlte Artikel wurde nicht zurückgegeben."
           );
         }
 
-        updatedItems =
-          updatedItems.map((item) =>
-            item.id === updatedItem.id
-              ? (updatedItem as OrderItem)
-              : item
+        const index =
+          updatedItems.findIndex(
+            (item) =>
+              item.id === data.id
           );
+
+        if (index !== -1) {
+          updatedItems[index] =
+            data as OrderItem;
+        }
       }
 
-      /*
-       * SOFORT lokalen Zustand aktualisieren.
-       *
-       * Dadurch verschwinden vollständig bezahlte
-       * Produkte sofort aus der Zahlungsliste.
-       */
       setOrderItems(updatedItems);
 
       setPaymentSelection([]);
       setCashReceived("");
 
-      /*
-       * Prüfen, ob auf dem Tisch noch etwas
-       * unbezahlt ist.
-       */
       const remainingItems =
         updatedItems.filter((item) => {
-          const belongsToTable =
-            selectedTableOrderIds.includes(
+          if (
+            !selectedTableOrderIds.includes(
               item.order_id
-            );
-
-          if (!belongsToTable) {
+            )
+          ) {
             return false;
           }
 
@@ -859,21 +841,9 @@ export default function DashboardPage() {
         });
 
       if (remainingItems.length > 0) {
-        /*
-         * Noch etwas offen:
-         * Zahlung bleibt geöffnet.
-         */
         return;
       }
 
-      /*
-       * Alles auf dem Tisch wurde bezahlt.
-       */
-      setShowPayment(false);
-
-      /*
-       * Fertige Orders bekommen finished_at.
-       */
       const finishedOrders =
         selectedTableOrders.filter(
           (order) =>
@@ -881,32 +851,26 @@ export default function DashboardPage() {
             order.finished_at === null
         );
 
-      if (finishedOrders.length > 0) {
-        const finishedAt =
-          new Date().toISOString();
+      for (const order of finishedOrders) {
+        const { error } =
+          await supabase
+            .from("orders")
+            .update({
+              finished_at:
+                new Date().toISOString(),
+            })
+            .eq("id", order.id);
 
-        for (const order of finishedOrders) {
-          const { error } =
-            await supabase
-              .from("orders")
-              .update({
-                finished_at: finishedAt,
-              })
-              .eq("id", order.id);
-
-          if (error) {
-            console.error(
-              "Fehler beim Setzen von finished_at:",
-              error
-            );
-          }
+        if (error) {
+          console.error(
+            "finished_at Fehler:",
+            error
+          );
         }
       }
 
-      /*
-       * Einmal neu laden, weil jetzt wirklich alles
-       * bezahlt wurde und der Tisch "frei" werden soll.
-       */
+      setShowPayment(false);
+
       await loadData();
     } catch (error) {
       console.error(
@@ -915,22 +879,11 @@ export default function DashboardPage() {
       );
 
       alert(
-        "Die Zahlung konnte nicht gespeichert werden."
+        "Die Zahlung konnte nicht gespeichert werden. Bitte Konsole prüfen."
       );
     } finally {
       setSaving(false);
     }
-  }
-
-  function closeTable() {
-    setSelectedTable(null);
-    setCart([]);
-    setShowAddOrder(false);
-    setShowPayment(false);
-    setPaymentSelection([]);
-    setCashReceived("");
-    setSearch("");
-    setCategory("alle");
   }
 
   function startAddingOrder() {
@@ -948,10 +901,21 @@ export default function DashboardPage() {
     setCategory("alle");
   }
 
+  function closeTable() {
+    setSelectedTable(null);
+    setCart([]);
+    setShowAddOrder(false);
+    setShowPayment(false);
+    setPaymentSelection([]);
+    setCashReceived("");
+    setSearch("");
+    setCategory("alle");
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 px-8 py-6">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 px-8 py-6 shadow-xl">
           <div className="text-lg font-semibold">
             Kassensystem wird geladen...
           </div>
@@ -960,10 +924,18 @@ export default function DashboardPage() {
     );
   }
 
+  const panelClass = dark
+    ? "rounded-2xl border border-slate-800 bg-slate-900 shadow-xl"
+    : "rounded-2xl border border-slate-200 bg-white shadow-sm";
+
+  const secondaryButton = dark
+    ? "border-slate-700 hover:bg-slate-800"
+    : "border-slate-300 hover:bg-slate-100";
+
   return (
     <main
       className={
-        theme === "dark"
+        dark
           ? "min-h-screen bg-slate-950 text-white"
           : "min-h-screen bg-slate-100 text-slate-900"
       }
@@ -972,12 +944,12 @@ export default function DashboardPage() {
 
       <header
         className={
-          theme === "dark"
+          dark
             ? "border-b border-slate-800 bg-slate-900"
             : "border-b border-slate-200 bg-white"
         }
       >
-        <div className="mx-auto max-w-[1600px] px-6 py-5 flex items-center justify-between">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-5">
           <div>
             <h1 className="text-2xl font-bold">
               Döner POS
@@ -993,14 +965,12 @@ export default function DashboardPage() {
           <button
             onClick={() =>
               setTheme(
-                theme === "dark"
-                  ? "light"
-                  : "dark"
+                dark ? "light" : "dark"
               )
             }
-            className="rounded-xl border border-slate-700 px-4 py-2 text-sm transition hover:bg-slate-800"
+            className={`rounded-xl border px-4 py-2 text-sm transition ${secondaryButton}`}
           >
-            {theme === "dark"
+            {dark
               ? "☀️ Hell"
               : "🌙 Dunkel"}
           </button>
@@ -1010,14 +980,8 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-[1600px] px-6 py-6">
         {/* STATUS */}
 
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div
-            className={
-              theme === "dark"
-                ? "rounded-2xl border border-slate-800 bg-slate-900 p-5"
-                : "rounded-2xl border border-slate-200 bg-white p-5"
-            }
-          >
+        <div className="mb-7 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className={`${panelClass} p-5`}>
             <div className="text-sm text-slate-400">
               Freie Tische
             </div>
@@ -1027,13 +991,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div
-            className={
-              theme === "dark"
-                ? "rounded-2xl border border-slate-800 bg-slate-900 p-5"
-                : "rounded-2xl border border-slate-200 bg-white p-5"
-            }
-          >
+          <div className={`${panelClass} p-5`}>
             <div className="text-sm text-slate-400">
               Offene Bestellungen
             </div>
@@ -1043,13 +1001,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div
-            className={
-              theme === "dark"
-                ? "rounded-2xl border border-slate-800 bg-slate-900 p-5"
-                : "rounded-2xl border border-slate-200 bg-white p-5"
-            }
-          >
+          <div className={`${panelClass} p-5`}>
             <div className="text-sm text-slate-400">
               Bezahlbereit
             </div>
@@ -1060,7 +1012,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* TABLE OVERVIEW */}
+        {/* TISCHE */}
 
         {selectedTable === null && (
           <section>
@@ -1076,9 +1028,7 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10">
               {Array.from(
-                {
-                  length: TABLE_COUNT,
-                },
+                { length: TABLE_COUNT },
                 (_, index) => {
                   const tableNumber =
                     index + 1;
@@ -1088,35 +1038,19 @@ export default function DashboardPage() {
                       tableNumber
                     ];
 
-                  let statusClasses =
-                    "";
+                  const classes =
+                    status === "frei"
+                      ? "border-green-500/40 bg-green-500/10 hover:bg-green-500/20"
+                      : status === "offen"
+                      ? "border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20"
+                      : "border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20";
 
-                  if (status === "frei") {
-                    statusClasses =
-                      "border-green-500/40 bg-green-500/10 hover:bg-green-500/20";
-                  } else if (
-                    status === "offen"
-                  ) {
-                    statusClasses =
-                      "border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20";
-                  } else {
-                    statusClasses =
-                      "border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20";
-                  }
-
-                  let statusText = "";
-
-                  if (status === "frei") {
-                    statusText = "Frei";
-                  } else if (
-                    status === "offen"
-                  ) {
-                    statusText =
-                      "Bestellung offen";
-                  } else {
-                    statusText =
-                      "Bezahlbereit";
-                  }
+                  const text =
+                    status === "frei"
+                      ? "Frei"
+                      : status === "offen"
+                      ? "Bestellung offen"
+                      : "Bezahlbereit";
 
                   return (
                     <button
@@ -1126,7 +1060,7 @@ export default function DashboardPage() {
                           tableNumber
                         )
                       }
-                      className={`rounded-2xl border p-5 text-left transition ${statusClasses}`}
+                      className={`rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 ${classes}`}
                     >
                       <div className="text-lg font-bold">
                         Tisch{" "}
@@ -1134,7 +1068,7 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="mt-2 text-sm text-slate-400">
-                        {statusText}
+                        {text}
                       </div>
                     </button>
                   );
@@ -1144,17 +1078,15 @@ export default function DashboardPage() {
           </section>
         )}
 
-        {/* SELECTED TABLE */}
+        {/* AUSGEWÄHLTER TISCH */}
 
         {selectedTable !== null && (
           <section>
-            {/* TABLE HEADER */}
-
             <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
               <div>
                 <button
                   onClick={closeTable}
-                  className="mb-2 text-sm text-slate-400 transition hover:text-white"
+                  className="mb-2 text-sm text-slate-400 transition hover:text-slate-900 dark:hover:text-white"
                 >
                   ← Zurück zu den Tischen
                 </button>
@@ -1167,43 +1099,38 @@ export default function DashboardPage() {
               <div className="flex flex-wrap gap-3">
                 {!showPayment &&
                   !showAddOrder && (
-                    <button
-                      onClick={
-                        startAddingOrder
-                      }
-                      className="rounded-xl bg-orange-500 px-5 py-3 font-semibold text-white transition hover:bg-orange-600"
-                    >
-                      + Bestellung
-                      hinzufügen
-                    </button>
-                  )}
+                    <>
+                      <button
+                        onClick={
+                          startAddingOrder
+                        }
+                        className="rounded-xl bg-orange-500 px-5 py-3 font-semibold text-white shadow-lg shadow-orange-500/10 transition hover:bg-orange-600"
+                      >
+                        + Weitere Artikel
+                      </button>
 
-                {!showPayment &&
-                  !showAddOrder &&
-                  paymentItems.length >
-                    0 && (
-                    <button
-                      onClick={
-                        openPayment
-                      }
-                      className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
-                    >
-                      💳 Zur Bezahlung
-                    </button>
+                      {paymentItems.length >
+                        0 && (
+                        <button
+                          onClick={
+                            openPayment
+                          }
+                          className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+                        >
+                          💳 Zur Bezahlung
+                        </button>
+                      )}
+                    </>
                   )}
               </div>
             </div>
 
-            {/* PAYMENT VIEW */}
+            {/* ZAHLUNG */}
 
             {showPayment && (
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_400px]">
                 <div
-                  className={
-                    theme === "dark"
-                      ? "rounded-2xl border border-slate-800 bg-slate-900 p-6"
-                      : "rounded-2xl border border-slate-200 bg-white p-6"
-                  }
+                  className={`${panelClass} p-6`}
                 >
                   <div className="mb-6 flex items-center justify-between">
                     <div>
@@ -1213,160 +1140,149 @@ export default function DashboardPage() {
 
                       <p className="mt-1 text-sm text-slate-400">
                         Wähle die Artikel aus,
-                        die bezahlt werden.
+                        die jetzt bezahlt werden.
                       </p>
                     </div>
 
                     <button
-                      onClick={() =>
-                        setShowPayment(
-                          false
-                        )
+                      onClick={
+                        closePayment
                       }
-                      className="text-slate-400 transition hover:text-white"
+                      className="rounded-lg px-3 py-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
                     >
                       ✕
                     </button>
                   </div>
 
-                  {paymentItems.length ===
-                  0 ? (
-                    <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-6 text-center">
-                      <div className="mb-2 text-3xl">
-                        ✓
-                      </div>
+                  <div className="space-y-3">
+                    {paymentItems.map(
+                      (item) => {
+                        const selected =
+                          getSelectedQuantity(
+                            item.id
+                          );
 
-                      <div className="font-semibold">
-                        Alles bezahlt
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {paymentItems.map(
-                        (item) => {
-                          const selected =
-                            getSelectedQuantity(
-                              item.id
-                            );
+                        const product =
+                          products.find(
+                            (productItem) =>
+                              productItem.name ===
+                              item.product_name
+                          );
 
-                          const product =
-                            products.find(
-                              (
-                                productItem
-                              ) =>
-                                productItem.name ===
-                                item.product_name
-                            );
+                        const price =
+                          product?.price ?? 0;
 
-                          const price =
-                            product?.price ??
-                            0;
-
-                          return (
-                            <div
-                              key={item.id}
-                              className={
-                                theme ===
-                                "dark"
-                                  ? "rounded-xl border border-slate-700 bg-slate-800 p-4"
-                                  : "rounded-xl border border-slate-200 bg-slate-50 p-4"
-                              }
-                            >
-                              <div className="flex items-center justify-between gap-4">
-                                <div>
-                                  <div className="font-semibold">
-                                    {
-                                      item.product_name
-                                    }
-                                  </div>
-
-                                  <div className="mt-1 text-sm text-slate-400">
-                                    Noch{" "}
-                                    {
-                                      item.remainingQuantity
-                                    }{" "}
-                                    Stück ·{" "}
-                                    {formatPrice(
-                                      price
-                                    )}
-                                  </div>
+                        return (
+                          <div
+                            key={item.id}
+                            className={
+                              dark
+                                ? "rounded-xl border border-slate-700 bg-slate-800 p-4"
+                                : "rounded-xl border border-slate-200 bg-slate-50 p-4"
+                            }
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <div>
+                                <div className="font-semibold">
+                                  {
+                                    item.product_name
+                                  }
                                 </div>
 
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() =>
-                                      changePaymentQuantity(
-                                        item.id,
-                                        -1
-                                      )
-                                    }
-                                    className="h-10 w-10 rounded-lg bg-slate-700 text-lg transition hover:bg-slate-600"
-                                  >
-                                    −
-                                  </button>
-
-                                  <div className="w-12 text-center font-bold">
-                                    {selected}
-                                  </div>
-
-                                  <button
-                                    onClick={() =>
-                                      changePaymentQuantity(
-                                        item.id,
-                                        1
-                                      )
-                                    }
-                                    className="h-10 w-10 rounded-lg bg-slate-700 text-lg transition hover:bg-slate-600"
-                                  >
-                                    +
-                                  </button>
-                                </div>
-                              </div>
-
-                              {selected >
-                                0 && (
-                                <div className="mt-3 text-sm text-blue-400">
-                                  Ausgewählt:{" "}
-                                  {selected}{" "}
-                                  ×{" "}
+                                <div className="mt-1 text-sm text-slate-400">
+                                  Noch{" "}
+                                  {
+                                    item.remainingQuantity
+                                  }{" "}
+                                  Stück ·{" "}
                                   {formatPrice(
                                     price
                                   )}
                                 </div>
-                              )}
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() =>
+                                    changePaymentQuantity(
+                                      item.id,
+                                      -1
+                                    )
+                                  }
+                                  className="h-11 w-11 rounded-xl bg-slate-700 text-xl transition hover:bg-slate-600"
+                                >
+                                  −
+                                </button>
+
+                                <div className="w-12 text-center text-lg font-bold">
+                                  {selected}
+                                </div>
+
+                                <button
+                                  onClick={() =>
+                                    changePaymentQuantity(
+                                      item.id,
+                                      1
+                                    )
+                                  }
+                                  className="h-11 w-11 rounded-xl bg-slate-700 text-xl transition hover:bg-slate-600"
+                                >
+                                  +
+                                </button>
+                              </div>
                             </div>
-                          );
-                        }
-                      )}
+
+                            {selected >
+                              0 && (
+                              <div className="mt-3 rounded-lg bg-blue-500/10 px-3 py-2 text-sm font-medium text-blue-500">
+                                Ausgewählt:{" "}
+                                {selected} ×{" "}
+                                {formatPrice(
+                                  price
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+
+                  {paymentItems.length ===
+                    0 && (
+                    <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-6 text-center">
+                      <div className="text-3xl">
+                        ✓
+                      </div>
+
+                      <div className="mt-2 font-semibold">
+                        Alles bezahlt
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* PAYMENT SUMMARY */}
+                {/* ZAHLUNGSSEITE */}
 
                 <div
-                  className={
-                    theme === "dark"
-                      ? "h-fit rounded-2xl border border-slate-800 bg-slate-900 p-6"
-                      : "h-fit rounded-2xl border border-slate-200 bg-white p-6"
-                  }
+                  className={`${panelClass} h-fit p-6`}
                 >
                   <h3 className="mb-4 text-lg font-bold">
                     Zahlungsart
                   </h3>
 
-                  <div className="mb-6 grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() =>
                         setPaymentMethod(
                           "bar"
                         )
                       }
-                      className={`rounded-xl border p-4 transition ${
+                      className={`rounded-xl border p-4 font-semibold transition ${
                         paymentMethod ===
                         "bar"
-                          ? "border-green-500 bg-green-500/10"
-                          : "border-slate-700 hover:bg-slate-800"
+                          ? "border-green-500 bg-green-500/10 text-green-500"
+                          : secondaryButton
                       }`}
                     >
                       💶 Bar
@@ -1378,24 +1294,30 @@ export default function DashboardPage() {
                           "karte"
                         )
                       }
-                      className={`rounded-xl border p-4 transition ${
+                      className={`rounded-xl border p-4 font-semibold transition ${
                         paymentMethod ===
                         "karte"
-                          ? "border-blue-500 bg-blue-500/10"
-                          : "border-slate-700 hover:bg-slate-800"
+                          ? "border-blue-500 bg-blue-500/10 text-blue-500"
+                          : secondaryButton
                       }`}
                     >
                       💳 Karte
                     </button>
                   </div>
 
-                  <div className="border-t border-slate-800 pt-5">
-                    <div className="flex justify-between text-sm text-slate-400">
-                      <span>
+                  <div
+                    className={`mt-6 border-t pt-5 ${
+                      dark
+                        ? "border-slate-800"
+                        : "border-slate-200"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">
                         Zu bezahlen
                       </span>
 
-                      <span className="font-semibold text-white">
+                      <span className="text-2xl font-bold">
                         {formatPrice(
                           paymentTotal
                         )}
@@ -1405,7 +1327,7 @@ export default function DashboardPage() {
                     {paymentMethod ===
                       "bar" && (
                       <>
-                        <label className="mb-2 mt-5 block text-sm text-slate-400">
+                        <label className="mb-2 mt-6 block text-sm font-medium text-slate-400">
                           Gegeben
                         </label>
 
@@ -1421,21 +1343,20 @@ export default function DashboardPage() {
                                 .value
                             )
                           }
-                          placeholder="0,00"
+                          placeholder="0,00 €"
                           className={
-                            theme ===
-                            "dark"
-                              ? "w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 outline-none transition focus:border-blue-500"
-                              : "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500"
+                            dark
+                              ? "w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-4 text-lg outline-none transition focus:border-blue-500"
+                              : "w-full rounded-xl border border-slate-300 bg-white px-4 py-4 text-lg outline-none transition focus:border-blue-500"
                           }
                         />
 
-                        <div className="mt-4 flex justify-between">
+                        <div className="mt-5 flex items-center justify-between">
                           <span className="text-slate-400">
                             Rückgeld
                           </span>
 
-                          <span className="text-xl font-bold text-green-500">
+                          <span className="text-2xl font-bold text-green-500">
                             {formatPrice(
                               changeAmount
                             )}
@@ -1446,16 +1367,19 @@ export default function DashboardPage() {
 
                     {paymentMethod ===
                       "karte" && (
-                      <div className="mt-5 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-400">
-                        Die Kartenzahlung
-                        wird außerhalb
-                        des Kassensystems
+                      <div className="mt-5 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-500">
+                        Die Kartenzahlung wird
+                        außerhalb des
+                        Kassensystems
                         durchgeführt.
                       </div>
                     )}
                   </div>
 
                   <button
+                    onClick={
+                      completePayment
+                    }
                     disabled={
                       saving ||
                       paymentSelection.length ===
@@ -1466,10 +1390,7 @@ export default function DashboardPage() {
                         numericCashReceived <
                           paymentTotal)
                     }
-                    onClick={
-                      completePayment
-                    }
-                    className="mt-6 w-full rounded-xl bg-green-600 px-5 py-4 font-bold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="mt-6 w-full rounded-xl bg-green-600 px-5 py-4 text-lg font-bold text-white shadow-lg shadow-green-600/20 transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {saving
                       ? "Speichere..."
@@ -1477,21 +1398,27 @@ export default function DashboardPage() {
                           paymentTotal
                         )} bezahlen`}
                   </button>
+
+                  <button
+                    onClick={
+                      closePayment
+                    }
+                    disabled={saving}
+                    className={`mt-3 w-full rounded-xl border px-5 py-3 font-semibold transition ${secondaryButton}`}
+                  >
+                    Abbrechen
+                  </button>
                 </div>
               </div>
             )}
 
-            {/* ADD ORDER */}
+            {/* BESTELLUNG HINZUFÜGEN */}
 
             {showAddOrder && (
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_400px]">
                 <div>
                   <div
-                    className={
-                      theme === "dark"
-                        ? "mb-5 rounded-2xl border border-slate-800 bg-slate-900 p-5"
-                        : "mb-5 rounded-2xl border border-slate-200 bg-white p-5"
-                    }
+                    className={`${panelClass} mb-5 p-5`}
                   >
                     <div className="flex flex-col gap-3 md:flex-row">
                       <input
@@ -1504,7 +1431,7 @@ export default function DashboardPage() {
                         }
                         placeholder="Produkt suchen..."
                         className={
-                          theme === "dark"
+                          dark
                             ? "flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 outline-none focus:border-blue-500"
                             : "flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-blue-500"
                         }
@@ -1517,7 +1444,7 @@ export default function DashboardPage() {
                             "alle"
                           );
                         }}
-                        className="rounded-xl border border-slate-700 px-4 py-3 transition hover:bg-slate-800"
+                        className={`rounded-xl border px-4 py-3 transition ${secondaryButton}`}
                       >
                         Zurücksetzen
                       </button>
@@ -1535,11 +1462,13 @@ export default function DashboardPage() {
                                 key
                               )
                             }
-                            className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm transition ${
+                            className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition ${
                               category ===
                               key
                                 ? "bg-blue-600 text-white"
-                                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                                : dark
+                                ? "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                             }`}
                           >
                             {name}
@@ -1559,12 +1488,7 @@ export default function DashboardPage() {
                               product
                             )
                           }
-                          className={
-                            theme ===
-                            "dark"
-                              ? "rounded-2xl border border-slate-800 bg-slate-900 p-5 text-left transition hover:border-blue-500 hover:bg-slate-800"
-                              : "rounded-2xl border border-slate-200 bg-white p-5 text-left transition hover:border-blue-500 hover:bg-slate-50"
-                          }
+                          className={`${panelClass} p-5 text-left transition hover:-translate-y-0.5 hover:border-blue-500`}
                         >
                           <div className="font-semibold">
                             {
@@ -1572,7 +1496,7 @@ export default function DashboardPage() {
                             }
                           </div>
 
-                          <div className="mt-2 font-bold text-blue-400">
+                          <div className="mt-2 font-bold text-blue-500">
                             {formatPrice(
                               product.price
                             )}
@@ -1593,14 +1517,8 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* CART */}
-
                 <div
-                  className={
-                    theme === "dark"
-                      ? "h-fit rounded-2xl border border-slate-800 bg-slate-900 p-6"
-                      : "h-fit rounded-2xl border border-slate-200 bg-white p-6"
-                  }
+                  className={`${panelClass} h-fit p-6`}
                 >
                   <div className="mb-5 flex items-center justify-between">
                     <h3 className="text-lg font-bold">
@@ -1611,14 +1529,14 @@ export default function DashboardPage() {
                       onClick={
                         cancelAddingOrder
                       }
-                      className="text-slate-400 transition hover:text-white"
+                      className="rounded-lg px-3 py-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
                     >
                       ✕
                     </button>
                   </div>
 
                   {cart.length === 0 ? (
-                    <div className="text-sm text-slate-400">
+                    <div className="rounded-xl border border-dashed border-slate-700 p-6 text-center text-sm text-slate-400">
                       Klicke links auf
                       Produkte, um sie
                       hinzuzufügen.
@@ -1633,7 +1551,11 @@ export default function DashboardPage() {
                                 .product
                                 .id
                             }
-                            className="rounded-xl border border-slate-800 p-3"
+                            className={
+                              dark
+                                ? "rounded-xl border border-slate-800 bg-slate-800/50 p-3"
+                                : "rounded-xl border border-slate-200 bg-slate-50 p-3"
+                            }
                           >
                             <div className="flex justify-between gap-3">
                               <span className="font-medium">
@@ -1664,7 +1586,7 @@ export default function DashboardPage() {
                                     -1
                                   )
                                 }
-                                className="h-8 w-8 rounded-lg bg-slate-800 transition hover:bg-slate-700"
+                                className="h-9 w-9 rounded-lg bg-slate-700 transition hover:bg-slate-600"
                               >
                                 −
                               </button>
@@ -1684,7 +1606,7 @@ export default function DashboardPage() {
                                     1
                                   )
                                 }
-                                className="h-8 w-8 rounded-lg bg-slate-800 transition hover:bg-slate-700"
+                                className="h-9 w-9 rounded-lg bg-slate-700 transition hover:bg-slate-600"
                               >
                                 +
                               </button>
@@ -1695,11 +1617,15 @@ export default function DashboardPage() {
                     </div>
                   )}
 
-                  <div className="mt-5 border-t border-slate-800 pt-5">
+                  <div
+                    className={`mt-5 border-t pt-5 ${
+                      dark
+                        ? "border-slate-800"
+                        : "border-slate-200"
+                    }`}
+                  >
                     <div className="flex justify-between text-lg font-bold">
-                      <span>
-                        Gesamt
-                      </span>
+                      <span>Gesamt</span>
 
                       <span>
                         {formatPrice(
@@ -1727,17 +1653,13 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* NORMAL TABLE VIEW */}
+            {/* NORMALE TISCHANSICHT */}
 
             {!showPayment &&
               !showAddOrder && (
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_400px]">
                   <div
-                    className={
-                      theme === "dark"
-                        ? "rounded-2xl border border-slate-800 bg-slate-900 p-6"
-                        : "rounded-2xl border border-slate-200 bg-white p-6"
-                    }
+                    className={`${panelClass} p-6`}
                   >
                     <h3 className="mb-5 text-lg font-bold">
                       Bestellung
@@ -1763,7 +1685,11 @@ export default function DashboardPage() {
                                 key={
                                   item.id
                                 }
-                                className="rounded-xl border border-slate-800 p-4"
+                                className={
+                                  dark
+                                    ? "rounded-xl border border-slate-800 bg-slate-800/40 p-4"
+                                    : "rounded-xl border border-slate-200 bg-slate-50 p-4"
+                                }
                               >
                                 <div className="flex items-center justify-between gap-4">
                                   <div>
@@ -1782,8 +1708,10 @@ export default function DashboardPage() {
                                   </div>
 
                                   <div className="text-right">
-                                    <div className="font-bold">
-                                      {remaining}
+                                    <div className="text-lg font-bold">
+                                      {
+                                        remaining
+                                      }
                                     </div>
 
                                     <div className="text-xs text-slate-500">
@@ -1794,7 +1722,7 @@ export default function DashboardPage() {
 
                                 {item.paid_quantity >
                                   0 && (
-                                  <div className="mt-2 text-sm text-green-500">
+                                  <div className="mt-2 text-sm font-medium text-green-500">
                                     Bezahlt:{" "}
                                     {
                                       item.paid_quantity
@@ -1809,14 +1737,8 @@ export default function DashboardPage() {
                     )}
                   </div>
 
-                  {/* RIGHT PANEL */}
-
                   <div
-                    className={
-                      theme === "dark"
-                        ? "h-fit rounded-2xl border border-slate-800 bg-slate-900 p-6"
-                        : "h-fit rounded-2xl border border-slate-200 bg-white p-6"
-                    }
+                    className={`${panelClass} h-fit p-6`}
                   >
                     <h3 className="mb-5 text-lg font-bold">
                       Tisch{" "}
@@ -1837,7 +1759,11 @@ export default function DashboardPage() {
                                 key={
                                   item.id
                                 }
-                                className="flex items-center justify-between border-b border-slate-800 pb-3"
+                                className={`flex items-center justify-between border-b pb-3 ${
+                                  dark
+                                    ? "border-slate-800"
+                                    : "border-slate-200"
+                                }`}
                               >
                                 <div>
                                   <div className="font-medium">
@@ -1897,7 +1823,7 @@ export default function DashboardPage() {
                         onClick={
                           openPayment
                         }
-                        className="mt-3 w-full rounded-xl bg-green-600 px-5 py-3 font-bold text-white transition hover:bg-green-700"
+                        className="mt-3 w-full rounded-xl bg-green-600 px-5 py-3 font-bold text-white shadow-lg shadow-green-600/10 transition hover:bg-green-700"
                       >
                         💳 Bezahlen
                       </button>
@@ -1907,7 +1833,7 @@ export default function DashboardPage() {
                       onClick={
                         startAddingOrder
                       }
-                      className="mt-3 w-full rounded-xl border border-slate-700 px-5 py-3 font-semibold transition hover:bg-slate-800"
+                      className={`mt-3 w-full rounded-xl border px-5 py-3 font-semibold transition ${secondaryButton}`}
                     >
                       + Weitere Artikel
                     </button>
