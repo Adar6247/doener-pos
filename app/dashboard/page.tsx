@@ -36,7 +36,7 @@ type CartItem = {
 };
 
 type PaymentSelection = {
-  itemId: number;
+  orderItemId: number;
   quantity: number;
 };
 
@@ -44,70 +44,17 @@ type TableStatus = "frei" | "offen" | "fertig";
 
 const TABLE_COUNT = 25;
 
-function formatPrice(price: number) {
-  return `${price.toFixed(2).replace(".", ",")} €`;
-}
+const formatPrice = (value: number) =>
+  new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  }).format(value);
 
-function getTableStatus(
-  tableNumber: number,
-  orders: Order[],
-  orderItems: OrderItem[]
-): TableStatus {
-  const tableOrders = orders.filter(
-    (order) => order.table_number === tableNumber
-  );
-
-  if (tableOrders.length === 0) {
-    return "frei";
-  }
-
-  if (
-    tableOrders.some(
-      (order) => order.status === "offen"
-    )
-  ) {
-    return "offen";
-  }
-
-  const orderIds = tableOrders.map(
-    (order) => order.id
-  );
-
-  const hasUnpaidItems = orderItems.some(
-    (item) =>
-      orderIds.includes(item.order_id) &&
-      item.paid_quantity < item.quantity
-  );
-
-  return hasUnpaidItems ? "fertig" : "frei";
-}
-
-function getStatusLabel(status: TableStatus) {
-  if (status === "offen") return "Bestellung offen";
-  if (status === "fertig") return "Bezahlbereit";
-  return "Frei";
-}
-
-function getStatusClasses(
-  status: TableStatus,
-  dark: boolean
-) {
-  if (status === "offen") {
-    return dark
-      ? "border-orange-500/30 bg-orange-500/[0.08] text-orange-400"
-      : "border-orange-200 bg-orange-50 text-orange-600";
-  }
-
-  if (status === "fertig") {
-    return dark
-      ? "border-blue-500/30 bg-blue-500/[0.08] text-blue-400"
-      : "border-blue-200 bg-blue-50 text-blue-600";
-  }
-
-  return dark
-    ? "border-emerald-500/30 bg-emerald-500/[0.08] text-emerald-400"
-    : "border-emerald-200 bg-emerald-50 text-emerald-600";
-}
+const formatTime = (date: string) =>
+  new Date(date).toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
 export default function DashboardPage() {
   const { theme, setTheme } = useTheme();
@@ -118,145 +65,180 @@ export default function DashboardPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
 
-  const [selectedTable, setSelectedTable] =
-    useState<number | null>(null);
+  const [selectedTable, setSelectedTable] = useState<number | null>(null);
 
   const [cart, setCart] = useState<CartItem[]>([]);
-
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("alle");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [showAddOrder, setShowAddOrder] =
-    useState(false);
-
-  const [showPayment, setShowPayment] =
-    useState(false);
+  const [showAddOrder, setShowAddOrder] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
 
   const [paymentMethod, setPaymentMethod] =
     useState<"bar" | "karte">("bar");
 
-  const [cashReceived, setCashReceived] =
-    useState("");
+  const [cashReceived, setCashReceived] = useState(0);
 
   const [paymentSelection, setPaymentSelection] =
     useState<PaymentSelection[]>([]);
 
   const [currentUserName, setCurrentUserName] =
-    useState("");
+    useState("Kellner");
 
-  async function loadData() {
-    const [
-      productsResult,
-      ordersResult,
-      orderItemsResult,
-    ] = await Promise.all([
-      supabase
-        .from("products")
-        .select("*")
-        .order("category", { ascending: true })
-        .order("name", { ascending: true }),
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-      supabase
-        .from("orders")
-        .select("*")
-        .order("created_at", { ascending: true }),
+  const [refreshing, setRefreshing] = useState(false);
 
-      supabase
-        .from("order_items")
-        .select("*")
-        .order("id", { ascending: true }),
-    ]);
+  /*
+  ============================================================
+  DATEN LADEN
+  ============================================================
+  */
 
-    if (productsResult.error) {
-      console.error(
-        "Fehler beim Laden der Produkte:",
-        productsResult.error
-      );
-    }
+  const loadData = async () => {
+    setRefreshing(true);
 
-    if (ordersResult.error) {
-      console.error(
-        "Fehler beim Laden der Bestellungen:",
-        ordersResult.error
-      );
-    }
+    try {
+      const [
+        productsResult,
+        ordersResult,
+        orderItemsResult,
+      ] = await Promise.all([
+        supabase
+          .from("products")
+          .select("*")
+          .order("category", { ascending: true })
+          .order("name", { ascending: true }),
 
-    if (orderItemsResult.error) {
-      console.error(
-        "Fehler beim Laden der Bestellartikel:",
-        orderItemsResult.error
-      );
-    }
+        supabase
+          .from("orders")
+          .select("*")
+          .order("created_at", {
+            ascending: true,
+          }),
 
-    if (productsResult.data) {
+        supabase
+          .from("order_items")
+          .select("*")
+          .order("id", {
+            ascending: true,
+          }),
+      ]);
+
+      if (productsResult.error) {
+        console.error(
+          "Produkte:",
+          productsResult.error
+        );
+        throw productsResult.error;
+      }
+
+      if (ordersResult.error) {
+        console.error(
+          "Bestellungen:",
+          ordersResult.error
+        );
+        throw ordersResult.error;
+      }
+
+      if (orderItemsResult.error) {
+        console.error(
+          "Bestellpositionen:",
+          orderItemsResult.error
+        );
+        throw orderItemsResult.error;
+      }
+
       setProducts(
-        productsResult.data as Product[]
+        (productsResult.data ?? []) as Product[]
       );
-    }
 
-    if (ordersResult.data) {
       setOrders(
-        ordersResult.data as Order[]
+        (ordersResult.data ?? []) as Order[]
       );
-    }
 
-    if (orderItemsResult.data) {
       setOrderItems(
-        orderItemsResult.data as OrderItem[]
+        (orderItemsResult.data ?? []) as OrderItem[]
       );
-    }
+    } catch (error) {
+      console.error(
+        "Fehler beim Laden:",
+        error
+      );
 
-    setLoading(false);
-  }
+      setErrorMessage(
+        "Die Daten konnten nicht geladen werden."
+      );
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  /*
+  ============================================================
+  BENUTZER
+  ============================================================
+  */
 
   useEffect(() => {
-    let mounted = true;
-
-    async function initialize() {
+    const initialize = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!mounted) return;
-
-      if (user) {
-        const { data: profile, error } =
-          await supabase
-            .from("profiles")
-            .select("name")
-            .eq("id", user.id)
-            .maybeSingle();
-
-        if (error) {
-          console.error(
-            "Fehler beim Laden des Profils:",
-            error
-          );
-        }
-
-        if (profile && mounted) {
-          setCurrentUserName(profile.name);
-        }
+      if (!user) {
+        setErrorMessage(
+          "Du bist nicht angemeldet."
+        );
+        setLoading(false);
+        return;
       }
 
-      if (mounted) {
-        await loadData();
+      const { data: profile } =
+        await supabase
+          .from("profiles")
+          .select("name")
+          .eq("id", user.id)
+          .maybeSingle();
+
+      if (profile?.name) {
+        setCurrentUserName(profile.name);
       }
-    }
+
+      await loadData();
+    };
 
     initialize();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
 
+  /*
+  ============================================================
+  REALTIME
+  ============================================================
+  */
+
   useEffect(() => {
-    const ordersChannel = supabase
-      .channel("waiter-orders-realtime")
+    let refreshTimeout: ReturnType<
+      typeof setTimeout
+    > | null = null;
+
+    const scheduleRefresh = () => {
+      if (refreshTimeout) {
+        clearTimeout(refreshTimeout);
+      }
+
+      refreshTimeout = setTimeout(() => {
+        void loadData();
+      }, 250);
+    };
+
+    const channel = supabase
+      .channel("waiter-pos-live")
       .on(
         "postgres_changes",
         {
@@ -264,14 +246,8 @@ export default function DashboardPage() {
           schema: "public",
           table: "orders",
         },
-        async () => {
-          await loadData();
-        }
+        scheduleRefresh
       )
-      .subscribe();
-
-    const itemsChannel = supabase
-      .channel("waiter-order-items-realtime")
       .on(
         "postgres_changes",
         {
@@ -279,36 +255,127 @@ export default function DashboardPage() {
           schema: "public",
           table: "order_items",
         },
-        async () => {
-          await loadData();
-        }
+        scheduleRefresh
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "payments",
+        },
+        scheduleRefresh
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(
-        ordersChannel
-      );
-      supabase.removeChannel(
-        itemsChannel
-      );
+      if (refreshTimeout) {
+        clearTimeout(refreshTimeout);
+      }
+
+      void supabase.removeChannel(channel);
     };
   }, []);
 
+  /*
+  ============================================================
+  PRODUKTKATEGORIEN
+  ============================================================
+  */
+
+  const categories = useMemo(() => {
+    const unique = Array.from(
+      new Set(
+        products
+          .map((product) =>
+            product.category?.trim()
+          )
+          .filter(Boolean)
+      )
+    );
+
+    return [
+      "alle",
+      ...unique,
+    ];
+  }, [products]);
+
+  /*
+  ============================================================
+  PRODUKTPREISE
+  ============================================================
+  */
+
+  const productPriceMap = useMemo(() => {
+    const map = new Map<string, number>();
+
+    products.forEach((product) => {
+      map.set(product.name, Number(product.price));
+    });
+
+    return map;
+  }, [products]);
+
+  /*
+  ============================================================
+  TISCHSTATUS
+  ============================================================
+  */
+
+  const getTableStatus = (
+    tableNumber: number
+  ): TableStatus => {
+    const tableOrders = orders.filter(
+      (order) =>
+        order.table_number === tableNumber
+    );
+
+    if (tableOrders.length === 0) {
+      return "frei";
+    }
+
+    const hasOpenOrder = tableOrders.some(
+      (order) => order.status === "offen"
+    );
+
+    if (hasOpenOrder) {
+      return "offen";
+    }
+
+    const tableOrderIds = new Set(
+      tableOrders.map((order) => order.id)
+    );
+
+    const tableItems = orderItems.filter(
+      (item) =>
+        tableOrderIds.has(item.order_id)
+    );
+
+    const hasUnpaidItems = tableItems.some(
+      (item) =>
+        item.paid_quantity < item.quantity
+    );
+
+    if (hasUnpaidItems) {
+      return "fertig";
+    }
+
+    return "frei";
+  };
+
   const tableStatuses = useMemo(() => {
-    const result: Record<number, TableStatus> =
-      {};
+    const result: Record<
+      number,
+      TableStatus
+    > = {};
 
     for (
       let table = 1;
       table <= TABLE_COUNT;
       table++
     ) {
-      result[table] = getTableStatus(
-        table,
-        orders,
-        orderItems
-      );
+      result[table] =
+        getTableStatus(table);
     }
 
     return result;
@@ -332,10 +399,14 @@ export default function DashboardPage() {
     (status) => status === "fertig"
   ).length;
 
+  /*
+  ============================================================
+  AUSGEWÄHLTER TISCH
+  ============================================================
+  */
+
   const selectedTableOrders = useMemo(() => {
-    if (selectedTable === null) {
-      return [];
-    }
+    if (!selectedTable) return [];
 
     return orders.filter(
       (order) =>
@@ -343,171 +414,167 @@ export default function DashboardPage() {
     );
   }, [orders, selectedTable]);
 
-  const selectedTableOrderIds = useMemo(
-    () =>
-      selectedTableOrders.map(
-        (order) => order.id
-      ),
-    [selectedTableOrders]
-  );
-
-  const selectedTableItems = useMemo(
-    () =>
-      orderItems.filter((item) =>
-        selectedTableOrderIds.includes(
-          item.order_id
-        )
-      ),
-    [orderItems, selectedTableOrderIds]
-  );
-
-  const openOrder = useMemo(
-    () =>
-      selectedTableOrders.find(
-        (order) =>
-          order.status === "offen"
-      ),
-    [selectedTableOrders]
-  );
-
-  const paymentItems = useMemo(
-    () =>
-      selectedTableItems
-        .filter(
-          (item) =>
-            item.paid_quantity <
-            item.quantity
-        )
-        .map((item) => ({
-          ...item,
-          remainingQuantity:
-            item.quantity -
-            item.paid_quantity,
-        })),
-    [selectedTableItems]
-  );
-
-  const categories = useMemo(() => {
-    const unique = Array.from(
-      new Set(
-        products
-          .map((product) =>
-            product.category?.trim()
+  const selectedTableOrderIds =
+    useMemo(
+      () =>
+        new Set(
+          selectedTableOrders.map(
+            (order) => order.id
           )
-          .filter(Boolean)
-      )
+        ),
+      [selectedTableOrders]
     );
 
-    return ["alle", ...unique];
-  }, [products]);
-
-  const filteredProducts = useMemo(() => {
-    const searchText = search
-      .trim()
-      .toLowerCase();
-
-    return products.filter((product) => {
-      const matchesSearch =
-        searchText === "" ||
-        product.name
-          .toLowerCase()
-          .includes(searchText);
-
-      const matchesCategory =
-        category === "alle" ||
-        product.category === category;
-
-      return (
-        matchesSearch &&
-        matchesCategory
+  const selectedTableItems =
+    useMemo(() => {
+      return orderItems.filter(
+        (item) =>
+          selectedTableOrderIds.has(
+            item.order_id
+          )
       );
-    });
-  }, [
-    products,
-    search,
-    category,
-  ]);
+    }, [
+      orderItems,
+      selectedTableOrderIds,
+    ]);
 
-  const cartTotal = useMemo(
-    () =>
-      cart.reduce(
-        (total, item) =>
-          total +
-          item.product.price *
-            item.quantity,
-        0
-      ),
-    [cart]
-  );
+  const openOrder =
+    selectedTableOrders.find(
+      (order) => order.status === "offen"
+    ) ?? null;
+
+  /*
+  ============================================================
+  BEZAHLBARE POSITIONEN
+  ============================================================
+  */
+
+  const paymentItems = useMemo(() => {
+    return selectedTableItems.filter(
+      (item) =>
+        item.paid_quantity <
+        item.quantity
+    );
+  }, [selectedTableItems]);
+
+  /*
+  ============================================================
+  GEFILTERTE PRODUKTE
+  ============================================================
+  */
+
+  const filteredProducts =
+    useMemo(() => {
+      const searchValue =
+        search.trim().toLowerCase();
+
+      return products.filter(
+        (product) => {
+          const matchesSearch =
+            !searchValue ||
+            product.name
+              .toLowerCase()
+              .includes(searchValue);
+
+          const matchesCategory =
+            category === "alle" ||
+            product.category === category;
+
+          return (
+            matchesSearch &&
+            matchesCategory
+          );
+        }
+      );
+    }, [
+      products,
+      search,
+      category,
+    ]);
+
+  /*
+  ============================================================
+  WARENKORB
+  ============================================================
+  */
+
+  const cartTotal = useMemo(() => {
+    return cart.reduce(
+      (total, item) =>
+        total +
+        Number(item.product.price) *
+          item.quantity,
+      0
+    );
+  }, [cart]);
+
+  /*
+  ============================================================
+  ZAHLUNG
+  ============================================================
+  */
 
   const paymentTotal = useMemo(() => {
-    let total = 0;
+    return paymentSelection.reduce(
+      (total, selection) => {
+        const item =
+          orderItems.find(
+            (orderItem) =>
+              orderItem.id ===
+              selection.orderItemId
+          );
 
-    for (const selection of paymentSelection) {
-      const item = paymentItems.find(
-        (paymentItem) =>
-          paymentItem.id ===
-          selection.itemId
-      );
+        if (!item) {
+          return total;
+        }
 
-      if (!item) continue;
+        const price =
+          productPriceMap.get(
+            item.product_name
+          ) ?? 0;
 
-      const product = products.find(
-        (productItem) =>
-          productItem.name ===
-          item.product_name
-      );
-
-      if (!product) continue;
-
-      total +=
-        product.price *
-        selection.quantity;
-    }
-
-    return total;
+        return (
+          total +
+          price *
+            selection.quantity
+        );
+      },
+      0
+    );
   }, [
     paymentSelection,
-    paymentItems,
-    products,
+    orderItems,
+    productPriceMap,
   ]);
 
-  const numericCashReceived =
-    Number(
-      cashReceived.replace(",", ".")
-    ) || 0;
-
   const changeAmount =
-    paymentMethod === "bar"
-      ? Math.max(
-          0,
-          numericCashReceived -
-            paymentTotal
-        )
-      : 0;
+    Math.max(
+      0,
+      cashReceived - paymentTotal
+    );
 
-  const tableOpenItemCount = useMemo(
-    () =>
-      paymentItems.reduce(
-        (total, item) =>
-          total +
-          item.remainingQuantity,
-        0
-      ),
-    [paymentItems]
-  );
+  /*
+  ============================================================
+  WARENKORB HINZUFÜGEN
+  ============================================================
+  */
 
-  function addToCart(product: Product) {
-    setCart((currentCart) => {
+  const addToCart = (
+    product: Product
+  ) => {
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    setCart((current) => {
       const existing =
-        currentCart.find(
+        current.find(
           (item) =>
             item.product.id ===
             product.id
         );
 
       if (existing) {
-        return currentCart.map(
+        return current.map(
           (item) =>
             item.product.id ===
             product.id
@@ -521,57 +588,66 @@ export default function DashboardPage() {
       }
 
       return [
-        ...currentCart,
+        ...current,
         {
           product,
           quantity: 1,
         },
       ];
     });
-  }
+  };
 
-  function changeCartQuantity(
+  const changeCartQuantity = (
     productId: number,
     amount: number
-  ) {
-    setCart((currentCart) =>
-      currentCart
+  ) => {
+    setCart((current) =>
+      current
         .map((item) =>
           item.product.id ===
           productId
             ? {
                 ...item,
                 quantity:
-                  item.quantity +
-                  amount,
+                  item.quantity + amount,
               }
             : item
         )
         .filter(
-          (item) => item.quantity > 0
+          (item) =>
+            item.quantity > 0
         )
     );
-  }
+  };
 
-  async function createNewOrder() {
-    if (
-      selectedTable === null ||
-      cart.length === 0
-    ) {
+  /*
+  ============================================================
+  NEUE BESTELLUNG / BESTELLUNG ERWEITERN
+  ============================================================
+  */
+
+  const createNewOrder = async () => {
+    if (!selectedTable) return;
+
+    if (cart.length === 0) {
+      setErrorMessage(
+        "Bitte füge zuerst Produkte hinzu."
+      );
       return;
     }
 
     setSaving(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
       const {
         data: { user },
-      } =
-        await supabase.auth.getUser();
+      } = await supabase.auth.getUser();
 
       if (!user) {
         throw new Error(
-          "Kein Benutzer eingeloggt."
+          "Kein angemeldeter Benutzer."
         );
       }
 
@@ -582,7 +658,7 @@ export default function DashboardPage() {
       } else {
         const {
           data: newOrder,
-          error,
+          error: orderError,
         } = await supabase
           .from("orders")
           .insert({
@@ -591,48 +667,38 @@ export default function DashboardPage() {
             waiter_id: user.id,
             status: "offen",
           })
-          .select("*")
+          .select()
           .single();
 
-        if (error) throw error;
-
-        if (!newOrder) {
-          throw new Error(
-            "Bestellung konnte nicht erstellt werden."
-          );
+        if (orderError) {
+          throw orderError;
         }
 
         orderId = newOrder.id;
       }
 
       for (const cartItem of cart) {
-        const {
-          data: existingItem,
-          error,
-        } = await supabase
-          .from("order_items")
-          .select("*")
-          .eq(
-            "order_id",
-            orderId
-          )
-          .eq(
-            "product_name",
-            cartItem.product.name
-          )
-          .maybeSingle();
-
-        if (error) throw error;
+        const existingItem =
+          orderItems.find(
+            (item) =>
+              item.order_id ===
+                orderId &&
+              item.product_name ===
+                cartItem.product.name
+          );
 
         if (existingItem) {
+          const newQuantity =
+            existingItem.quantity +
+            cartItem.quantity;
+
           const {
             error: updateError,
           } = await supabase
             .from("order_items")
             .update({
               quantity:
-                existingItem.quantity +
-                cartItem.quantity,
+                newQuantity,
             })
             .eq(
               "id",
@@ -664,439 +730,646 @@ export default function DashboardPage() {
 
       setCart([]);
       setShowAddOrder(false);
-      setSearch("");
-      setCategory("alle");
+
+      setSuccessMessage(
+        `Bestellung für Tisch ${selectedTable} wurde gespeichert.`
+      );
 
       await loadData();
     } catch (error) {
       console.error(
-        "Fehler beim Speichern:",
+        "Bestellung speichern:",
         error
       );
 
-      alert(
+      setErrorMessage(
         "Die Bestellung konnte nicht gespeichert werden."
       );
     } finally {
       setSaving(false);
     }
-  }
+  };
 
-  async function finishOrder() {
-    if (
-      selectedTable === null ||
-      !openOrder
-    ) {
-      return;
-    }
+  /*
+  ============================================================
+  BESTELLUNG FERTIG
+  ============================================================
+  */
+
+  const finishOrder = async () => {
+    if (!openOrder) return;
 
     setSaving(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
-      const { error } =
-        await supabase
-          .from("orders")
-          .update({
-            status: "fertig",
-          })
-          .eq(
-            "id",
-            openOrder.id
-          );
+      const {
+        error,
+      } = await supabase
+        .from("orders")
+        .update({
+          status: "fertig",
+        })
+        .eq(
+          "id",
+          openOrder.id
+        );
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+
+      setSuccessMessage(
+        `Tisch ${selectedTable} ist jetzt zur Bezahlung bereit.`
+      );
 
       await loadData();
     } catch (error) {
       console.error(
-        "Fehler beim Abschließen:",
+        "Bestellung fertig:",
         error
       );
 
-      alert(
+      setErrorMessage(
         "Die Bestellung konnte nicht abgeschlossen werden."
       );
     } finally {
       setSaving(false);
     }
-  }
+  };
 
-  function openPayment() {
+  /*
+  ============================================================
+  ZAHLUNG ÖFFNEN
+  ============================================================
+  */
+
+  const openPayment = () => {
+    if (!selectedTable) return;
+
     if (paymentItems.length === 0) {
+      setErrorMessage(
+        "Für diesen Tisch gibt es keine offenen Positionen."
+      );
       return;
     }
 
-    setShowAddOrder(false);
-    setShowPayment(true);
+    setErrorMessage("");
+    setSuccessMessage("");
     setPaymentSelection([]);
     setPaymentMethod("bar");
-    setCashReceived("");
-  }
+    setCashReceived(0);
+    setShowAddOrder(false);
+    setShowPayment(true);
+  };
 
-  function closePayment() {
+  const closePayment = () => {
     setShowPayment(false);
     setPaymentSelection([]);
-    setCashReceived("");
-  }
+    setCashReceived(0);
+    setErrorMessage("");
+  };
 
-  function getSelectedQuantity(
+  /*
+  ============================================================
+  ZAHLUNG POSITION AUSWÄHLEN
+  ============================================================
+  */
+
+  const getSelectedQuantity = (
     itemId: number
-  ) {
+  ) => {
     return (
       paymentSelection.find(
-        (item) =>
-          item.itemId === itemId
+        (selection) =>
+          selection.orderItemId ===
+          itemId
       )?.quantity ?? 0
     );
-  }
+  };
 
-  function changePaymentQuantity(
-    itemId: number,
+  const changePaymentQuantity = (
+    item: OrderItem,
     amount: number
-  ) {
-    const item = paymentItems.find(
-      (paymentItem) =>
-        paymentItem.id === itemId
-    );
+  ) => {
+    const remaining =
+      item.quantity -
+      item.paid_quantity;
 
-    if (!item) return;
+    const current =
+      getSelectedQuantity(item.id);
+
+    const next = Math.max(
+      0,
+      Math.min(
+        remaining,
+        current + amount
+      )
+    );
 
     setPaymentSelection(
       (currentSelection) => {
-        const existing =
-          currentSelection.find(
+        const without =
+          currentSelection.filter(
             (selection) =>
-              selection.itemId ===
-              itemId
+              selection.orderItemId !==
+              item.id
           );
 
-        const oldQuantity =
-          existing?.quantity ?? 0;
-
-        const newQuantity = Math.max(
-          0,
-          Math.min(
-            item.remainingQuantity,
-            oldQuantity + amount
-          )
-        );
-
-        if (newQuantity === 0) {
-          return currentSelection.filter(
-            (selection) =>
-              selection.itemId !==
-              itemId
-          );
-        }
-
-        if (existing) {
-          return currentSelection.map(
-            (selection) =>
-              selection.itemId ===
-              itemId
-                ? {
-                    ...selection,
-                    quantity:
-                      newQuantity,
-                  }
-                : selection
-          );
+        if (next === 0) {
+          return without;
         }
 
         return [
-          ...currentSelection,
+          ...without,
           {
-            itemId,
-            quantity: newQuantity,
+            orderItemId: item.id,
+            quantity: next,
           },
         ];
       }
     );
-  }
+  };
 
-  async function completePayment() {
-    if (
-      paymentSelection.length === 0 ||
-      paymentTotal <= 0
-    ) {
-      return;
-    }
+  /*
+  ============================================================
+  ZAHLUNG SPEICHERN
+  ============================================================
+  */
 
-    if (
-      paymentMethod === "bar" &&
-      numericCashReceived <
-        paymentTotal
-    ) {
-      alert(
-        "Der gegebene Geldbetrag ist zu niedrig."
-      );
-      return;
-    }
+  const completePayment =
+    async () => {
+      if (!selectedTable) return;
 
-    setSaving(true);
-
-    try {
-      const updatedItems = [
-        ...orderItems,
-      ];
-
-      for (const selection of paymentSelection) {
-        const currentItem =
-          updatedItems.find(
-            (item) =>
-              item.id ===
-              selection.itemId
-          );
-
-        if (!currentItem) continue;
-
-        const remaining =
-          currentItem.quantity -
-          currentItem.paid_quantity;
-
-        const quantityToPay =
-          Math.min(
-            selection.quantity,
-            remaining
-          );
-
-        if (quantityToPay <= 0) {
-          continue;
-        }
-
-        const newPaidQuantity =
-          currentItem.paid_quantity +
-          quantityToPay;
-
-        const fullyPaid =
-          newPaidQuantity >=
-          currentItem.quantity;
-
-        const {
-          data,
-          error,
-        } = await supabase
-          .from("order_items")
-          .update({
-            paid_quantity:
-              newPaidQuantity,
-            paid_at: fullyPaid
-              ? new Date().toISOString()
-              : currentItem.paid_at,
-          })
-          .eq(
-            "id",
-            currentItem.id
-          )
-          .select("*")
-          .single();
-
-        if (error) {
-          console.error(
-            "Supabase Zahlungsfehler:",
-            error
-          );
-
-          throw error;
-        }
-
-        if (!data) {
-          throw new Error(
-            "Der bezahlte Artikel wurde nicht zurückgegeben."
-          );
-        }
-
-        const index =
-          updatedItems.findIndex(
-            (item) =>
-              item.id === data.id
-          );
-
-        if (index !== -1) {
-          updatedItems[index] =
-            data as OrderItem;
-        }
-      }
-
-      setOrderItems(updatedItems);
-      setPaymentSelection([]);
-      setCashReceived("");
-
-      const remainingItems =
-        updatedItems.filter((item) => {
-          if (
-            !selectedTableOrderIds.includes(
-              item.order_id
-            )
-          ) {
-            return false;
-          }
-
-          return (
-            item.paid_quantity <
-            item.quantity
-          );
-        });
-
-      if (remainingItems.length > 0) {
+      if (
+        paymentSelection.length === 0
+      ) {
+        setErrorMessage(
+          "Bitte wähle mindestens eine Position aus."
+        );
         return;
       }
 
-      const finishedOrders =
-        selectedTableOrders.filter(
-          (order) =>
-            order.status === "fertig" &&
-            order.finished_at === null
+      if (
+        paymentMethod === "bar" &&
+        cashReceived < paymentTotal
+      ) {
+        setErrorMessage(
+          "Der erhaltene Betrag ist zu niedrig."
         );
+        return;
+      }
 
-      for (const order of finishedOrders) {
-        const { error } =
-          await supabase
-            .from("orders")
+      if (paymentTotal <= 0) {
+        setErrorMessage(
+          "Der Zahlungsbetrag ist ungültig."
+        );
+        return;
+      }
+
+      setSaving(true);
+      setErrorMessage("");
+      setSuccessMessage("");
+
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) {
+          throw userError;
+        }
+
+        if (!user) {
+          throw new Error(
+            "Kein angemeldeter Benutzer."
+          );
+        }
+
+        /*
+        --------------------------------------------------------
+        1. POSITIONEN ALS BEZAHLT MARKIEREN
+        --------------------------------------------------------
+        */
+
+        for (const selection of paymentSelection) {
+          const item =
+            orderItems.find(
+              (orderItem) =>
+                orderItem.id ===
+                selection.orderItemId
+            );
+
+          if (!item) {
+            throw new Error(
+              "Bestellposition wurde nicht gefunden."
+            );
+          }
+
+          const remaining =
+            item.quantity -
+            item.paid_quantity;
+
+          if (
+            selection.quantity >
+            remaining
+          ) {
+            throw new Error(
+              `Zu viele Stück von "${item.product_name}" ausgewählt.`
+            );
+          }
+
+          const newPaidQuantity =
+            item.paid_quantity +
+            selection.quantity;
+
+          const {
+            error: updateError,
+          } = await supabase
+            .from("order_items")
             .update({
-              finished_at:
-                new Date().toISOString(),
+              paid_quantity:
+                newPaidQuantity,
+              paid_at:
+                newPaidQuantity >=
+                item.quantity
+                  ? new Date().toISOString()
+                  : item.paid_at,
             })
             .eq(
               "id",
-              order.id
+              item.id
             );
 
-        if (error) {
-          console.error(
-            "finished_at Fehler:",
-            error
+          if (updateError) {
+            console.error(
+              "Order item update:",
+              updateError
+            );
+
+            throw updateError;
+          }
+        }
+
+        /*
+        --------------------------------------------------------
+        2. ZAHLUNG DEM KELLNER ZUORDNEN
+        --------------------------------------------------------
+        */
+
+        const paymentByOrder =
+          new Map<number, number>();
+
+        for (const selection of paymentSelection) {
+          const item =
+            orderItems.find(
+              (orderItem) =>
+                orderItem.id ===
+                selection.orderItemId
+            );
+
+          if (!item) continue;
+
+          const price =
+            productPriceMap.get(
+              item.product_name
+            );
+
+          if (
+            price === undefined
+          ) {
+            throw new Error(
+              `Preis für "${item.product_name}" wurde nicht gefunden.`
+            );
+          }
+
+          const itemAmount =
+            Number(price) *
+            selection.quantity;
+
+          const oldAmount =
+            paymentByOrder.get(
+              item.order_id
+            ) ?? 0;
+
+          paymentByOrder.set(
+            item.order_id,
+            oldAmount + itemAmount
           );
         }
+
+        /*
+        --------------------------------------------------------
+        Für jede betroffene Bestellung wird
+        eine Zahlung gespeichert.
+        --------------------------------------------------------
+        */
+
+        for (const [
+          orderId,
+          amount,
+        ] of paymentByOrder) {
+          const {
+            error: paymentError,
+          } = await supabase
+            .from("payments")
+            .insert({
+              order_id: orderId,
+              waiter_id: user.id,
+              amount:
+                Number(
+                  amount.toFixed(2)
+                ),
+              payment_method:
+                paymentMethod,
+            });
+
+          if (paymentError) {
+            console.error(
+              "Payment insert:",
+              paymentError
+            );
+
+            throw paymentError;
+          }
+        }
+
+        /*
+        --------------------------------------------------------
+        3. AKTUELLEN STAND DER BESTELLUNGEN LADEN
+        --------------------------------------------------------
+        */
+
+        const {
+          data: freshOrders,
+          error: freshOrdersError,
+        } = await supabase
+          .from("orders")
+          .select("*")
+          .eq(
+            "table_number",
+            selectedTable
+          );
+
+        if (freshOrdersError) {
+          throw freshOrdersError;
+        }
+
+        const freshOrderIds =
+          (freshOrders ?? []).map(
+            (order) => order.id
+          );
+
+        let freshItems: OrderItem[] =
+          [];
+
+        if (
+          freshOrderIds.length > 0
+        ) {
+          const {
+            data,
+            error: freshItemsError,
+          } = await supabase
+            .from("order_items")
+            .select("*")
+            .in(
+              "order_id",
+              freshOrderIds
+            );
+
+          if (freshItemsError) {
+            throw freshItemsError;
+          }
+
+          freshItems =
+            (data ?? []) as OrderItem[];
+        }
+
+        /*
+        --------------------------------------------------------
+        4. PRÜFEN, OB ALLES BEZAHLT IST
+        --------------------------------------------------------
+        */
+
+        const allPaid =
+          freshItems.length > 0 &&
+          freshItems.every(
+            (item) =>
+              item.paid_quantity >=
+              item.quantity
+          );
+
+        if (allPaid) {
+          const finishedOrderIds =
+            (freshOrders ?? [])
+              .filter(
+                (order) =>
+                  order.status ===
+                  "fertig"
+              )
+              .map(
+                (order) =>
+                  order.id
+              );
+
+          if (
+            finishedOrderIds.length >
+            0
+          ) {
+            const {
+              error: finishError,
+            } = await supabase
+              .from("orders")
+              .update({
+                finished_at:
+                  new Date().toISOString(),
+              })
+              .in(
+                "id",
+                finishedOrderIds
+              );
+
+            if (finishError) {
+              throw finishError;
+            }
+          }
+        }
+
+        setPaymentSelection([]);
+        setShowPayment(false);
+        setCashReceived(0);
+
+        if (allPaid) {
+          setSuccessMessage(
+            `Tisch ${selectedTable} wurde vollständig bezahlt und ist wieder frei.`
+          );
+        } else {
+          setSuccessMessage(
+            `Zahlung über ${formatPrice(
+              paymentTotal
+            )} wurde auf ${currentUserName} gespeichert.`
+          );
+        }
+
+        await loadData();
+      } catch (error) {
+        console.error(
+          "Fehler bei der Zahlung:",
+          error
+        );
+
+        setErrorMessage(
+          "Die Zahlung konnte nicht gespeichert werden."
+        );
+      } finally {
+        setSaving(false);
       }
+    };
 
-      setShowPayment(false);
+  /*
+  ============================================================
+  BESTELLUNG HINZUFÜGEN
+  ============================================================
+  */
 
-      await loadData();
-    } catch (error) {
-      console.error(
-        "Fehler bei der Zahlung:",
-        error
-      );
-
-      alert(
-        "Die Zahlung konnte nicht gespeichert werden. Bitte Konsole prüfen."
-      );
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function startAddingOrder() {
+  const startAddingOrder = () => {
+    setErrorMessage("");
+    setSuccessMessage("");
     setShowPayment(false);
+    setCart([]);
+    setSearch("");
+    setCategory("alle");
     setShowAddOrder(true);
+  };
+
+  const cancelAddingOrder = () => {
     setCart([]);
     setSearch("");
     setCategory("alle");
-  }
-
-  function cancelAddingOrder() {
     setShowAddOrder(false);
+    setErrorMessage("");
+  };
+
+  /*
+  ============================================================
+  TISCH AUSWÄHLEN
+  ============================================================
+  */
+
+  const selectTable = (
+    tableNumber: number
+  ) => {
+    setSelectedTable(
+      tableNumber
+    );
+
     setCart([]);
     setSearch("");
     setCategory("alle");
-  }
-
-  function closeTable() {
-    setSelectedTable(null);
-    setCart([]);
-    setShowAddOrder(false);
     setShowPayment(false);
+    setShowAddOrder(false);
     setPaymentSelection([]);
-    setCashReceived("");
-    setSearch("");
-    setCategory("alle");
-  }
+    setErrorMessage("");
+    setSuccessMessage("");
+  };
+
+  /*
+  ============================================================
+  ABMELDEN
+  ============================================================
+  */
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
+
+  /*
+  ============================================================
+  UI
+  ============================================================
+  */
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#070b14] text-white">
+      <main
+        className={`min-h-screen flex items-center justify-center ${
+          dark
+            ? "bg-[#0b1120] text-white"
+            : "bg-[#f4f7fb] text-slate-900"
+        }`}
+      >
         <div className="text-center">
-          <div className="mx-auto mb-5 h-11 w-11 animate-spin rounded-full border-4 border-slate-700 border-t-blue-500" />
-
-          <p className="text-lg font-bold">
-            Döner POS
-          </p>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Kassensystem wird geladen...
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-300 border-t-blue-600" />
+          <p className="font-medium">
+            POS wird geladen...
           </p>
         </div>
       </main>
     );
   }
 
-  const pageBackground = dark
-    ? "bg-[#070b14] text-white"
-    : "bg-[#f5f7fa] text-slate-900";
-
-  const sidebarBackground = dark
-    ? "border-slate-800 bg-[#0b101c]"
-    : "border-slate-200 bg-white";
-
-  const cardBackground = dark
-    ? "border-slate-800 bg-[#0d1422]"
-    : "border-slate-200 bg-white";
-
-  const softBackground = dark
-    ? "bg-slate-800/50"
-    : "bg-slate-100";
-
   return (
     <main
-      className={`min-h-screen ${pageBackground}`}
+      className={`min-h-screen ${
+        dark
+          ? "bg-[#0b1120] text-white"
+          : "bg-[#f4f7fb] text-slate-900"
+      }`}
     >
       {/* HEADER */}
 
       <header
-        className={`sticky top-0 z-50 border-b backdrop-blur-xl ${
+        className={`sticky top-0 z-40 border-b backdrop-blur-xl ${
           dark
-            ? "border-slate-800 bg-[#0b101c]/95"
+            ? "border-slate-800 bg-[#0b1120]/95"
             : "border-slate-200 bg-white/95"
         }`}
       >
-        <div className="mx-auto flex h-[76px] max-w-[1800px] items-center justify-between px-4 md:px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-xl shadow-lg shadow-blue-600/20">
-              🍽️
+        <div className="mx-auto flex max-w-[1800px] items-center justify-between px-4 py-4 lg:px-7">
+          <div className="flex items-center gap-4">
+            <div
+              className={`flex h-12 w-12 items-center justify-center rounded-2xl text-2xl shadow-sm ${
+                dark
+                  ? "bg-blue-600"
+                  : "bg-blue-600 text-white"
+              }`}
+            >
+              🥙
             </div>
 
             <div>
-              <div className="text-lg font-black tracking-tight">
+              <h1 className="text-xl font-black tracking-tight">
                 Döner POS
-              </div>
+              </h1>
 
-              <div
+              <p
                 className={`text-xs font-medium ${
                   dark
-                    ? "text-slate-500"
+                    ? "text-slate-400"
                     : "text-slate-500"
                 }`}
               >
-                {currentUserName ||
-                  "Mitarbeiter"}{" "}
-                · Kellner
-              </div>
+                Kellner-Bereich
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div
-              className={`hidden rounded-xl px-3 py-2 text-sm font-semibold sm:block ${
+              className={`hidden rounded-xl px-4 py-2 text-sm font-semibold sm:block ${
                 dark
-                  ? "bg-slate-800 text-slate-300"
-                  : "bg-slate-100 text-slate-600"
+                  ? "bg-slate-800 text-slate-200"
+                  : "bg-slate-100 text-slate-700"
               }`}
             >
-              🟢 System online
+              👤 {currentUserName}
             </div>
 
             <button
+              type="button"
               onClick={() =>
                 setTheme(
                   dark
@@ -1104,637 +1377,597 @@ export default function DashboardPage() {
                     : "dark"
                 )
               }
-              className={`flex h-10 w-10 items-center justify-center rounded-xl border transition ${
+              className={`rounded-xl px-3 py-2 text-lg transition ${
                 dark
-                  ? "border-slate-700 bg-slate-800 hover:bg-slate-700"
-                  : "border-slate-300 bg-white hover:bg-slate-100"
+                  ? "bg-slate-800 hover:bg-slate-700"
+                  : "bg-slate-100 hover:bg-slate-200"
               }`}
-              title="Darstellung ändern"
+              title="Theme wechseln"
             >
               {dark ? "☀️" : "🌙"}
+            </button>
+
+            <button
+              type="button"
+              onClick={logout}
+              className={`rounded-xl px-4 py-2 text-sm font-bold transition ${
+                dark
+                  ? "bg-slate-800 text-slate-200 hover:bg-slate-700"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              Abmelden
             </button>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-[1800px]">
-        {/* LINKER BEREICH */}
+      <div className="mx-auto max-w-[1800px] px-4 py-5 lg:px-7">
+        {/* MELDUNGEN */}
 
-        <aside
-          className={`hidden min-h-[calc(100vh-76px)] w-[280px] shrink-0 border-r p-5 lg:block ${sidebarBackground}`}
-        >
-          <div className="mb-6">
-            <p
-              className={`text-xs font-black uppercase tracking-[0.15em] ${
-                dark
-                  ? "text-slate-600"
-                  : "text-slate-400"
-              }`}
-            >
-              Übersicht
-            </p>
+        {errorMessage && (
+          <div
+            className={`mb-4 flex items-center justify-between rounded-2xl border px-4 py-3 ${
+              dark
+                ? "border-red-900/70 bg-red-950/40 text-red-200"
+                : "border-red-200 bg-red-50 text-red-700"
+            }`}
+          >
+            <span className="text-sm font-semibold">
+              ⚠️ {errorMessage}
+            </span>
 
-            <h2 className="mt-2 text-xl font-black">
-              Deine Tische
-            </h2>
-          </div>
-
-          <div className="space-y-2">
-            {Array.from(
-              { length: TABLE_COUNT },
-              (_, index) => {
-                const table =
-                  index + 1;
-
-                const status =
-                  tableStatuses[table];
-
-                const selected =
-                  selectedTable ===
-                  table;
-
-                const tableOrders =
-                  orders.filter(
-                    (order) =>
-                      order.table_number ===
-                      table
-                  );
-
-                const tableOrderIds =
-                  tableOrders.map(
-                    (order) =>
-                      order.id
-                  );
-
-                const itemCount =
-                  orderItems
-                    .filter((item) =>
-                      tableOrderIds.includes(
-                        item.order_id
-                      )
-                    )
-                    .reduce(
-                      (
-                        total,
-                        item
-                      ) =>
-                        total +
-                        item.quantity,
-                      0
-                    );
-
-                return (
-                  <button
-                    key={table}
-                    onClick={() =>
-                      setSelectedTable(
-                        table
-                      )
-                    }
-                    className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
-                      selected
-                        ? "border-blue-500 bg-blue-500/10"
-                        : dark
-                        ? "border-transparent hover:bg-slate-800/70"
-                        : "border-transparent hover:bg-slate-100"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-black ${
-                          status ===
-                          "offen"
-                            ? "bg-orange-500/10 text-orange-500"
-                            : status ===
-                              "fertig"
-                            ? "bg-blue-500/10 text-blue-500"
-                            : "bg-green-500/10 text-green-500"
-                        }`}
-                      >
-                        {table}
-                      </div>
-
-                      <div>
-                        <div className="text-sm font-bold">
-                          Tisch{" "}
-                          {table}
-                        </div>
-
-                        <div
-                          className={`text-xs ${
-                            dark
-                              ? "text-slate-500"
-                              : "text-slate-400"
-                          }`}
-                        >
-                          {getStatusLabel(
-                            status
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {itemCount >
-                      0 && (
-                      <span
-                        className={`rounded-lg px-2 py-1 text-xs font-black ${
-                          dark
-                            ? "bg-slate-800 text-slate-400"
-                            : "bg-slate-100 text-slate-500"
-                        }`}
-                      >
-                        {itemCount}
-                      </span>
-                    )}
-                  </button>
-                );
+            <button
+              type="button"
+              onClick={() =>
+                setErrorMessage("")
               }
-            )}
+              className="ml-4 text-lg opacity-70 hover:opacity-100"
+            >
+              ×
+            </button>
           </div>
-        </aside>
+        )}
 
-        {/* HAUPTBEREICH */}
+        {successMessage && (
+          <div
+            className={`mb-4 flex items-center justify-between rounded-2xl border px-4 py-3 ${
+              dark
+                ? "border-emerald-900/70 bg-emerald-950/40 text-emerald-200"
+                : "border-emerald-200 bg-emerald-50 text-emerald-700"
+            }`}
+          >
+            <span className="text-sm font-semibold">
+              ✓ {successMessage}
+            </span>
 
-        <div className="min-w-0 flex-1 p-4 md:p-6">
-          {/* MOBILE TISCHLEISTE */}
+            <button
+              type="button"
+              onClick={() =>
+                setSuccessMessage("")
+              }
+              className="ml-4 text-lg opacity-70 hover:opacity-100"
+            >
+              ×
+            </button>
+          </div>
+        )}
 
-          <div className="mb-5 lg:hidden">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-black">
-                Tische
-              </h2>
+        {/* STATUS */}
+
+        <section className="mb-6 grid grid-cols-3 gap-3 lg:gap-5">
+          <div
+            className={`rounded-2xl border p-4 shadow-sm ${
+              dark
+                ? "border-slate-800 bg-slate-900/80"
+                : "border-slate-200 bg-white"
+            }`}
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-2xl">
+                🟢
+              </span>
 
               <span
-                className={`text-xs font-medium ${
+                className={`text-2xl font-black ${
                   dark
-                    ? "text-slate-500"
-                    : "text-slate-400"
+                    ? "text-white"
+                    : "text-slate-900"
                 }`}
               >
-                25 Tische
+                {freeTables}
               </span>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {Array.from(
-                { length: TABLE_COUNT },
-                (_, index) => {
-                  const table =
-                    index + 1;
+            <p
+              className={`text-xs font-bold uppercase tracking-wider ${
+                dark
+                  ? "text-slate-400"
+                  : "text-slate-500"
+              }`}
+            >
+              Frei
+            </p>
+          </div>
 
-                  const status =
-                    tableStatuses[table];
+          <div
+            className={`rounded-2xl border p-4 shadow-sm ${
+              dark
+                ? "border-slate-800 bg-slate-900/80"
+                : "border-slate-200 bg-white"
+            }`}
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-2xl">
+                🟠
+              </span>
 
-                  return (
-                    <button
-                      key={table}
-                      onClick={() =>
-                        setSelectedTable(
-                          table
-                        )
-                      }
-                      className={`flex h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border text-sm font-black ${
-                        selectedTable ===
-                        table
-                          ? "border-blue-500 bg-blue-600 text-white"
-                          : status ===
-                            "offen"
-                          ? "border-orange-500/30 bg-orange-500/10 text-orange-500"
-                          : status ===
-                            "fertig"
-                          ? "border-blue-500/30 bg-blue-500/10 text-blue-500"
-                          : "border-green-500/30 bg-green-500/10 text-green-500"
-                      }`}
-                    >
-                      {table}
-                    </button>
-                  );
-                }
-              )}
+              <span className="text-2xl font-black">
+                {openTables}
+              </span>
+            </div>
+
+            <p
+              className={`text-xs font-bold uppercase tracking-wider ${
+                dark
+                  ? "text-slate-400"
+                  : "text-slate-500"
+              }`}
+            >
+              Bestellung
+            </p>
+          </div>
+
+          <div
+            className={`rounded-2xl border p-4 shadow-sm ${
+              dark
+                ? "border-slate-800 bg-slate-900/80"
+                : "border-slate-200 bg-white"
+            }`}
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-2xl">
+                💳
+              </span>
+
+              <span className="text-2xl font-black">
+                {readyTables}
+              </span>
+            </div>
+
+            <p
+              className={`text-xs font-bold uppercase tracking-wider ${
+                dark
+                  ? "text-slate-400"
+                  : "text-slate-500"
+              }`}
+            >
+              Bezahlbereit
+            </p>
+          </div>
+        </section>
+
+        {/* TISCHPLAN */}
+
+        <section
+          className={`mb-6 rounded-3xl border p-4 shadow-sm lg:p-6 ${
+            dark
+              ? "border-slate-800 bg-slate-900/70"
+              : "border-slate-200 bg-white"
+          }`}
+        >
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-black">
+                Tische
+              </h2>
+
+              <p
+                className={`mt-1 text-sm ${
+                  dark
+                    ? "text-slate-400"
+                    : "text-slate-500"
+                }`}
+              >
+                Wähle einen Tisch aus
+              </p>
+            </div>
+
+            <div
+              className={`hidden items-center gap-4 text-xs font-semibold md:flex ${
+                dark
+                  ? "text-slate-400"
+                  : "text-slate-500"
+              }`}
+            >
+              <span>🟢 Frei</span>
+              <span>🟠 Bestellung</span>
+              <span>🔵 Bezahlung</span>
             </div>
           </div>
 
-          {/* DASHBOARD OHNE TISCH */}
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10">
+            {Array.from(
+              { length: TABLE_COUNT },
+              (_, index) => index + 1
+            ).map((table) => {
+              const status =
+                tableStatuses[table];
 
-          {selectedTable === null && (
-            <>
-              <div className="mb-7">
-                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-                  <div>
-                    <p className="text-sm font-bold text-blue-500">
-                      KELLNER-BEREICH
-                    </p>
+              const selected =
+                selectedTable === table;
 
-                    <h1 className="mt-1 text-3xl font-black tracking-tight">
-                      Tischübersicht
-                    </h1>
+              let colorClass = "";
 
-                    <p
-                      className={`mt-2 text-sm ${
-                        dark
-                          ? "text-slate-500"
-                          : "text-slate-500"
-                      }`}
-                    >
-                      Wähle einen Tisch
-                      für eine neue
-                      Bestellung oder
-                      Zahlung.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              if (
+                status === "frei"
+              ) {
+                colorClass = dark
+                  ? "border-emerald-800 bg-emerald-950/30 hover:bg-emerald-950/50"
+                  : "border-emerald-200 bg-emerald-50 hover:bg-emerald-100";
+              }
 
-              <div className="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div
-                  className={`rounded-3xl border p-5 ${cardBackground}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p
-                        className={`text-xs font-bold uppercase tracking-wider ${
-                          dark
-                            ? "text-slate-500"
-                            : "text-slate-400"
-                        }`}
-                      >
-                        Frei
-                      </p>
+              if (
+                status === "offen"
+              ) {
+                colorClass = dark
+                  ? "border-orange-800 bg-orange-950/30 hover:bg-orange-950/50"
+                  : "border-orange-200 bg-orange-50 hover:bg-orange-100";
+              }
 
-                      <p className="mt-2 text-3xl font-black">
-                        {freeTables}
-                      </p>
-                    </div>
+              if (
+                status === "fertig"
+              ) {
+                colorClass = dark
+                  ? "border-blue-800 bg-blue-950/30 hover:bg-blue-950/50"
+                  : "border-blue-200 bg-blue-50 hover:bg-blue-100";
+              }
 
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-500/10 text-xl">
-                      ✓
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className={`rounded-3xl border p-5 ${cardBackground}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p
-                        className={`text-xs font-bold uppercase tracking-wider ${
-                          dark
-                            ? "text-slate-500"
-                            : "text-slate-400"
-                        }`}
-                      >
-                        Offen
-                      </p>
-
-                      <p className="mt-2 text-3xl font-black">
-                        {openTables}
-                      </p>
-                    </div>
-
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/10 text-xl">
-                      ●
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className={`rounded-3xl border p-5 ${cardBackground}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p
-                        className={`text-xs font-bold uppercase tracking-wider ${
-                          dark
-                            ? "text-slate-500"
-                            : "text-slate-400"
-                        }`}
-                      >
-                        Bezahlbereit
-                      </p>
-
-                      <p className="mt-2 text-3xl font-black">
-                        {readyTables}
-                      </p>
-                    </div>
-
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-xl">
-                      €
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6">
-                {Array.from(
-                  { length: TABLE_COUNT },
-                  (_, index) => {
-                    const table =
-                      index + 1;
-
-                    const status =
-                      tableStatuses[
-                        table
-                      ];
-
-                    const tableOrders =
-                      orders.filter(
-                        (order) =>
-                          order.table_number ===
-                          table
-                      );
-
-                    const tableOrderIds =
-                      tableOrders.map(
-                        (order) =>
-                          order.id
-                      );
-
-                    const itemCount =
-                      orderItems
-                        .filter(
-                          (item) =>
-                            tableOrderIds.includes(
-                              item.order_id
-                            )
-                        )
-                        .reduce(
-                          (
-                            total,
-                            item
-                          ) =>
-                            total +
-                            item.quantity,
-                          0
-                        );
-
-                    return (
-                      <button
-                        key={table}
-                        onClick={() =>
-                          setSelectedTable(
-                            table
-                          )
-                        }
-                        className={`group min-h-[150px] rounded-3xl border p-5 text-left transition hover:-translate-y-1 hover:shadow-xl ${getStatusClasses(
-                          status,
-                          dark
-                        )}`}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <div className="text-xs font-bold opacity-60">
-                              TISCH
-                            </div>
-
-                            <div className="mt-1 text-2xl font-black">
-                              {table}
-                            </div>
-                          </div>
-
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-lg">
-                            {status ===
-                            "frei"
-                              ? "✓"
-                              : status ===
-                                "offen"
-                              ? "●"
-                              : "€"}
-                          </div>
-                        </div>
-
-                        <div className="mt-7">
-                          <div className="text-sm font-bold">
-                            {getStatusLabel(
-                              status
-                            )}
-                          </div>
-
-                          {itemCount >
-                            0 && (
-                            <div className="mt-1 text-xs opacity-60">
-                              {itemCount}{" "}
-                              Artikel
-                            </div>
-                          )}
-                        </div>
-                      </button>
-                    );
+              return (
+                <button
+                  key={table}
+                  type="button"
+                  onClick={() =>
+                    selectTable(table)
                   }
-                )}
-              </div>
-            </>
-          )}
+                  className={`relative min-h-[105px] rounded-2xl border-2 p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${colorClass} ${
+                    selected
+                      ? "ring-4 ring-blue-500/30"
+                      : ""
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <span className="text-lg font-black">
+                      {table}
+                    </span>
 
-          {/* AUSGEWÄHLTER TISCH */}
+                    <span>
+                      {status ===
+                        "frei" &&
+                        "🟢"}
+                      {status ===
+                        "offen" &&
+                        "🟠"}
+                      {status ===
+                        "fertig" &&
+                        "🔵"}
+                    </span>
+                  </div>
 
-          {selectedTable !== null && (
-            <>
-              <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <button
-                    onClick={closeTable}
-                    className={`mb-3 text-sm font-bold transition hover:text-blue-500 ${
+                  <div
+                    className={`mt-5 text-[11px] font-bold ${
                       dark
-                        ? "text-slate-500"
+                        ? "text-slate-400"
                         : "text-slate-500"
                     }`}
                   >
-                    ← Tischübersicht
-                  </button>
+                    {status ===
+                      "frei" &&
+                      "FREI"}
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h1 className="text-3xl font-black">
-                      Tisch{" "}
-                      {selectedTable}
-                    </h1>
+                    {status ===
+                      "offen" &&
+                      "BESTELLUNG"}
 
-                    <span
-                      className={`rounded-full border px-3 py-1 text-xs font-bold ${getStatusClasses(
-                        tableStatuses[
-                          selectedTable
-                        ],
-                        dark
-                      )}`}
-                    >
-                      {getStatusLabel(
-                        tableStatuses[
-                          selectedTable
-                        ]
-                      )}
-                    </span>
+                    {status ===
+                      "fertig" &&
+                      "BEZAHLEN"}
                   </div>
-                </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
-                {!showPayment &&
-                  !showAddOrder && (
-                    <div className="flex gap-2">
-                      {paymentItems.length >
-                        0 && (
-                        <button
-                          onClick={
-                            openPayment
-                          }
-                          className="rounded-2xl bg-green-600 px-5 py-3 font-black text-white shadow-lg shadow-green-600/20 transition hover:bg-green-700"
-                        >
-                          💳 Bezahlen
-                        </button>
-                      )}
+        {/* KEIN TISCH */}
 
-                      <button
-                        onClick={
-                          startAddingOrder
-                        }
-                        className="rounded-2xl bg-blue-600 px-5 py-3 font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
-                      >
-                        + Bestellung
-                      </button>
-                    </div>
-                  )}
+        {selectedTable ===
+          null && (
+          <section
+            className={`flex min-h-[280px] items-center justify-center rounded-3xl border ${
+              dark
+                ? "border-slate-800 bg-slate-900/50"
+                : "border-slate-200 bg-white"
+            }`}
+          >
+            <div className="text-center">
+              <div className="mb-4 text-5xl">
+                🪑
               </div>
 
-              {/* ZAHLUNG */}
+              <h2 className="text-xl font-black">
+                Tisch auswählen
+              </h2>
 
-              {showPayment && (
-                <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_430px]">
-                  <div
-                    className={`rounded-3xl border p-5 md:p-6 ${cardBackground}`}
+              <p
+                className={`mt-2 text-sm ${
+                  dark
+                    ? "text-slate-400"
+                    : "text-slate-500"
+                }`}
+              >
+                Wähle oben einen Tisch,
+                um die Bestellung zu
+                bearbeiten.
+              </p>
+            </div>
+          </section>
+        )}
+
+        {/* TISCH BEREICH */}
+
+        {selectedTable !==
+          null && (
+          <section
+            className={`rounded-3xl border shadow-sm ${
+              dark
+                ? "border-slate-800 bg-slate-900/70"
+                : "border-slate-200 bg-white"
+            }`}
+          >
+            {/* TISCHKOPF */}
+
+            <div
+              className={`border-b px-5 py-5 lg:px-7 ${
+                dark
+                  ? "border-slate-800"
+                  : "border-slate-200"
+              }`}
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-black">
+                      Tisch{" "}
+                      {selectedTable}
+                    </h2>
+
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-black ${
+                        tableStatuses[
+                          selectedTable
+                        ] ===
+                        "frei"
+                          ? dark
+                            ? "bg-emerald-950 text-emerald-300"
+                            : "bg-emerald-100 text-emerald-700"
+                          : tableStatuses[
+                              selectedTable
+                            ] ===
+                            "offen"
+                          ? dark
+                            ? "bg-orange-950 text-orange-300"
+                            : "bg-orange-100 text-orange-700"
+                          : dark
+                          ? "bg-blue-950 text-blue-300"
+                          : "bg-blue-100 text-blue-700"
+                      }`}
+                    >
+                      {tableStatuses[
+                        selectedTable
+                      ] === "frei" &&
+                        "Frei"}
+
+                      {tableStatuses[
+                        selectedTable
+                      ] === "offen" &&
+                        "Bestellung läuft"}
+
+                      {tableStatuses[
+                        selectedTable
+                      ] === "fertig" &&
+                        "Bezahlung offen"}
+                    </span>
+                  </div>
+
+                  <p
+                    className={`mt-1 text-sm ${
+                      dark
+                        ? "text-slate-400"
+                        : "text-slate-500"
+                    }`}
                   >
-                    <div className="mb-6 flex items-start justify-between">
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-blue-500">
-                          Zahlung
-                        </p>
+                    {selectedTableItems.length >
+                    0
+                      ? `${selectedTableItems.length} Positionen`
+                      : "Noch keine Bestellung"}
+                  </p>
+                </div>
 
-                        <h2 className="mt-1 text-2xl font-black">
-                          Artikel auswählen
-                        </h2>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={
+                      startAddingOrder
+                    }
+                    className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={saving}
+                  >
+                    ＋ Bestellung
+                  </button>
 
-                        <p
-                          className={`mt-1 text-sm ${
-                            dark
-                              ? "text-slate-500"
-                              : "text-slate-500"
-                          }`}
-                        >
-                          Nur die ausgewählten
-                          Mengen werden
-                          bezahlt.
-                        </p>
-                      </div>
-
+                  {tableStatuses[
+                    selectedTable
+                  ] ===
+                    "fertig" &&
+                    paymentItems.length >
+                      0 && (
                       <button
+                        type="button"
                         onClick={
-                          closePayment
+                          openPayment
                         }
-                        className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                          dark
-                            ? "bg-slate-800 hover:bg-slate-700"
-                            : "bg-slate-100 hover:bg-slate-200"
-                        }`}
+                        className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={saving}
                       >
-                        ✕
+                        💳 Bezahlen
                       </button>
-                    </div>
+                    )}
+                </div>
+              </div>
+            </div>
 
+            {/* ZAHLUNG */}
+
+            {showPayment && (
+              <div className="p-5 lg:p-7">
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-black">
+                      Zahlung
+                    </h3>
+
+                    <p
+                      className={`mt-1 text-sm ${
+                        dark
+                          ? "text-slate-400"
+                          : "text-slate-500"
+                      }`}
+                    >
+                      Welche Positionen
+                      bezahlt der
+                      aktuelle Kellner?
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={
+                      closePayment
+                    }
+                    className={`rounded-xl px-4 py-2 text-sm font-bold ${
+                      dark
+                        ? "bg-slate-800 hover:bg-slate-700"
+                        : "bg-slate-100 hover:bg-slate-200"
+                    }`}
+                  >
+                    Zurück
+                  </button>
+                </div>
+
+                <div className="grid gap-5 xl:grid-cols-[1fr_400px]">
+                  <div
+                    className={`rounded-2xl border p-4 ${
+                      dark
+                        ? "border-slate-800 bg-slate-950/40"
+                        : "border-slate-200 bg-slate-50"
+                    }`}
+                  >
                     <div className="space-y-3">
                       {paymentItems.map(
                         (item) => {
+                          const remaining =
+                            item.quantity -
+                            item.paid_quantity;
+
                           const selected =
                             getSelectedQuantity(
                               item.id
                             );
 
-                          const product =
-                            products.find(
-                              (p) =>
-                                p.name ===
-                                item.product_name
-                            );
-
                           const price =
-                            product?.price ??
-                            0;
+                            productPriceMap.get(
+                              item.product_name
+                            ) ?? 0;
 
                           return (
                             <div
-                              key={
-                                item.id
-                              }
+                              key={item.id}
                               className={`rounded-2xl border p-4 ${
-                                dark
-                                  ? "border-slate-800 bg-slate-800/40"
-                                  : "border-slate-200 bg-slate-50"
+                                selected >
+                                0
+                                  ? dark
+                                    ? "border-blue-700 bg-blue-950/30"
+                                    : "border-blue-300 bg-blue-50"
+                                  : dark
+                                  ? "border-slate-800 bg-slate-900"
+                                  : "border-slate-200 bg-white"
                               }`}
                             >
                               <div className="flex items-center justify-between gap-4">
                                 <div className="min-w-0">
-                                  <div className="font-bold">
+                                  <p className="truncate font-black">
                                     {
                                       item.product_name
                                     }
-                                  </div>
+                                  </p>
 
-                                  <div
-                                    className={`mt-1 text-sm ${
+                                  <p
+                                    className={`mt-1 text-xs ${
                                       dark
-                                        ? "text-slate-500"
+                                        ? "text-slate-400"
                                         : "text-slate-500"
                                     }`}
                                   >
-                                    {
-                                      item.remainingQuantity
-                                    }{" "}
+                                    {remaining}{" "}
                                     offen ·{" "}
                                     {formatPrice(
                                       price
-                                    )}
-                                  </div>
+                                    )}{" "}
+                                    pro Stück
+                                  </p>
                                 </div>
 
                                 <div className="flex shrink-0 items-center gap-2">
                                   <button
+                                    type="button"
                                     onClick={() =>
                                       changePaymentQuantity(
-                                        item.id,
+                                        item,
                                         -1
                                       )
                                     }
-                                    className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-700 text-xl font-black transition hover:bg-slate-600"
+                                    className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg font-black ${
+                                      dark
+                                        ? "bg-slate-800 hover:bg-slate-700"
+                                        : "bg-slate-100 hover:bg-slate-200"
+                                    }`}
                                   >
                                     −
                                   </button>
 
-                                  <div className="w-8 text-center text-lg font-black">
-                                    {
-                                      selected
-                                    }
+                                  <div className="flex h-10 min-w-10 items-center justify-center rounded-xl bg-blue-600 px-3 font-black text-white">
+                                    {selected}
                                   </div>
 
                                   <button
+                                    type="button"
                                     onClick={() =>
                                       changePaymentQuantity(
-                                        item.id,
+                                        item,
                                         1
                                       )
                                     }
-                                    className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-xl font-black text-white transition hover:bg-blue-700"
+                                    disabled={
+                                      selected >=
+                                      remaining
+                                    }
+                                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-lg font-black text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
                                   >
-                                    +
+                                    ＋
                                   </button>
                                 </div>
                               </div>
-
-                              {selected >
-                                0 && (
-                                <div className="mt-3 rounded-xl bg-blue-500/10 px-3 py-2 text-sm font-bold text-blue-500">
-                                  ✓{" "}
-                                  {
-                                    selected
-                                  }{" "}
-                                  ausgewählt
-                                </div>
-                              )}
                             </div>
                           );
                         }
@@ -1742,136 +1975,178 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
+                  {/* ZAHLUNGSRECHNER */}
+
                   <div
-                    className={`h-fit rounded-3xl border p-6 xl:sticky xl:top-24 ${cardBackground}`}
+                    className={`h-fit rounded-3xl border p-5 shadow-sm ${
+                      dark
+                        ? "border-slate-800 bg-slate-950"
+                        : "border-slate-200 bg-white"
+                    }`}
                   >
-                    <p className="text-xs font-black uppercase tracking-widest text-blue-500">
-                      Kasse
-                    </p>
+                    <div className="mb-5">
+                      <p
+                        className={`text-xs font-black uppercase tracking-wider ${
+                          dark
+                            ? "text-slate-500"
+                            : "text-slate-400"
+                        }`}
+                      >
+                        Zu bezahlen
+                      </p>
 
-                    <h2 className="mt-1 text-2xl font-black">
-                      Zahlung
-                    </h2>
+                      <p className="mt-1 text-4xl font-black">
+                        {formatPrice(
+                          paymentTotal
+                        )}
+                      </p>
+                    </div>
 
-                    <div className="mt-6 grid grid-cols-2 gap-2">
+                    <div className="mb-5 grid grid-cols-2 gap-2">
                       <button
+                        type="button"
                         onClick={() =>
                           setPaymentMethod(
                             "bar"
                           )
                         }
-                        className={`rounded-2xl border py-4 font-black transition ${
+                        className={`rounded-xl px-4 py-3 text-sm font-black ${
                           paymentMethod ===
                           "bar"
-                            ? "border-green-500 bg-green-500/10 text-green-500"
+                            ? "bg-blue-600 text-white"
                             : dark
-                            ? "border-slate-700 bg-slate-800"
-                            : "border-slate-300 bg-white"
+                            ? "bg-slate-800 text-slate-300"
+                            : "bg-slate-100 text-slate-700"
                         }`}
                       >
                         💶 Bar
                       </button>
 
                       <button
+                        type="button"
                         onClick={() =>
                           setPaymentMethod(
                             "karte"
                           )
                         }
-                        className={`rounded-2xl border py-4 font-black transition ${
+                        className={`rounded-xl px-4 py-3 text-sm font-black ${
                           paymentMethod ===
                           "karte"
-                            ? "border-blue-500 bg-blue-500/10 text-blue-500"
+                            ? "bg-blue-600 text-white"
                             : dark
-                            ? "border-slate-700 bg-slate-800"
-                            : "border-slate-300 bg-white"
+                            ? "bg-slate-800 text-slate-300"
+                            : "bg-slate-100 text-slate-700"
                         }`}
                       >
                         💳 Karte
                       </button>
                     </div>
 
-                    <div
-                      className={`my-6 border-t ${
-                        dark
-                          ? "border-slate-800"
-                          : "border-slate-200"
-                      }`}
-                    />
-
-                    <div className="flex items-end justify-between">
-                      <span
-                        className={
-                          dark
-                            ? "text-slate-500"
-                            : "text-slate-500"
-                        }
-                      >
-                        Gesamt
-                      </span>
-
-                      <span className="text-3xl font-black">
-                        {formatPrice(
-                          paymentTotal
-                        )}
-                      </span>
-                    </div>
-
                     {paymentMethod ===
                       "bar" && (
-                      <>
+                      <div className="mb-5">
                         <label
-                          className={`mt-6 mb-2 block text-sm font-bold ${
+                          className={`mb-2 block text-sm font-bold ${
                             dark
-                              ? "text-slate-400"
-                              : "text-slate-600"
+                              ? "text-slate-300"
+                              : "text-slate-700"
                           }`}
                         >
-                          Gegeben
+                          Erhalten
                         </label>
 
                         <input
+                          type="number"
+                          min="0"
+                          step="0.01"
                           value={
-                            cashReceived
+                            cashReceived ===
+                            0
+                              ? ""
+                              : cashReceived
                           }
-                          onChange={(e) =>
+                          onChange={(event) =>
                             setCashReceived(
-                              e.target
-                                .value
+                              Number(
+                                event
+                                  .target
+                                  .value
+                              ) || 0
                             )
                           }
-                          inputMode="decimal"
                           placeholder="0,00 €"
-                          className={`w-full rounded-2xl border px-4 py-4 text-xl font-black outline-none focus:border-blue-500 ${dark ? "border-slate-700 bg-slate-800" : "border-slate-300 bg-white"}`}
+                          className={`w-full rounded-xl border px-4 py-3 text-lg font-bold outline-none focus:border-blue-500 ${
+                            dark
+                              ? "border-slate-700 bg-slate-900 text-white"
+                              : "border-slate-200 bg-slate-50 text-slate-900"
+                          }`}
                         />
 
-                        <div className="mt-4 flex items-center justify-between rounded-2xl bg-green-500/10 p-4">
-                          <span className="font-bold text-green-500">
+                        <div className="mt-3 flex items-center justify-between">
+                          <span
+                            className={`text-sm font-semibold ${
+                              dark
+                                ? "text-slate-400"
+                                : "text-slate-500"
+                            }`}
+                          >
                             Rückgeld
                           </span>
 
-                          <span className="text-2xl font-black text-green-500">
+                          <span className="text-lg font-black text-emerald-500">
                             {formatPrice(
                               changeAmount
                             )}
                           </span>
                         </div>
-                      </>
-                    )}
-
-                    {paymentMethod ===
-                      "karte" && (
-                      <div className="mt-5 rounded-2xl bg-blue-500/10 p-4 text-sm font-medium text-blue-500">
-                        💳 Kartenzahlung am
-                        Terminal
-                        durchführen und
-                        anschließend die
-                        Zahlung hier
-                        bestätigen.
                       </div>
                     )}
 
+                    <div
+                      className={`mb-5 rounded-2xl p-4 ${
+                        dark
+                          ? "bg-slate-900"
+                          : "bg-slate-50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-sm">
+                        <span
+                          className={
+                            dark
+                              ? "text-slate-400"
+                              : "text-slate-500"
+                          }
+                        >
+                          Kellner
+                        </span>
+
+                        <span className="font-bold">
+                          {currentUserName}
+                        </span>
+                      </div>
+
+                      <div className="mt-2 flex items-center justify-between text-sm">
+                        <span
+                          className={
+                            dark
+                              ? "text-slate-400"
+                              : "text-slate-500"
+                          }
+                        >
+                          Zahlungsart
+                        </span>
+
+                        <span className="font-bold">
+                          {paymentMethod ===
+                          "bar"
+                            ? "Bar"
+                            : "Karte"}
+                        </span>
+                      </div>
+                    </div>
+
                     <button
+                      type="button"
                       onClick={
                         completePayment
                       }
@@ -1882,202 +2157,189 @@ export default function DashboardPage() {
                         paymentTotal <= 0 ||
                         (paymentMethod ===
                           "bar" &&
-                          numericCashReceived <
+                          cashReceived <
                             paymentTotal)
                       }
-                      className="mt-6 w-full rounded-2xl bg-green-600 px-5 py-4 text-lg font-black text-white shadow-lg shadow-green-600/20 transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="w-full rounded-2xl bg-emerald-600 px-5 py-4 text-base font-black text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {saving
-                        ? "Wird gespeichert..."
+                        ? "Speichere..."
                         : `✓ ${formatPrice(
                             paymentTotal
-                          )} kassieren`}
-                    </button>
-
-                    <button
-                      onClick={
-                        closePayment
-                      }
-                      disabled={saving}
-                      className={`mt-3 w-full rounded-2xl border px-5 py-3 font-bold ${
-                        dark
-                          ? "border-slate-700 hover:bg-slate-800"
-                          : "border-slate-300 hover:bg-slate-100"
-                      }`}
-                    >
-                      Abbrechen
+                          )} bezahlen`}
                     </button>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* ARTIKEL HINZUFÜGEN */}
+            {/* BESTELLUNG HINZUFÜGEN */}
 
-              {showAddOrder && (
-                <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_430px]">
+            {showAddOrder && (
+              <div className="p-5 lg:p-7">
+                <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                   <div>
-                    <div
-                      className={`mb-5 rounded-3xl border p-4 ${cardBackground}`}
+                    <h3 className="text-xl font-black">
+                      {openOrder
+                        ? "Bestellung erweitern"
+                        : "Neue Bestellung"}
+                    </h3>
+
+                    <p
+                      className={`mt-1 text-sm ${
+                        dark
+                          ? "text-slate-400"
+                          : "text-slate-500"
+                      }`}
                     >
-                      <div className="flex flex-col gap-3">
-                        <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                            🔎
-                          </span>
+                      Tisch{" "}
+                      {selectedTable}
+                    </p>
+                  </div>
 
-                          <input
-                            value={search}
-                            onChange={(e) =>
-                              setSearch(
-                                e.target
-                                  .value
-                              )
-                            }
-                            placeholder="Produkt suchen..."
-                            className={`w-full rounded-2xl border py-4 pl-11 pr-4 font-medium outline-none focus:border-blue-500 ${
-                              dark
-                                ? "border-slate-700 bg-slate-800"
-                                : "border-slate-300 bg-white"
-                            }`}
-                          />
-                        </div>
+                  <button
+                    type="button"
+                    onClick={
+                      cancelAddingOrder
+                    }
+                    className={`rounded-xl px-4 py-2 text-sm font-bold ${
+                      dark
+                        ? "bg-slate-800 hover:bg-slate-700"
+                        : "bg-slate-100 hover:bg-slate-200"
+                    }`}
+                  >
+                    Abbrechen
+                  </button>
+                </div>
 
-                        <div className="flex gap-2 overflow-x-auto pb-1">
-                          {categories.map(
-                            (cat) => (
-                              <button
-                                key={cat}
-                                onClick={() =>
-                                  setCategory(
-                                    cat
-                                  )
-                                }
-                                className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold transition ${
-                                  category ===
-                                  cat
-                                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                                    : dark
-                                    ? "bg-slate-800 text-slate-300 hover:bg-slate-700"
-                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                }`}
-                              >
-                                {cat ===
-                                "alle"
-                                  ? "Alle"
-                                  : cat}
-                              </button>
+                <div className="grid gap-5 xl:grid-cols-[1fr_380px]">
+                  {/* PRODUKTE */}
+
+                  <div>
+                    <div className="mb-4 flex flex-col gap-3 lg:flex-row">
+                      <div className="relative flex-1">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2">
+                          🔎
+                        </span>
+
+                        <input
+                          type="text"
+                          value={search}
+                          onChange={(event) =>
+                            setSearch(
+                              event.target.value
                             )
-                          )}
-                        </div>
+                          }
+                          placeholder="Produkt suchen..."
+                          className={`w-full rounded-2xl border py-3 pl-11 pr-4 text-sm font-semibold outline-none focus:border-blue-500 ${
+                            dark
+                              ? "border-slate-700 bg-slate-950 text-white placeholder:text-slate-500"
+                              : "border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400"
+                          }`}
+                        />
                       </div>
                     </div>
 
-                    <div className="mb-4 flex items-center justify-between">
-                      <div>
-                        <h2 className="text-xl font-black">
-                          Produkte
-                        </h2>
-
-                        <p
-                          className={`text-sm ${
-                            dark
-                              ? "text-slate-500"
-                              : "text-slate-500"
-                          }`}
-                        >
-                          {filteredProducts.length}{" "}
-                          Produkte
-                        </p>
-                      </div>
-
-                      <button
-                        onClick={() => {
-                          setSearch("");
-                          setCategory(
+                    <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
+                      {categories.map(
+                        (itemCategory) => (
+                          <button
+                            key={
+                              itemCategory
+                            }
+                            type="button"
+                            onClick={() =>
+                              setCategory(
+                                itemCategory
+                              )
+                            }
+                            className={`shrink-0 rounded-xl px-4 py-2 text-xs font-black transition ${
+                              category ===
+                              itemCategory
+                                ? "bg-blue-600 text-white"
+                                : dark
+                                ? "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            }`}
+                          >
+                            {itemCategory ===
                             "alle"
-                          );
-                        }}
-                        className={`rounded-xl px-3 py-2 text-xs font-bold ${
-                          dark
-                            ? "bg-slate-800 text-slate-400"
-                            : "bg-white text-slate-500"
-                        }`}
-                      >
-                        Zurücksetzen
-                      </button>
+                              ? "Alle"
+                              : itemCategory}
+                          </button>
+                        )
+                      )}
                     </div>
 
                     {filteredProducts.length ===
                     0 ? (
                       <div
-                        className={`rounded-3xl border p-12 text-center ${cardBackground}`}
+                        className={`rounded-2xl border p-10 text-center ${
+                          dark
+                            ? "border-slate-800 bg-slate-950/40"
+                            : "border-slate-200 bg-slate-50"
+                        }`}
                       >
-                        <div className="text-4xl">
+                        <div className="mb-3 text-4xl">
                           🔎
                         </div>
 
-                        <h3 className="mt-3 font-black">
-                          Kein Produkt
-                          gefunden
-                        </h3>
-
-                        <p
-                          className={`mt-1 text-sm ${
-                            dark
-                              ? "text-slate-500"
-                              : "text-slate-500"
-                          }`}
-                        >
-                          Ändere die
-                          Suche oder
-                          Kategorie.
+                        <p className="font-bold">
+                          Kein Produkt gefunden
                         </p>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                         {filteredProducts.map(
                           (product) => (
                             <button
                               key={
                                 product.id
                               }
+                              type="button"
                               onClick={() =>
                                 addToCart(
                                   product
                                 )
                               }
-                              className={`group min-h-[145px] rounded-3xl border p-4 text-left transition hover:-translate-y-1 hover:border-blue-500 hover:shadow-xl ${cardBackground}`}
+                              className={`group rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 hover:border-blue-500 hover:shadow-md ${
+                                dark
+                                  ? "border-slate-800 bg-slate-950/50 hover:bg-slate-900"
+                                  : "border-slate-200 bg-white hover:bg-slate-50"
+                              }`}
                             >
-                              <div className="flex h-full flex-col justify-between">
+                              <div className="flex min-h-[105px] flex-col justify-between">
                                 <div>
-                                  <div className="font-bold leading-snug">
+                                  <p className="line-clamp-3 text-sm font-black">
                                     {
                                       product.name
                                     }
-                                  </div>
+                                  </p>
 
-                                  <div
-                                    className={`mt-2 text-xs ${
+                                  <p
+                                    className={`mt-2 text-[11px] ${
                                       dark
-                                        ? "text-slate-600"
+                                        ? "text-slate-500"
                                         : "text-slate-400"
                                     }`}
                                   >
                                     {
                                       product.category
                                     }
-                                  </div>
+                                  </p>
                                 </div>
 
-                                <div className="mt-5 flex items-center justify-between">
+                                <div className="mt-4 flex items-center justify-between">
                                   <span className="font-black text-blue-500">
                                     {formatPrice(
-                                      product.price
+                                      Number(
+                                        product.price
+                                      )
                                     )}
                                   </span>
 
-                                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-lg font-black text-blue-500 transition group-hover:bg-blue-600 group-hover:text-white">
-                                    +
+                                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+                                    ＋
                                   </span>
                                 </div>
                               </div>
@@ -2090,174 +2352,161 @@ export default function DashboardPage() {
 
                   {/* WARENKORB */}
 
-                  <div
-                    className={`h-fit rounded-3xl border p-5 xl:sticky xl:top-24 ${cardBackground}`}
+                  <aside
+                    className={`h-fit rounded-3xl border p-5 xl:sticky xl:top-28 ${
+                      dark
+                        ? "border-slate-800 bg-slate-950"
+                        : "border-slate-200 bg-white"
+                    }`}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="mb-5 flex items-center justify-between">
                       <div>
+                        <h3 className="font-black">
+                          Bestellung
+                        </h3>
+
                         <p
-                          className={`text-xs font-black uppercase tracking-widest ${
+                          className={`mt-1 text-xs ${
                             dark
-                              ? "text-slate-600"
+                              ? "text-slate-500"
                               : "text-slate-400"
                           }`}
                         >
                           Tisch{" "}
                           {selectedTable}
                         </p>
-
-                        <h2 className="mt-1 text-2xl font-black">
-                          Bestellung
-                        </h2>
                       </div>
 
-                      <button
-                        onClick={
-                          cancelAddingOrder
-                        }
-                        className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                          dark
-                            ? "bg-slate-800 hover:bg-slate-700"
-                            : "bg-slate-100 hover:bg-slate-200"
-                        }`}
-                      >
-                        ✕
-                      </button>
+                      <span className="rounded-full bg-blue-600 px-3 py-1 text-xs font-black text-white">
+                        {cart.reduce(
+                          (
+                            total,
+                            item
+                          ) =>
+                            total +
+                            item.quantity,
+                          0
+                        )}
+                      </span>
                     </div>
 
-                    <div className="mt-5 max-h-[500px] space-y-3 overflow-y-auto">
-                      {cart.length === 0 ? (
-                        <div
-                          className={`rounded-2xl border border-dashed p-8 text-center ${
-                            dark
-                              ? "border-slate-700"
-                              : "border-slate-300"
-                          }`}
-                        >
-                          <div className="text-3xl">
-                            🛒
-                          </div>
-
-                          <p
-                            className={`mt-3 text-sm ${
-                              dark
-                                ? "text-slate-500"
-                                : "text-slate-500"
-                            }`}
-                          >
-                            Noch keine
-                            Artikel
-                            ausgewählt.
-                          </p>
+                    {cart.length ===
+                    0 ? (
+                      <div
+                        className={`rounded-2xl border border-dashed p-8 text-center ${
+                          dark
+                            ? "border-slate-700 text-slate-500"
+                            : "border-slate-300 text-slate-400"
+                        }`}
+                      >
+                        <div className="mb-2 text-3xl">
+                          🛒
                         </div>
-                      ) : (
-                        cart.map(
-                          (cartItem) => (
+
+                        <p className="text-sm font-semibold">
+                          Noch keine
+                          Produkte
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {cart.map(
+                          (item) => (
                             <div
                               key={
-                                cartItem
-                                  .product
+                                item.product
                                   .id
                               }
-                              className={`rounded-2xl border p-4 ${
+                              className={`rounded-2xl p-3 ${
                                 dark
-                                  ? "border-slate-800 bg-slate-800/40"
-                                  : "border-slate-200 bg-slate-50"
+                                  ? "bg-slate-900"
+                                  : "bg-slate-50"
                               }`}
                             >
-                              <div className="flex justify-between gap-3">
+                              <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">
-                                  <div className="font-bold">
+                                  <p className="text-sm font-black">
                                     {
-                                      cartItem
+                                      item
                                         .product
                                         .name
                                     }
-                                  </div>
+                                  </p>
 
-                                  <div
-                                    className={`mt-1 text-xs ${
-                                      dark
-                                        ? "text-slate-500"
-                                        : "text-slate-500"
-                                    }`}
-                                  >
+                                  <p className="mt-1 text-xs font-semibold text-blue-500">
                                     {formatPrice(
-                                      cartItem
-                                        .product
-                                        .price
-                                    )}{" "}
-                                    / Stück
-                                  </div>
+                                      Number(
+                                        item
+                                          .product
+                                          .price
+                                      ) *
+                                        item.quantity
+                                    )}
+                                  </p>
                                 </div>
 
-                                <div className="font-black">
-                                  {formatPrice(
-                                    cartItem
-                                      .product
-                                      .price *
-                                      cartItem.quantity
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="mt-4 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
+                                <div className="flex shrink-0 items-center gap-1">
                                   <button
+                                    type="button"
                                     onClick={() =>
                                       changeCartQuantity(
-                                        cartItem
+                                        item
                                           .product
                                           .id,
                                         -1
                                       )
                                     }
-                                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-700 text-lg font-black hover:bg-slate-600"
+                                    className={`h-8 w-8 rounded-lg font-black ${
+                                      dark
+                                        ? "bg-slate-800 hover:bg-slate-700"
+                                        : "bg-white hover:bg-slate-200"
+                                    }`}
                                   >
                                     −
                                   </button>
 
-                                  <span className="w-8 text-center font-black">
+                                  <span className="flex h-8 min-w-8 items-center justify-center font-black">
                                     {
-                                      cartItem.quantity
+                                      item.quantity
                                     }
                                   </span>
 
                                   <button
+                                    type="button"
                                     onClick={() =>
                                       changeCartQuantity(
-                                        cartItem
+                                        item
                                           .product
                                           .id,
                                         1
                                       )
                                     }
-                                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-lg font-black text-white hover:bg-blue-700"
+                                    className="h-8 w-8 rounded-lg bg-blue-600 font-black text-white hover:bg-blue-700"
                                   >
-                                    +
+                                    ＋
                                   </button>
                                 </div>
                               </div>
                             </div>
                           )
-                        )
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    )}
 
                     <div
-                      className={`mt-5 border-t pt-5 ${
+                      className={`my-5 border-t pt-5 ${
                         dark
                           ? "border-slate-800"
                           : "border-slate-200"
                       }`}
                     >
-                      <div className="flex items-end justify-between">
+                      <div className="flex items-center justify-between">
                         <span
-                          className={
+                          className={`text-sm font-bold ${
                             dark
-                              ? "text-slate-500"
+                              ? "text-slate-400"
                               : "text-slate-500"
-                          }
+                          }`}
                         >
                           Gesamt
                         </span>
@@ -2268,264 +2517,317 @@ export default function DashboardPage() {
                           )}
                         </span>
                       </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={
+                        createNewOrder
+                      }
+                      disabled={
+                        saving ||
+                        cart.length ===
+                          0
+                      }
+                      className="w-full rounded-2xl bg-blue-600 px-5 py-4 text-sm font-black text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {saving
+                        ? "Speichere..."
+                        : openOrder
+                        ? "✓ Bestellung ergänzen"
+                        : "✓ Bestellung speichern"}
+                    </button>
+                  </aside>
+                </div>
+              </div>
+            )}
+
+            {/* NORMALE TISCHANSICHT */}
+
+            {!showPayment &&
+              !showAddOrder && (
+                <div className="p-5 lg:p-7">
+                  {selectedTableItems.length ===
+                  0 ? (
+                    <div
+                      className={`rounded-2xl border border-dashed p-12 text-center ${
+                        dark
+                          ? "border-slate-700"
+                          : "border-slate-300"
+                      }`}
+                    >
+                      <div className="mb-4 text-5xl">
+                        🧾
+                      </div>
+
+                      <h3 className="text-lg font-black">
+                        Noch keine Bestellung
+                      </h3>
+
+                      <p
+                        className={`mx-auto mt-2 max-w-md text-sm ${
+                          dark
+                            ? "text-slate-400"
+                            : "text-slate-500"
+                        }`}
+                      >
+                        Füge Produkte hinzu,
+                        um eine neue
+                        Bestellung für
+                        diesen Tisch
+                        anzulegen.
+                      </p>
 
                       <button
+                        type="button"
                         onClick={
-                          createNewOrder
+                          startAddingOrder
                         }
-                        disabled={
-                          saving ||
-                          cart.length ===
-                            0
-                        }
-                        className="mt-5 w-full rounded-2xl bg-blue-600 px-5 py-4 font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="mt-5 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white hover:bg-blue-700"
                       >
-                        {saving
-                          ? "Wird gespeichert..."
-                          : "✓ Bestellung speichern"}
+                        ＋ Bestellung
+                        starten
                       </button>
                     </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TISCH DETAIL */}
-
-              {!showPayment &&
-                !showAddOrder && (
-                  <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_430px]">
-                    <div
-                      className={`rounded-3xl border p-5 md:p-6 ${cardBackground}`}
-                    >
-                      <div className="mb-5 flex items-center justify-between">
-                        <div>
+                  ) : (
+                    <>
+                      <div className="mb-5 grid gap-3 sm:grid-cols-3">
+                        <div
+                          className={`rounded-2xl p-4 ${
+                            dark
+                              ? "bg-slate-950"
+                              : "bg-slate-50"
+                          }`}
+                        >
                           <p
-                            className={`text-xs font-black uppercase tracking-widest ${
+                            className={`text-xs font-bold uppercase tracking-wider ${
                               dark
-                                ? "text-slate-600"
+                                ? "text-slate-500"
                                 : "text-slate-400"
                             }`}
                           >
-                            Aktuelle Bestellung
+                            Positionen
                           </p>
 
-                          <h2 className="mt-1 text-2xl font-black">
-                            Artikel
-                          </h2>
-                        </div>
-
-                        {selectedTableItems.length >
-                          0 && (
-                          <span
-                            className={`rounded-xl px-3 py-2 text-xs font-black ${softBackground}`}
-                          >
+                          <p className="mt-1 text-2xl font-black">
                             {
                               selectedTableItems.length
-                            }{" "}
-                            Positionen
-                          </span>
+                            }
+                          </p>
+                        </div>
+
+                        <div
+                          className={`rounded-2xl p-4 ${
+                            dark
+                              ? "bg-slate-950"
+                              : "bg-slate-50"
+                          }`}
+                        >
+                          <p
+                            className={`text-xs font-bold uppercase tracking-wider ${
+                              dark
+                                ? "text-slate-500"
+                                : "text-slate-400"
+                            }`}
+                          >
+                            Offen
+                          </p>
+
+                          <p className="mt-1 text-2xl font-black text-orange-500">
+                            {paymentItems.reduce(
+                              (
+                                total,
+                                item
+                              ) =>
+                                total +
+                                (item.quantity -
+                                  item.paid_quantity),
+                              0
+                            )}
+                          </p>
+                        </div>
+
+                        <div
+                          className={`rounded-2xl p-4 ${
+                            dark
+                              ? "bg-slate-950"
+                              : "bg-slate-50"
+                          }`}
+                        >
+                          <p
+                            className={`text-xs font-bold uppercase tracking-wider ${
+                              dark
+                                ? "text-slate-500"
+                                : "text-slate-400"
+                            }`}
+                          >
+                            Status
+                          </p>
+
+                          <p className="mt-1 text-lg font-black">
+                            {tableStatuses[
+                              selectedTable
+                            ] === "offen"
+                              ? "In Bearbeitung"
+                              : tableStatuses[
+                                  selectedTable
+                                ] ===
+                                "fertig"
+                              ? "Bezahlung offen"
+                              : "Frei"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        {selectedTableItems.map(
+                          (item) => {
+                            const price =
+                              productPriceMap.get(
+                                item.product_name
+                              ) ?? 0;
+
+                            const unpaid =
+                              item.quantity -
+                              item.paid_quantity;
+
+                            return (
+                              <div
+                                key={
+                                  item.id
+                                }
+                                className={`flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between ${
+                                  dark
+                                    ? "border-slate-800 bg-slate-950/40"
+                                    : "border-slate-200 bg-white"
+                                }`}
+                              >
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <p className="font-black">
+                                      {
+                                        item.product_name
+                                      }
+                                    </p>
+
+                                    {item.paid_quantity >
+                                      0 && (
+                                      <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-black text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                                        {
+                                          item.paid_quantity
+                                        }{" "}
+                                        bezahlt
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <p
+                                    className={`mt-1 text-xs ${
+                                      dark
+                                        ? "text-slate-500"
+                                        : "text-slate-400"
+                                    }`}
+                                  >
+                                    {item.quantity}{" "}
+                                    ×{" "}
+                                    {formatPrice(
+                                      price
+                                    )}
+                                  </p>
+                                </div>
+
+                                <div className="flex items-center justify-between gap-5 sm:justify-end">
+                                  <div className="text-right">
+                                    <p className="font-black">
+                                      {formatPrice(
+                                        price *
+                                          item.quantity
+                                      )}
+                                    </p>
+
+                                    {unpaid >
+                                      0 && (
+                                      <p className="mt-1 text-xs font-bold text-orange-500">
+                                        {unpaid}{" "}
+                                        offen
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
                         )}
                       </div>
 
-                      {selectedTableItems.length ===
-                      0 ? (
-                        <div
-                          className={`rounded-3xl border border-dashed p-12 text-center ${
-                            dark
-                              ? "border-slate-700"
-                              : "border-slate-300"
-                          }`}
-                        >
-                          <div className="text-4xl">
-                            🍽️
-                          </div>
-
-                          <h3 className="mt-4 text-lg font-black">
-                            Tisch ist frei
-                          </h3>
-
-                          <p
-                            className={`mx-auto mt-1 max-w-sm text-sm ${
-                              dark
-                                ? "text-slate-500"
-                                : "text-slate-500"
-                            }`}
-                          >
-                            Füge eine neue
-                            Bestellung
-                            hinzu, um den
-                            Tisch zu
-                            belegen.
-                          </p>
-
+                      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                        {openOrder && (
                           <button
+                            type="button"
                             onClick={
-                              startAddingOrder
+                              finishOrder
                             }
-                            className="mt-5 rounded-2xl bg-blue-600 px-5 py-3 font-black text-white"
+                            disabled={saving}
+                            className="rounded-xl bg-orange-500 px-6 py-3 text-sm font-black text-white hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            + Bestellung aufnehmen
+                            {saving
+                              ? "Speichere..."
+                              : "✓ Bestellung fertig"}
                           </button>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {selectedTableItems.map(
-                            (item) => {
-                              const remaining =
-                                item.quantity -
-                                item.paid_quantity;
+                        )}
 
-                              return (
-                                <div
-                                  key={
-                                    item.id
-                                  }
-                                  className={`rounded-2xl border p-4 ${
-                                    dark
-                                      ? "border-slate-800 bg-slate-800/30"
-                                      : "border-slate-200 bg-slate-50"
-                                  }`}
-                                >
-                                  <div className="flex items-center justify-between gap-4">
-                                    <div>
-                                      <div className="font-bold">
-                                        {
-                                          item.product_name
-                                        }
-                                      </div>
-
-                                      <div
-                                        className={`mt-1 text-sm ${
-                                          dark
-                                            ? "text-slate-500"
-                                            : "text-slate-500"
-                                        }`}
-                                      >
-                                        Menge{" "}
-                                        {
-                                          item.quantity
-                                        }
-                                      </div>
-                                    </div>
-
-                                    <div className="text-right">
-                                      <div className="text-xl font-black">
-                                        {
-                                          remaining
-                                        }
-                                      </div>
-
-                                      <div
-                                        className={`text-xs ${
-                                          dark
-                                            ? "text-slate-600"
-                                            : "text-slate-400"
-                                        }`}
-                                      >
-                                        offen
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {item.paid_quantity >
-                                    0 && (
-                                    <div className="mt-3 inline-flex rounded-lg bg-green-500/10 px-3 py-1.5 text-xs font-bold text-green-500">
-                                      ✓{" "}
-                                      {
-                                        item.paid_quantity
-                                      }{" "}
-                                      bezahlt
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            }
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    <div
-                      className={`h-fit rounded-3xl border p-5 xl:sticky xl:top-24 ${cardBackground}`}
-                    >
-                      <p className="text-xs font-black uppercase tracking-widest text-blue-500">
-                        Aktionen
-                      </p>
-
-                      <h2 className="mt-1 text-2xl font-black">
-                        Tisch{" "}
-                        {selectedTable}
-                      </h2>
-
-                      {selectedTableItems.length >
-                        0 && (
-                        <div
-                          className={`mt-5 rounded-2xl p-4 ${softBackground}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span
-                              className={
-                                dark
-                                  ? "text-slate-500"
-                                  : "text-slate-500"
+                        {tableStatuses[
+                          selectedTable
+                        ] ===
+                          "fertig" &&
+                          paymentItems.length >
+                            0 && (
+                            <button
+                              type="button"
+                              onClick={
+                                openPayment
                               }
+                              disabled={
+                                saving
+                              }
+                              className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                              Offene Artikel
-                            </span>
+                              💳 Zur
+                              Bezahlung
+                            </button>
+                          )}
 
-                            <span className="text-xl font-black">
-                              {
-                                tableOpenItemCount
-                              }
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {openOrder && (
                         <button
-                          onClick={
-                            finishOrder
-                          }
-                          disabled={saving}
-                          className="mt-5 w-full rounded-2xl bg-blue-600 px-5 py-4 font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:opacity-40"
-                        >
-                          {saving
-                            ? "Wird gespeichert..."
-                            : "✓ Bestellung fertig"}
-                        </button>
-                      )}
-
-                      {paymentItems.length >
-                        0 && (
-                        <button
-                          onClick={
-                            openPayment
-                          }
-                          className="mt-3 w-full rounded-2xl bg-green-600 px-5 py-4 font-black text-white shadow-lg shadow-green-600/20 transition hover:bg-green-700"
-                        >
-                          💳 Zahlung öffnen
-                        </button>
-                      )}
-
-                      {selectedTableItems.length >
-                        0 && (
-                        <button
+                          type="button"
                           onClick={
                             startAddingOrder
                           }
-                          className="mt-3 w-full rounded-2xl bg-orange-500 px-5 py-4 font-black text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-600"
+                          disabled={saving}
+                          className={`rounded-xl px-6 py-3 text-sm font-black ${
+                            dark
+                              ? "bg-slate-800 hover:bg-slate-700"
+                              : "bg-slate-100 hover:bg-slate-200"
+                          }`}
                         >
-                          + Weitere Artikel
+                          ＋ Weitere
+                          Produkte
                         </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-            </>
-          )}
-        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+          </section>
+        )}
       </div>
+
+      {/* AKTUALISIERUNGSINDIKATOR */}
+
+      {refreshing && (
+        <div className="fixed bottom-5 right-5 z-50 rounded-full bg-slate-900 px-4 py-2 text-xs font-bold text-white shadow-lg">
+          ↻ Aktualisiere...
+        </div>
+      )}
     </main>
   );
 }
